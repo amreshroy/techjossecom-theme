@@ -1,0 +1,233 @@
+{
+  "$schema": "techjossecom/master-form/1.0",
+  "theme": "techjossecom",
+  "theme_name": "TechJosse Commerce",
+  "version": "1.0.0",
+  "purpose": "Single source of truth for the whole site. Paste this file into Appearance -> Master Content and press 'Apply master content' to configure theme options, pages, menus, product categories and products in one step.",
+  "how_to_import": [
+    "1. In wp-admin go to Appearance -> Master Content.",
+    "2. Press 'Reload bundled file' to load master-form.json (or paste your own JSON).",
+    "3. Choose the scope (everything / theme options only / content only) and press Apply.",
+    "4. Open a page in wp-admin with an edit link from the importer report and check the result.",
+    "Re-running the import is safe: pages are matched by slug, menu items by target, categories by slug and products by SKU."
+  ],
+  "field_reference": {
+    "settings": "Flat map of theme option keys. Keys must exist in techjossecom_defaults(): keys starting with show_/enable_ are booleans, *_limit are numbers, *_image accept an attachment ID or a remote image URL (downloaded into the media library), *_url and social_* are URLs, *_color are hex colours.",
+    "content.categories": "Product categories. List parents before children. Optional keys: slug, parent, description, image.",
+    "content.pages": "Pages matched by slug (created or updated). Optional keys: title, content, parent, template, front_page (bool), posts_page (bool), status.",
+    "content.menu": "Menu object or list of menu objects: name, locations (theme locations: primary, topbar, footer_1, footer_2, footer_3, mobile), items (page slug | product_cat slug | url, plus optional title).",
+    "content.products": "Simple products matched by SKU. Keys: name, sku, regular_price, sale_price, description, short_description, categories (slugs), image, gallery, stock_status, stock_quantity, featured, status."
+  },
+  "bilingual_examples": {
+    "note": "Customer-facing labels can be English or Bengali. Copy these values into the matching settings keys to switch a string to Bengali.",
+    "cod_button_text": "ক্যাশ অন ডেলিভারি অর্ডার করুন",
+    "cod_modal_title": "অর্ডার নিশ্চিত করুন",
+    "cod_success_message": "ধন্যবাদ! আপনার অর্ডারটি গ্রহণ করা হয়েছে। আমাদের প্রতিনিধি শীঘ্রই কল করবেন।",
+    "search_placeholder": "পণ্য খুঁজুন...",
+    "categories_title": "ক্যাটাগরি অনুযায়ী কিনুন",
+    "deals_title": "বেস্ট ডিল",
+    "hotline_label": "হটলাইন",
+    "filter_note": "Any key that is not listed in techjossecom_defaults() is rejected with a warning, so the importer can never write unexpected options."
+  },
+  "settings": {
+    "show_topbar": true,
+    "topbar_text": "Best Online Shop in Bangladesh — Genuine Products, Nationwide Delivery",
+    "hotline_label": "Hotline",
+    "hotline_number": "+8801700000000",
+    "whatsapp_number": "+8801700000000",
+    "messenger_username": "",
+    "search_placeholder": "Search for products...",
+    "show_live_search": true,
+    "hero1_image": "",
+    "hero1_title": "Big Savings On Everyday Products",
+    "hero1_subtitle": "Genuine items, fast delivery, honest prices",
+    "hero1_button_text": "Shop Now",
+    "hero1_button_url": "",
+    "hero2_image": "",
+    "hero2_badge": "New Arrival",
+    "hero2_title": "Home Essentials",
+    "hero2_url": "",
+    "hero3_image": "",
+    "hero3_badge": "Best Price",
+    "hero3_title": "Top Rated Items",
+    "hero3_url": "",
+    "show_intro": true,
+    "show_front_heading": true,
+    "front_heading": "Shop Online in Bangladesh — Genuine Products, Fast Delivery",
+    "intro_title": "Your Trusted Online Shop in Bangladesh",
+    "intro_text": "We deliver genuine products to every district of Bangladesh with cash on delivery. Browse the categories above, use the live search to find an item quickly, or press the green Order Now button on any product to place a cash on delivery order in under a minute.",
+    "show_categories": true,
+    "categories_title": "Shop by Category",
+    "categories_limit": 12,
+    "show_deals": true,
+    "deals_title": "Best Deals",
+    "deals_limit": 8,
+    "show_features": true,
+    "feature1_title": "100% Genuine Products",
+    "feature1_text": "Verified quality items",
+    "feature2_title": "Nationwide Delivery",
+    "feature2_text": "Fast delivery across Bangladesh",
+    "feature3_title": "24/7 Support",
+    "feature3_text": "Call us any time",
+    "feature4_title": "Best Price Guarantee",
+    "feature4_text": "Affordable & transparent",
+    "enable_cod": true,
+    "cod_button_text": "Order Now (Cash on Delivery)",
+    "cod_modal_title": "Order Now — Cash on Delivery",
+    "cod_success_message": "Thank you! Your order has been received.",
+    "contact_address": "Dhaka, Bangladesh",
+    "contact_email": "support@example.com",
+    "social_facebook": "",
+    "social_youtube": "",
+    "social_x": "",
+    "social_linkedin": "",
+    "social_instagram": "",
+    "social_pinterest": "",
+    "footer_about": "We are a trusted online shop delivering genuine products all over Bangladesh with cash on delivery.",
+    "footer_payments": "We accept: bKash • Nagad • Cash on Delivery • Cards",
+    "footer_copyright": "",
+    "show_single_share": true,
+    "primary_color": "#0a7d4f",
+    "accent_color": "#ff6b00",
+    "dark_color": "#12251c",
+    "secondary_color": "#1c4fd8"
+  },
+  "content": {
+    "categories": [
+      {
+        "name": "Health & Personal Care",
+        "slug": "health-personal-care",
+        "description": "Everyday health and personal care products delivered nationwide."
+      },
+      {
+        "name": "Home & Kitchen",
+        "slug": "home-kitchen",
+        "description": "Useful home and kitchen items at honest prices."
+      },
+      {
+        "name": "Electronics & Gadgets",
+        "slug": "electronics-gadgets",
+        "description": "Gadgets, accessories and everyday electronics."
+      },
+      {
+        "name": "Baby & Mother Care",
+        "slug": "baby-mother-care",
+        "description": "Safe products for mother and baby."
+      },
+      {
+        "name": "Beauty & Skin Care",
+        "slug": "beauty-skin-care",
+        "description": "Skin, hair and beauty essentials.",
+        "parent": "health-personal-care"
+      }
+    ],
+    "pages": [
+      {
+        "slug": "home",
+        "title": "Home",
+        "front_page": true,
+        "content": "<p>The homepage layout is rendered by front-page.php: hero banners, the four service highlights, the category grid, Best Deals, New Arrivals and an SEO intro block. Configure those blocks in Appearance → Customize → TechJosse Theme Options, or replace this page content to add extra blocks below the product sections.</p>"
+      },
+      {
+        "slug": "about-us",
+        "title": "About Us",
+        "content": "<h2>Who we are</h2><p>We are an online shop serving customers all over Bangladesh. Every order can be paid in cash when the courier hands over the parcel, so you can shop with total confidence.</p><h2>Why customers choose us</h2><ul><li>Genuine, verified products</li><li>Fast nationwide delivery</li><li>Cash on delivery on every item</li><li>Friendly support on phone, WhatsApp and Messenger</li></ul>"
+      },
+      {
+        "slug": "contact-us",
+        "title": "Contact Us",
+        "content": "<h2>Talk to us</h2><p>Call or message us any day between 9:00 and 22:00. Our team replies to WhatsApp and Messenger messages within minutes.</p><ul><li>Hotline: your number here</li><li>Email: your email here</li><li>Address: your shop address here</li></ul><h2>Order tracking</h2><p>After placing an order you will receive a confirmation call and an SMS with the courier details.</p>"
+      },
+      {
+        "slug": "delivery-and-return",
+        "title": "Delivery & Return Policy",
+        "content": "<h2>Delivery</h2><p>Inside Dhaka: 1-2 working days. Outside Dhaka: 2-4 working days. Delivery charges are shown in the Cash on Delivery popup before you confirm the order.</p><h2>Return</h2><p>If a product arrives damaged or is not what you ordered, contact us within 7 days of delivery and we will replace it or refund the amount.</p>"
+      },
+      {
+        "slug": "privacy-policy",
+        "title": "Privacy Policy",
+        "content": "<h2>What we collect</h2><p>When you place an order we store your name, mobile number and delivery address so the courier can reach you. We never sell or share this information with third parties.</p><h2>Cookies</h2><p>Our shop uses cookies to keep your cart contents available between pages.</p>"
+      }
+    ],
+    "menu": [
+      {
+        "name": "Primary Menu",
+        "locations": [ "primary" ],
+        "items": [
+          { "page": "home", "title": "Home" },
+          { "product_cat": "health-personal-care" },
+          { "product_cat": "home-kitchen" },
+          { "product_cat": "electronics-gadgets" },
+          { "product_cat": "baby-mother-care" },
+          { "page": "about-us" },
+          { "page": "contact-us" }
+        ]
+      },
+      {
+        "name": "Customer Service",
+        "locations": [ "footer_2" ],
+        "items": [
+          { "page": "contact-us" },
+          { "page": "delivery-and-return", "title": "Delivery & Return" },
+          { "url": "/?s=&post_type=product", "title": "All Products" }
+        ]
+      },
+      {
+        "name": "Information",
+        "locations": [ "footer_3" ],
+        "items": [
+          { "page": "about-us" },
+          { "page": "privacy-policy" },
+          { "url": "/wp-admin/", "title": "Seller Login" }
+        ]
+      }
+    ],
+    "products": [
+      {
+        "_note": "For image and gallery use an attachment ID or a full https URL; the importer downloads remote images into the media library.",
+        "name": "Example Product One",
+        "sku": "TJ-1001",
+        "regular_price": "1250",
+        "sale_price": "990",
+        "categories": [ "health-personal-care" ],
+        "short_description": "A short benefit driven description shown next to the price.",
+        "description": "<p>Write the full product description here. Mention what is inside the box, how to use the item and who it is for. Good descriptions improve both conversions and SEO.</p>",
+        "stock_status": "instock",
+        "stock_quantity": 25,
+        "featured": true
+      },
+      {
+        "name": "Example Product Two",
+        "sku": "TJ-1002",
+        "regular_price": "850",
+        "sale_price": "749",
+        "categories": [ "home-kitchen" ],
+        "short_description": "Compact, durable and easy to use.",
+        "description": "<p>Full description for the second example product.</p>",
+        "stock_status": "instock",
+        "stock_quantity": 40
+      },
+      {
+        "name": "Example Product Three",
+        "sku": "TJ-1003",
+        "regular_price": "2200",
+        "sale_price": "",
+        "categories": [ "electronics-gadgets" ],
+        "short_description": "Everyday gadget with a two year warranty.",
+        "description": "<p>Full description for the third example product.</p>",
+        "stock_status": "instock",
+        "stock_quantity": 12
+      },
+      {
+        "name": "Example Product Four",
+        "sku": "TJ-1004",
+        "regular_price": "560",
+        "sale_price": "499",
+        "categories": [ "baby-mother-care" ],
+        "short_description": "Gentle and safe for daily use.",
+        "description": "<p>Full description for the fourth example product.</p>",
+        "stock_status": "instock"
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+/*
+Theme Name: TechJosse Commerce
+Theme URI: https://techjosse.com/
+Author: TechJosse
+Author URI: https://techjosse.com/
+Description: A lightweight, fast-loading, SEO friendly WooCommerce e-commerce theme with AJAX live search, a slide-in mini cart, and a one-click Cash on Delivery "Order Now" popup. Built for speed and simplicity.
+Version: 1.0.0
+Requires at least: 6.0
+Tested up to: 6.6
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: LICENSE
+Text Domain: techjossecom
+Tags: e-commerce, custom-menu, featured-images, full-width-template, threaded-comments, translation-ready
+
+TechJosse Commerce is distributed under the terms of the GNU GPL.
+*/
+
+/*   Minimal base reset. All real styling lives in assets/css/main.css
+   which is enqueued separately so it can be cached/minified independently. */
+html {
+	box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: inherit;
+}
+
+body {
+	margin: 0;
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+}

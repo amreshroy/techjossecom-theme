@@ -1,0 +1,29 @@
+# Local QA harness - screenshots, Chrome profiles and throwaway probes.
+# This folder is ~60 MB of build artefacts and machine specific paths, none
+# of it is theme source, so it stays out of the repository.
+.qa/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/
+*.sublime-*
+
+# Build / dependency artefacts
+node_modules/
+vendor/
+*.log
+
+# Local environment and secrets. wp-config.php normally lives above the theme
+# folder, but it is listed here so that a stray copy inside the theme can never
+# be committed: it holds the database password and the auth keys.
+wp-config.php
+wp-config-*.php
+.env
+.env.*
+*.pem
+*.key

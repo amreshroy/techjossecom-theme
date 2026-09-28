@@ -1,0 +1,2305 @@
+@charset "UTF-8";
+/**
+ * TechJosse Commerce - main stylesheet.
+ *
+ * Mobile first: base rules target phones, media queries scale the layout up.
+ * The colour variables are overridden by the customizer (inc/customizer.php).
+ */
+
+:root {
+	--tj-primary: #0a7d4f;
+	--tj-primary-dark: #085f3c;
+	--tj-primary-soft: rgba(10, 125, 79, .08);
+	--tj-primary-ring: rgba(10, 125, 79, .18);
+	--tj-accent: #ff6b00;
+	--tj-accent-dark: #c45200;
+	--tj-dark: #12251c;
+	--tj-secondary: #1c4fd8;
+	--tj-secondary-dark: #143a9e;
+	--tj-sale: #e0243a;
+	--tj-text: #22272b;
+	--tj-muted: #6b7280;
+	--tj-line: #e5e7eb;
+	--tj-bg: #f6f7f9;
+	--tj-white: #fff;
+	--tj-danger: #d92d20;
+	--tj-success: #067647;
+	--tj-radius: 10px;
+	--tj-radius-lg: 16px;
+	--tj-shadow: 0 2px 10px rgba(16, 24, 40, .07);
+	--tj-shadow-lg: 0 18px 40px rgba(16, 24, 40, .18);
+	--tj-gutter: 16px;
+	--tj-font: "Segoe UI", "Hind Siliguri", "Noto Sans Bengali", system-ui, -apple-system, Arial, sans-serif;
+	/* Shared button heights. "Add to Cart" / "Select options" (an <a class="button">)
+	   and the "Order Now" cash on delivery button (a <button class="tj-btn">) must
+	   resolve to exactly the same box on the product card and on the single product
+	   page, so the height lives in one token per context instead of being derived
+	   from each button's own padding plus whatever its content happens to be. */
+	--tj-btn-h-card: 40px;
+	--tj-btn-h-single: 46px;
+	/* Fallback fill for a Colour swatch. Each swatch overrides it inline with the
+	   colour resolved from its attribute term, so a term the theme cannot map
+	   still renders as a readable box instead of an empty one. */
+	--tj-swatch: #9ca3af;
+}
+
+/* ---------------------------------------------------------------- base --- */
+
+body {
+	margin: 0;
+	background: var(--tj-bg);
+	color: var(--tj-text);
+	font-family: var(--tj-font);
+	font-size: 15px;
+	line-height: 1.65;
+	-webkit-font-smoothing: antialiased;
+	overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	margin: 0 0 .6em;
+	color: #111;
+	line-height: 1.25;
+	font-weight: 700;
+}
+
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.15rem; }
+
+p { margin: 0 0 1em; }
+
+a {
+	color: var(--tj-primary);
+	text-decoration: none;
+	transition: color .15s ease, background-color .15s ease;
+}
+
+a:hover { color: var(--tj-accent); }
+
+ul, ol { margin: 0 0 1em; padding-left: 1.2em; }
+
+img { max-width: 100%; height: auto; }
+
+button { font-family: inherit; }
+
+svg.tj-icon { display: block; flex: 0 0 auto; }
+
+hr { border: 0; border-top: 1px solid var(--tj-line); margin: 2em 0; }
+
+/* WooCommerce prints its own a11y helpers (price ranges, "choose options on the
+   product page", live regions) with the plain .screen-reader-text class. The
+   theme owns that utility as well so the text is never visible, no matter
+   whether the WooCommerce stylesheet is loaded, stripped by an optimiser or
+   changed by a plugin. Clipping (instead of display:none) keeps the text
+   available to screen readers. */
+.screen-reader-text,
+.tj-screen-reader-text,
+.tj-skip-link:not(:focus) {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.tj-skip-link:focus {
+	position: fixed;
+	top: 8px;
+	left: 8px;
+	z-index: 10000;
+	background: var(--tj-white);
+	padding: 10px 16px;
+	border-radius: var(--tj-radius);
+	box-shadow: var(--tj-shadow-lg);
+}
+
+/* ------------------------------------------------------------ layout ---- */
+
+.tj-container {
+	width: 100%;
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 0 var(--tj-gutter);
+}
+
+.tj-main { display: block; }
+
+.tj-layout { display: block; }
+
+.tj-layout-sidebar { margin-top: 28px; }
+
+.tj-section { padding: 26px 0; }
+
+.tj-section-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.tj-section-title {
+	position: relative;
+	margin: 0;
+	font-size: 1.15rem;
+	padding-left: 12px;
+}
+
+.tj-section-title::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: .18em;
+	bottom: .18em;
+	width: 4px;
+	border-radius: 4px;
+	background: var(--tj-primary);
+}
+
+.tj-section-link { font-size: .85rem; font-weight: 600; white-space: nowrap; }
+
+.tj-section-tools { display: flex; align-items: center; gap: 12px; }
+
+.tj-section--intro .tj-section-title { text-align: center; font-size: 1.5rem; }
+
+.tj-scroll-buttons { display: none; gap: 6px; }
+
+.tj-scroll-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 1px solid var(--tj-line);
+	border-radius: 50%;
+	background: var(--tj-white);
+	color: var(--tj-dark);
+	font-size: 1.05rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.tj-scroll-btn:hover { background: var(--tj-dark); border-color: var(--tj-dark); color: #fff; }
+
+.tj-section.is-at-start .tj-scroll-btn[data-tj-scroll="prev"],
+.tj-section.is-at-end .tj-scroll-btn[data-tj-scroll="next"] { opacity: .4; cursor: default; }
+
+.tj-page-head { padding: 18px 0 6px; }
+.tj-page-title { margin: 0 0 8px; font-size: 1.45rem; }
+.tj-page-desc { color: var(--tj-muted); }
+
+.tj-breadcrumb { padding: 12px 0; font-size: .8rem; color: var(--tj-muted); }
+.tj-breadcrumb ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.tj-breadcrumb li { display: flex; align-items: center; gap: 6px; }
+.tj-breadcrumb li + li::before { content: "/"; color: var(--tj-line); }
+.tj-breadcrumb a { color: var(--tj-muted); }
+.tj-breadcrumb a:hover { color: var(--tj-primary); }
+
+.tj-placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 170px;
+	padding: 20px;
+	border: 1px dashed var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: repeating-linear-gradient(45deg, #fafafa, #fafafa 10px, #f0f1f3 10px, #f0f1f3 20px);
+	color: var(--tj-muted);
+	font-size: .8rem;
+	text-align: center;
+}
+
+@media (min-width: 992px) {
+	.tj-layout--sidebar {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 300px;
+		gap: 32px;
+		align-items: start;
+	}
+
+	.tj-layout-sidebar { margin-top: 0; }
+	.tj-section { padding: 34px 0; }
+	.tj-page-title { font-size: 1.8rem; }
+	.tj-section-title { font-size: 1.3rem; }
+}
+
+/* ----------------------------------------------------------- buttons ---- */
+
+.tj-btn,
+.woocommerce .button,
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 10px 16px;
+	border: 1px solid transparent;
+	border-radius: var(--tj-radius);
+	background: var(--tj-primary);
+	color: var(--tj-white);
+	font-size: .9rem;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: center;
+	cursor: pointer;
+	transition: transform .12s ease, background-color .15s ease, color .15s ease;
+}
+
+.tj-btn:hover,
+.woocommerce .button:hover,
+.woocommerce a.button:hover,
+.woocommerce button.button:hover,
+.woocommerce input.button:hover,
+.woocommerce #respond input#submit:hover {
+	background: var(--tj-primary-dark);
+	color: var(--tj-white);
+	transform: translateY(-1px);
+}
+
+.tj-btn--primary { background: var(--tj-primary); color: var(--tj-white); }
+.tj-btn--accent { background: var(--tj-accent); color: var(--tj-white); }
+.tj-btn--accent:hover { background: var(--tj-accent-dark); color: var(--tj-white); }
+.tj-btn--ghost { background: transparent; border-color: var(--tj-line); color: var(--tj-text); }
+.tj-btn--ghost:hover { background: #f3f4f6; color: var(--tj-text); }
+.tj-btn--cod { background: var(--tj-primary); color: var(--tj-white); }
+.tj-btn--cod:hover { background: var(--tj-primary-dark); color: var(--tj-white); }
+.tj-btn--whatsapp { background: #25d366; color: #08301a; }
+.tj-btn--whatsapp:hover { background: #1eb257; color: #08301a; }
+.tj-btn--messenger { background: #0084ff; color: var(--tj-white); }
+.tj-btn--lg { padding: 14px 24px; font-size: 1rem; }
+.tj-btn--block { width: 100%; }
+
+.tj-icon-btn {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	color: var(--tj-text);
+	font-size: 1.15rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.tj-icon-btn:hover { color: var(--tj-primary); border-color: var(--tj-primary); }
+
+.tj-chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+.tj-chip {
+	display: inline-block;
+	padding: 6px 12px;
+	border: 1px solid var(--tj-line);
+	border-radius: 999px;
+	background: var(--tj-white);
+	font-size: .82rem;
+	color: var(--tj-text);
+}
+
+.tj-chip:hover { border-color: var(--tj-primary); color: var(--tj-primary); }
+
+/* ------------------------------------------------------------- forms ---- */
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	color: var(--tj-text);
+	font-family: inherit;
+	font-size: .95rem;
+	line-height: 1.4;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+	outline: none;
+	border-color: var(--tj-primary);
+	box-shadow: 0 0 0 3px var(--tj-primary-ring);
+}
+
+.tj-field { margin: 0 0 12px; }
+.tj-field label { display: block; margin-bottom: 4px; font-size: .82rem; font-weight: 600; }
+.tj-req { color: var(--tj-danger); }
+
+.tj-hp {
+	position: absolute !important;
+	left: -9999px !important;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+/* -------------------------------------------------------- top bar ------- */
+
+.tj-topbar {
+	background: var(--tj-dark);
+	color: rgba(255, 255, 255, .9);
+	font-size: .78rem;
+}
+
+.tj-topbar-inner {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 6px;
+	padding-bottom: 6px;
+	text-align: center;
+}
+
+.tj-topbar-text { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; }
+.tj-topbar-text svg.tj-icon { width: 16px; height: 16px; }
+.tj-topbar-links { display: none; align-items: center; gap: 14px; }
+.tj-topbar-links a { color: rgba(255, 255, 255, .85); }
+.tj-topbar-links a:hover { color: #fff; }
+.tj-topbar-menu { display: flex; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.tj-topbar-link--whatsapp { color: #7ff0b0 !important; }
+
+/* ---------------------------------------------------------- header ------ */
+
+.tj-header {
+	position: sticky;
+	top: 0;
+	z-index: 60;
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+}
+
+.tj-header-inner {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	gap: 10px;
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+
+.tj-branding { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tj-branding img { max-height: 44px; width: auto; }
+.tj-text-logo { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--tj-dark); }
+.tj-text-logo:hover { color: var(--tj-primary); }
+.tj-text-logo-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 10px;
+	background: var(--tj-primary);
+	color: #fff;
+	font-size: 1.05rem;
+}
+.tj-text-logo-name { font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tj-tagline { display: none; color: var(--tj-muted); font-size: .72rem; }
+
+.tj-burger,
+.tj-burger::before,
+.tj-burger::after {
+	display: block;
+	width: 18px;
+	height: 2px;
+	border-radius: 2px;
+	background: currentColor;
+}
+
+.tj-burger { position: relative; }
+.tj-burger::before,
+.tj-burger::after { content: ""; position: absolute; left: 0; }
+.tj-burger::before { top: -6px; }
+.tj-burger::after { top: 6px; }
+
+.tj-search { position: relative; display: none; }
+
+.tj-search-form {
+	display: flex;
+	align-items: stretch;
+	border: 1px solid var(--tj-line);
+	border-radius: 8px;
+	overflow: hidden;
+	background: var(--tj-white);
+}
+
+.tj-search-cat {
+	position: relative;
+	display: none;
+	align-items: center;
+	flex: 0 0 auto;
+	border-right: 1px solid var(--tj-line);
+}
+
+.tj-search-cat-select {
+	width: auto;
+	max-width: 170px;
+	padding: 10px 32px 10px 14px;
+	border: 0 !important;
+	border-radius: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	color: var(--tj-text);
+	font-size: .85rem;
+	text-overflow: ellipsis;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	cursor: pointer;
+}
+
+.tj-search-cat-caret {
+	position: absolute;
+	right: 10px;
+	display: inline-flex;
+	color: var(--tj-muted);
+	pointer-events: none;
+}
+
+.tj-search-cat-caret svg.tj-icon { width: 16px; height: 16px; }
+
+.tj-search-input {
+	flex: 1;
+	min-width: 0;
+	padding: 10px 16px;
+	border: 0 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	font-size: .9rem;
+}
+
+.tj-search-submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 58px;
+	border: 0;
+	background: var(--tj-dark);
+	color: #fff;
+	cursor: pointer;
+}
+
+.tj-search-submit:hover { background: var(--tj-primary); }
+
+.tj-header-actions { display: flex; align-items: center; gap: 10px; }
+
+.tj-header-link {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--tj-text);
+	font-size: .85rem;
+}
+
+.tj-header-link:hover { color: var(--tj-primary); }
+.tj-header-link-label { font-weight: 600; white-space: nowrap; }
+
+.tj-header-link-icon,
+.tj-hotline-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	background: var(--tj-primary-soft);
+	color: var(--tj-primary);
+}
+
+.tj-account-link { display: none; }
+
+.tj-hotline { display: none; align-items: center; gap: 8px; color: var(--tj-text); }
+.tj-hotline:hover { color: var(--tj-primary); }
+.tj-hotline-text { display: flex; flex-direction: column; line-height: 1.2; }
+.tj-hotline-label { font-size: .7rem; color: var(--tj-muted); }
+.tj-hotline-number { font-size: .88rem; font-weight: 700; }
+
+.tj-cart-icon { position: relative; display: inline-flex; color: var(--tj-dark); }
+.tj-cart-total { font-size: .85rem; font-weight: 700; color: var(--tj-text); white-space: nowrap; }
+
+.tj-cart-count {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	border-radius: 999px;
+	background: var(--tj-accent);
+	color: #fff;
+	font-size: .68rem;
+	font-weight: 700;
+	line-height: 20px;
+	text-align: center;
+}
+
+.tj-cart-count:empty,
+.tj-cart-count:not(.is-filled) { display: none; }
+/* -------------------------------------------------- live search list ---- */
+
+.tj-live-search {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 0;
+	right: 0;
+	z-index: 70;
+	max-height: 70vh;
+	overflow-y: auto;
+	padding: 8px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow-lg);
+}
+
+.tj-live-search-list { margin: 0; padding: 0; list-style: none; }
+.tj-live-search-item + .tj-live-search-item { border-top: 1px solid var(--tj-line); }
+.tj-live-search-item a { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; color: var(--tj-text); }
+.tj-live-search-item a:hover,
+.tj-live-search-item.is-active a { background: var(--tj-primary-soft); color: var(--tj-text); }
+/* The discount badge anchors to the thumbnail box, so it needs to be the
+   positioning ancestor. The badge is printed before the image, which is why
+   "z-index" is needed here: the 44px image is a later sibling and would
+   otherwise paint over it. */
+.tj-live-search-thumb { position: relative; flex: 0 0 44px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--tj-line); border-radius: 8px; background: #fff; }
+.tj-live-search-thumb img { width: 44px; height: 44px; object-fit: cover; }
+/* The card badge, spelled out for the product loop.
+
+   Two selectors, because the loop renders in two different wrappers:
+
+     .woocommerce ul.products li.product .onsale   (0,4,0) - shop archive
+     .tj-front-page ul.products li.product .onsale (0,4,0) - front page
+
+   The first out-specifies WooCommerce's own loop rule
+   ".woocommerce ul.products li.product .onsale" (0,2,2), which pins the badge
+   to the top-right with "margin: -.5em -.5em 0 0". The front page sits outside
+   the .woocommerce wrapper entirely, so it needs its own selector to get the
+   same corner - without it the badge fell into the normal flow under the image
+   and rendered as plain unstyled text. */
+.woocommerce ul.products li.product .onsale.tj-sale-badge,
+.tj-front-page ul.products li.product .onsale.tj-sale-badge {
+	position: absolute;
+	top: 8px;
+	right: auto;
+	bottom: auto;
+	left: 8px;
+	margin: 0;
+}
+
+/* The per-context tweaks below all repeat the ".woocommerce .onsale" prefix
+   from the base rule for the same reason the base rule has it: on a context
+   selector with a lower specificity than ".woocommerce span.onsale" (0,1,1),
+   the top/left/size here would simply lose and the badge would snap back to
+   WooCommerce's olive circle. */
+.tj-live-search-thumb .onsale.tj-sale-badge { top: 3px; left: 3px; z-index: 9; padding: 1px 5px; border-radius: 4px; font-size: .6rem; box-shadow: none; }
+.tj-live-search-text { display: flex; flex-direction: column; min-width: 0; }
+.tj-live-search-title { font-size: .88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tj-live-search-price { font-size: .85rem; color: var(--tj-accent); font-weight: 700; text-align: right; white-space: nowrap; }
+.tj-live-search-price del { color: var(--tj-muted); font-weight: 400; }
+.tj-live-search-empty,
+.tj-live-search-loading { margin: 8px; color: var(--tj-muted); font-size: .85rem; }
+.tj-live-search-all { display: block; margin-top: 6px; padding: 10px 8px; border-top: 1px solid var(--tj-line); text-align: center; font-size: .85rem; font-weight: 700; color: var(--tj-primary); }
+
+/* ---------------------------------------------- nav bar & mega menu ---- */
+
+.tj-nav-bar { display: none; background: var(--tj-white); color: var(--tj-text); border-bottom: 1px solid var(--tj-line); }
+.tj-nav-inner { display: flex; align-items: center; gap: 14px; }
+.tj-primary-nav { flex: 1; min-width: 0; }
+
+.tj-menu { display: flex; flex-wrap: wrap; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.tj-menu > li { position: relative; }
+.tj-menu > li > a { display: block; padding: 13px 14px; color: var(--tj-text); font-size: .9rem; font-weight: 600; }
+
+.tj-menu > li > a:hover,
+.tj-menu > li.current-menu-item > a,
+.tj-menu > li.current_page_item > a,
+.tj-menu > li.current-menu-ancestor > a {
+	background: transparent;
+	color: var(--tj-primary);
+}
+
+.tj-menu .sub-menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 65;
+	min-width: 220px;
+	margin: 0;
+	padding: 6px;
+	list-style: none;
+	background: var(--tj-white);
+	border-radius: var(--tj-radius);
+	box-shadow: var(--tj-shadow-lg);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(6px);
+	transition: opacity .15s ease, transform .15s ease, visibility .15s;
+}
+
+.tj-menu > li:hover > .sub-menu,
+.tj-menu > li:focus-within > .sub-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.tj-menu .sub-menu a { display: block; padding: 8px 10px; border-radius: 6px; color: var(--tj-text); font-size: .85rem; }
+.tj-menu .sub-menu a:hover { background: var(--tj-primary-soft); color: var(--tj-primary); }
+
+.tj-catmenu { position: relative; flex: 0 0 auto; }
+
+.tj-catmenu-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 13px 16px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--tj-secondary);
+	color: #fff;
+	font-size: .9rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.tj-catmenu-toggle:hover { background: var(--tj-secondary-dark); }
+.tj-catmenu-toggle[aria-expanded="true"] { border-radius: 8px 8px 0 0; }
+.tj-catmenu-toggle .tj-catmenu-grid svg.tj-icon { width: 18px; height: 18px; }
+.tj-catmenu-toggle .tj-caret { display: inline-flex; margin-left: 4px; }
+.tj-catmenu-toggle .tj-caret svg.tj-icon { width: 14px; height: 14px; }
+
+.tj-catmenu-panel {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 66;
+	width: 290px;
+	max-height: 70vh;
+	overflow-y: auto;
+	padding: 8px;
+	background: var(--tj-white);
+	border-radius: 0 0 var(--tj-radius) var(--tj-radius);
+	box-shadow: var(--tj-shadow-lg);
+}
+
+.tj-catmenu-list { margin: 0; padding: 0; list-style: none; }
+
+.tj-catmenu-link {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 9px 10px;
+	border-radius: 8px;
+	color: var(--tj-text);
+	font-size: .88rem;
+}
+
+.tj-catmenu-link:hover { background: var(--tj-primary-soft); color: var(--tj-primary); }
+.tj-catmenu-icon { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; overflow: hidden; border-radius: 8px; background: #f3f4f6; font-size: .9rem; }
+.tj-catmenu-icon img { width: 30px; height: 30px; object-fit: cover; }
+.tj-catmenu-name { flex: 1; min-width: 0; }
+.tj-cat-count { color: var(--tj-muted); font-size: .75rem; }
+
+.tj-catmenu-item { position: relative; }
+.tj-catmenu-chevron { display: inline-flex; margin-left: 6px; color: var(--tj-muted); }
+.tj-catmenu-chevron svg.tj-icon { width: 15px; height: 15px; }
+
+.tj-catmenu-flyout {
+	display: none;
+	position: absolute;
+	top: -8px;
+	left: calc(100% + 8px);
+	z-index: 5;
+	flex-direction: column;
+	width: 380px;
+	padding: 18px 20px;
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow-lg);
+}
+
+.tj-catmenu-flyout-title { margin: 0 0 10px; font-size: 1rem; }
+.tj-catmenu-flyout-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 20px; margin: 0; padding: 0; list-style: none; }
+.tj-catmenu-flyout-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 5px 0; color: var(--tj-text); font-size: .85rem; }
+.tj-catmenu-flyout-list a:hover { color: var(--tj-primary); }
+.tj-catmenu-sub { display: none; margin: 0 0 6px 42px; padding: 0; list-style: none; }
+.tj-catmenu-item:hover .tj-catmenu-sub { display: block; }
+.tj-catmenu-sub a { display: block; padding: 4px 0; color: var(--tj-muted); font-size: .82rem; }
+.tj-catmenu-sub a:hover { color: var(--tj-primary); }
+.tj-catmenu-all { display: block; margin-top: 6px; padding: 9px; border-top: 1px solid var(--tj-line); text-align: center; font-size: .85rem; font-weight: 700; }
+
+.tj-nav-deal {
+	display: none;
+	align-items: center;
+	gap: 7px;
+	padding: 13px 4px;
+	color: var(--tj-dark);
+	font-size: .88rem;
+	font-weight: 700;
+}
+
+.tj-nav-deal:hover { color: var(--tj-primary); }
+.tj-nav-deal svg.tj-icon { width: 17px; height: 17px; }
+/* ----------------------------------------------------- mobile menu ----- */
+
+.tj-mobile-menu {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 120;
+	width: min(88vw, 340px);
+	display: flex;
+	flex-direction: column;
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow-lg);
+	transform: translateX(-100%);
+	transition: transform .25s ease;
+	overflow-y: auto;
+}
+
+.tj-mobile-menu.is-open { transform: translateX(0); }
+.tj-mobile-menu[hidden] { display: flex; }
+
+.tj-mobile-menu-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px var(--tj-gutter);
+	border-bottom: 1px solid var(--tj-line);
+}
+
+.tj-mobile-menu-body { padding: 12px var(--tj-gutter) 32px; }
+.tj-search--mobile { display: block; margin-bottom: 14px; }
+
+.tj-mobile-menu-list { margin: 0 0 14px; padding: 0; list-style: none; }
+.tj-mobile-menu-list li { border-bottom: 1px solid var(--tj-line); }
+.tj-mobile-menu-list a { display: block; padding: 11px 2px; color: var(--tj-text); font-size: .95rem; font-weight: 600; }
+.tj-mobile-menu-list .sub-menu { display: block; padding-left: 14px; }
+.tj-mobile-menu-list .sub-menu a { font-weight: 400; font-size: .88rem; color: var(--tj-muted); }
+
+.tj-mobile-cats-title { margin: 18px 0 8px; font-size: .95rem; }
+.tj-mobile-cats-list { margin: 0; padding: 0; list-style: none; }
+.tj-mobile-cat > a,
+.tj-mobile-cat summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 2px;
+	border-bottom: 1px solid var(--tj-line);
+	color: var(--tj-text);
+	font-size: .9rem;
+	cursor: pointer;
+}
+
+.tj-mobile-cat summary { list-style: none; }
+.tj-mobile-cat summary::-webkit-details-marker { display: none; }
+.tj-mobile-cat summary::after { content: "+"; color: var(--tj-muted); }
+.tj-mobile-cat details[open] summary::after { content: "−"; }
+.tj-mobile-cat details ul { margin: 0; padding: 0 0 6px 12px; list-style: none; }
+.tj-mobile-cat details a { display: block; padding: 7px 0; color: var(--tj-muted); font-size: .85rem; }
+.tj-mobile-cat-all { color: var(--tj-primary) !important; font-weight: 600; }
+
+/* ------------------------------------------------- bottom bar (phone) -- */
+
+.tj-bottom-bar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 90;
+	display: flex;
+	align-items: stretch;
+	justify-content: space-around;
+	background: var(--tj-white);
+	border-top: 1px solid var(--tj-line);
+	box-shadow: 0 -4px 14px rgba(16, 24, 40, .08);
+	padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.tj-bottom-bar a,
+.tj-bottom-bar button {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	padding: 8px 4px;
+	border: 0;
+	background: none;
+	color: var(--tj-muted);
+	font-size: .68rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.tj-bottom-bar span { font-size: 1.15rem; line-height: 1; }
+.tj-bottom-bar a:hover,
+.tj-bottom-bar button:hover { color: var(--tj-primary); }
+
+/* Interactivity is driven by .is-open, never by the hidden attribute, so an
+   invisible overlay can never sit on top of the page swallowing clicks. */
+.tj-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 110;
+	background: rgba(9, 20, 15, .55);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity .2s ease;
+}
+
+.tj-overlay.is-open { opacity: 1; pointer-events: auto; }
+.tj-overlay[hidden] { display: block; }
+
+body.tj-locked { overflow: hidden; }
+
+.tj-site { padding-bottom: 58px; }
+/* ------------------------------------------------------- front page --- */
+
+.tj-front-head { padding: 20px 0 0; }
+.tj-front-heading { margin: 0; color: var(--tj-dark); font-size: clamp(1.3rem, 2.4vw, 1.75rem); line-height: 1.3; }
+
+/* ------------------------------------------------------------ hero ----- */
+
+.tj-hero { padding: 14px 0 0; }
+.tj-hero-grid { display: grid; gap: 12px; }
+
+.tj-hero-main {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--tj-radius-lg);
+	background: var(--tj-dark);
+}
+
+.tj-hero-img,
+.tj-hero-main .tj-placeholder {
+	width: 100%;
+	height: 210px;
+	object-fit: cover;
+	display: block;
+}
+
+.tj-hero-content {
+	position: absolute;
+	inset: auto 0 0 0;
+	padding: 18px;
+	background: linear-gradient(to top, rgba(9, 20, 15, .88), rgba(9, 20, 15, .25) 70%, transparent);
+	color: #fff;
+}
+
+.tj-hero-title { margin: 0 0 4px; color: #fff; font-size: 1.3rem; }
+.tj-hero-subtitle { margin: 0 0 12px; color: rgba(255, 255, 255, .88); font-size: .9rem; }
+
+.tj-hero-side { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+
+.tj-hero-card {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	border-radius: var(--tj-radius-lg);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+}
+
+.tj-hero-card-img { display: block; width: 100%; height: 120px; object-fit: cover; }
+.tj-hero-card-text { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; }
+.tj-hero-card-badge { color: var(--tj-accent); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.tj-hero-card-title { color: var(--tj-text); font-size: .9rem; font-weight: 700; }
+.tj-hero-card:hover .tj-hero-card-title { color: var(--tj-primary); }
+
+/* --------------------------------------------------------- features ---- */
+
+/* Four selling points on the front page. They read as a row of four small cards
+   two-up on a phone. The icon sits above the text and everything is centred, so
+   each card is a self-contained badge: a shopper scanning the strip reads four
+   equal shapes rather than four text lines of differing widths. */
+.tj-features { padding: 14px 0 0; }
+
+.tj-features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.tj-feature {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+	padding: 16px 12px 17px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	text-align: center;
+}
+
+/* The icons ship at 20x20; on the card they are the headline, so they are scaled
+   up and given their own line. "display: flex" (block level) rather than the
+   previous "inline-flex" is what makes the wrapper a full width row: inline-flex
+   would sit on the text baseline and leave a few stray pixels underneath. */
+.tj-feature-icon {
+	display: flex;
+	color: var(--tj-primary);
+	font-size: 1.4rem;
+	line-height: 1;
+}
+.tj-feature-icon svg.tj-icon { width: 26px; height: 26px; }
+
+.tj-feature-text { display: flex; flex-direction: column; gap: 2px; line-height: 1.3; }
+.tj-feature-text strong { font-size: .95rem; font-weight: 700; color: var(--tj-text); }
+.tj-feature-text span { color: var(--tj-muted); font-size: .82rem; }
+
+/* ---------------------------------------------------------- categories - */
+
+.tj-category-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tj-category-card a {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	height: 100%;
+	padding: 14px 8px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	text-align: center;
+}
+
+.tj-category-card a:hover { border-color: var(--tj-primary); box-shadow: var(--tj-shadow); }
+
+.tj-category-thumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	overflow: hidden;
+	border-radius: 50%;
+	background: var(--tj-primary-soft);
+}
+
+.tj-category-thumb img { width: 64px; height: 64px; object-fit: cover; }
+.tj-category-icon { font-size: 1.5rem; }
+.tj-category-name { color: var(--tj-text); font-size: .85rem; font-weight: 700; }
+.tj-category-count { color: var(--tj-muted); font-size: .72rem; }
+/* ------------------------------------------------------ product cards -- */
+
+.woocommerce ul.products,
+.tj-front-page ul.products {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.woocommerce ul.products::before,
+.woocommerce ul.products::after { content: none; }
+
+.woocommerce ul.products li.product {
+	width: auto !important;
+	float: none !important;
+	margin: 0 !important;
+	clear: none !important;
+}
+
+.tj-product-inner {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.tj-product:hover .tj-product-inner { box-shadow: var(--tj-shadow-lg); transform: translateY(-2px); }
+
+.tj-product-media { position: relative; background: #fff; }
+.tj-product-thumb { display: block; }
+.tj-product-thumb img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; padding: 10px; }
+
+/* The discount badge, identical in every context.
+
+   techjossecom_sale_badge() prints the same markup on the shop cards, the
+   single product image, the live search results and the mini cart, so the
+   shape (red pill, white bold text, rounded corners) is declared ONCE here and
+   only the anchoring differs per context. That is why the colours, radius,
+   padding and type are not repeated below: a change to the badge look is a
+   change to this one block.
+
+   Why these selectors are shaped the way they are
+
+   WooCommerce ships this rule in its own stylesheet, loaded BEFORE this file:
+
+       .woocommerce span.onsale {
+           min-height: 3.236em; min-width: 3.236em;
+           padding: .202em; line-height: 3.236;
+           top: -.5em; left: -.5em;
+           border-radius: 100%; background-color: #958e09;
+       }
+       .woocommerce ul.products li.product .onsale {
+           top: 0; right: 0; left: auto; margin: -.5em -.5em 0 0;
+       }
+
+   The first is an olive circle pushed half outside the corner, the second pins
+   it to the top-right of every card. Each of those properties is reset below,
+   so the theme wins on both source order and specificity.
+
+   The base selector deliberately does NOT start with ".woocommerce".
+
+   That class is only printed on <body> by wc_body_class() when is_woocommerce()
+   is true, i.e. on the shop archive, product taxonomies and single products. The
+   front page, the header live-search panel and the mini cart drawer are NOT
+   inside it - they live on the home page and the site header. A rule scoped to
+   ".woocommerce" therefore never matched there, and the badge fell back to
+   unstyled inline text: plain "-6%" on the home page cards, a clipped sliver
+   in the search results, and a badge that broke the row height in the cart.
+
+   So the look is anchored to ".onsale.tj-sale-badge", which is present
+   everywhere the badge is printed, and the WooCommerce-scoped variants are
+   kept alongside it purely to out-specify the rules quoted above. The three
+   together mean: the badge looks the same on every page, and no WooCommerce
+   default can leak through on the shop pages. */
+.onsale.tj-sale-badge,
+.woocommerce .onsale.tj-sale-badge,
+.woocommerce span.onsale.tj-sale-badge {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	/* WooCommerce's loop rule pins the badge to the top-right with a negative
+	   margin ("margin: -.5em -.5em 0 0"). Left alone, that margin survives
+	   every offset override above and drags the badge back off the corner, so
+	   the margin is zeroed here alongside the offsets. */
+	right: auto;
+	margin: 0;
+	z-index: 9;
+	display: inline-block;
+	/* Undo WooCommerce's fixed circle size, which forced a round shape. */
+	min-height: 0;
+	min-width: 0;
+	max-height: none;
+	max-width: none;
+	padding: 3px 10px;
+	border: 0;
+	border-radius: 6px;
+	background: var(--tj-sale);
+	background-image: none;
+	color: #fff;
+	font-size: .72rem;
+	font-weight: 700;
+	line-height: 1.5;
+	text-align: left;
+	text-decoration: none;
+	text-transform: none;
+	white-space: nowrap;
+	box-shadow: 0 2px 6px rgba(224, 36, 58, .25);
+}
+
+/* The out-of-stock chip shares the corner of a card with the discount badge
+   but sits on the opposite side, so the two never overlap. It is its own
+   element (not a .tj-sale-badge), so it still needs the anchoring here. */
+.tj-badge {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	z-index: 3;
+	padding: 3px 10px;
+	border-radius: 6px;
+	color: #fff;
+	font-size: .72rem;
+	font-weight: 700;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+.tj-badge--out { left: auto; right: 8px; background: #4b5563; }
+
+.tj-product-body { display: flex; flex-direction: column; gap: 3px; flex: 1; padding: 10px 12px 4px; text-align: center; }
+.tj-product-cat { color: var(--tj-muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .03em; }
+.tj-product-cat a { color: var(--tj-muted); }
+
+/* Product title, price and rating.
+
+   The front page renders the very same content-product.php card as the shop
+   archive, but its grid sits in <main class="tj-front-page"> and is NOT inside
+   a ".woocommerce" wrapper. Without the extra ".tj-front-page" selector here
+   none of these rules matched on the home page, so the title fell back to the
+   generic "h2 { font-size: 1.35rem }" rule and rendered far larger than on the
+   archive. Both contexts are listed on every rule so a card looks identical
+   wherever it appears. */
+.woocommerce ul.products li.product .woocommerce-loop-product__title,
+.tj-front-page ul.products li.product .woocommerce-loop-product__title {
+	margin: 0;
+	padding: 0;
+	font-size: .88rem;
+	font-weight: 600;
+	line-height: 1.35;
+	/* One line, then an ellipsis.
+
+	   The title used to be a two line -webkit-box with "min-height: 2.4em".
+	   Long names wrapped onto a second line and short ones still reserved the
+	   height of two lines, so a card whose name fitted on one line showed an
+	   empty band between the name and the price - the white gap in the reference
+	   screenshot. Dropping the reserved height and clamping to a single line
+	   removes the gap; "flex: 1" on .tj-product-body and "margin-top: auto" on
+	   .tj-product-actions keep every card in a row the same height anyway. */
+	display: block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title a,
+.tj-front-page ul.products li.product .woocommerce-loop-product__title a {
+	/* The anchor is a block, so the one line + ellipsis is re-declared on it
+	   rather than inherited. "text-overflow" is drawn by the element that owns
+	   the "overflow: hidden", and with the text now inside a nested box the
+	   heading alone would only clip the text flat - no "..." would appear. */
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--tj-text);
+	text-decoration: none;
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title a:hover,
+.tj-front-page ul.products li.product .woocommerce-loop-product__title a:hover { color: var(--tj-primary); }
+
+/* Keyboard users get a visible ring; :focus-visible keeps it off mouse clicks,
+   so the card does not flash an outline every time it is hovered. */
+.woocommerce ul.products li.product .woocommerce-loop-product__title a:focus-visible,
+.tj-front-page ul.products li.product .woocommerce-loop-product__title a:focus-visible {
+	outline: 2px solid var(--tj-primary);
+	outline-offset: 2px;
+	border-radius: 3px;
+}
+
+.woocommerce ul.products li.product .price,
+.tj-front-page ul.products li.product .price {
+	margin: 4px 0 0;
+	color: var(--tj-text);
+	font-size: 1rem;
+	font-weight: 800;
+}
+
+.woocommerce ul.products li.product .star-rating,
+.tj-front-page ul.products li.product .star-rating { float: none; margin: 3px auto 0; }
+
+.woocommerce ul.products li.product .price del,
+.tj-front-page ul.products li.product .price del { color: var(--tj-muted); font-weight: 400; font-size: .82rem; }
+.woocommerce ul.products li.product .price ins,
+.tj-front-page ul.products li.product .price ins { text-decoration: none; font-weight: 800; }
+
+.tj-stock-note { margin: 2px 0 0; font-size: .7rem; }
+.tj-stock-note--out { color: var(--tj-danger); }
+
+/* Card footer. The two buttons must always sit side by side and resolve to the
+   exact same width AND height, even though one is an <a class="button"> and the
+   other a <button class="tj-btn">.
+
+   Flex (not grid) is used because the container also receives WooCommerce's
+   auxiliary markup - a clipped screen-reader span and the "View cart" link. Both
+   are pulled out of the flow, so they can never steal a slot and push a button
+   onto its own row.
+
+   Every rule below carries two selectors. The long one repeats the
+   ".woocommerce ul.products li.product" chain, because WooCommerce ships
+   ".woocommerce ul.products li.product .button { display: inline-block; margin-top: 1em }"
+   at (0,4,2) - five classes plus two element names. The short
+   ".tj-product .tj-product-actions > .button" pair is only (0,3,0) and lost to it,
+   which is why the "Add to Cart" / "Select options" link came back as an
+   inline-block shoved down by 1em while the Order Now button was a properly
+   centred inline-flex, and the two stopped lining up. The long selector reaches
+   (0,6,2) and the theme wins again.
+
+   The short selector is still needed: the card grid is also rendered on the
+   homepage, whose <body> carries "woocommerce-no-js" but not "woocommerce", so
+   WooCommerce's own rule never matches there and the theme has to style the
+   cards by itself. Keeping both means the shop archive, taxonomy archives and
+   the cart/checkout loops get the out-ranked treatment, and the homepage
+   carousels get the same result from the short pair.
+
+   Sizing: "flex: 1 1 0" + "min-width: 0" makes both grow from a zero basis, so the
+   widths match whatever their content is. The heights are pinned with a shared
+   min-height token instead of being left to each button's own padding, and the
+   card icon is capped so the 20px glyph cannot make the Order Now button taller
+   than the text-only add to cart link. "align-items: stretch" then keeps them
+   equal even when a very narrow card wraps one of the labels onto two lines. */
+.woocommerce ul.products li.product.tj-product .tj-product-actions,
+.tj-product .tj-product-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	justify-content: center;
+	gap: 6px;
+	width: 100%;
+	margin-top: auto;
+	padding: 10px 12px 12px;
+}
+
+/* "View cart" is a screen-reader friendly duplicate of the mini cart trigger. */
+.woocommerce ul.products li.product.tj-product .tj-product-actions .added_to_cart,
+.tj-product .tj-product-actions .added_to_cart { display: none; }
+
+.woocommerce ul.products li.product.tj-product .tj-product-actions > .button,
+.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn,
+.tj-product .tj-product-actions > .button,
+.tj-product .tj-product-actions > .tj-btn {
+	flex: 1 1 0;
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 9px 8px;
+	border: 0;
+	border-radius: 6px;
+	font-size: .78rem;
+	font-weight: 700;
+	line-height: 1.25;
+	text-align: center;
+	white-space: normal;
+	overflow-wrap: break-word;
+	min-height: var(--tj-btn-h-card);
+}
+
+/* The card icon ships at 20x20. Scaled to the button's own text size it can never
+   push the Order Now button taller than the add to cart link next to it. */
+.woocommerce ul.products li.product.tj-product .tj-product-actions .tj-order-now svg.tj-icon,
+.tj-product .tj-product-actions .tj-order-now svg.tj-icon {
+	width: 16px;
+	height: 16px;
+}
+
+.woocommerce ul.products li.product.tj-product .tj-product-actions > .button,
+.tj-product .tj-product-actions > .button { background: var(--tj-dark); color: var(--tj-white); }
+.woocommerce ul.products li.product.tj-product .tj-product-actions > .button:hover,
+.tj-product .tj-product-actions > .button:hover { background: var(--tj-secondary-dark); color: var(--tj-white); }
+.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn--cod,
+.tj-product .tj-product-actions > .tj-btn--cod { background: var(--tj-primary); color: var(--tj-white); }
+.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn--cod:hover,
+.tj-product .tj-product-actions > .tj-btn--cod:hover { background: var(--tj-primary-dark); color: var(--tj-white); }
+
+/* Phones: reclaim the page margins. The 16px gutter costs 32px of a 360px screen
+   and the content inside it (product cards, the feature grid) already carries its
+   own inner padding, so the two just stack. The override is scoped to
+   ".tj-container" rather than ":root" on purpose: the same token also feeds the
+   mini cart drawer, the mobile menu and the category panel, and those still want
+   the roomier 16px inset - only the page gutters tighten up. */
+@media (max-width: 575px) {
+	.tj-container { --tj-gutter: 10px; }
+}
+
+/* Phones: the card actions keep the desktop layout - "Add to Cart" and
+   "Order Now" side by side on a single row, filling the card. They used to wrap
+   onto two rows because the labels no longer fit once the grid is two columns
+   wide, and each button then broke its own label onto two more lines, leaving a
+   small stacked pair floating in the middle of the card.
+
+   The container is no longer allowed to wrap, the labels are held on one line
+   and the type, padding, gap and icon are scaled down just enough for both
+   labels to fit a ~175px card. The shared min-height token still applies, so the
+   two buttons stay exactly the same size as on desktop.
+
+   "--tj-btn-h-card" is re-declared here, on the buttons themselves, instead of
+   being nudged globally. Re-declaring a custom property on an element is local
+   to that element, so it drops the card buttons to 32px on a phone while the
+   single product page keeps its own 46px. It has to be set on BOTH the <a
+   class="button"> and the <button class="tj-btn">: they are siblings that each
+   read the token for their own min-height, so overriding only one would leave
+   the pair mismatched. */
+@media (max-width: 575px) {
+	.woocommerce ul.products li.product.tj-product .tj-product-actions,
+	.tj-product .tj-product-actions {
+		flex-wrap: nowrap;
+		gap: 4px;
+		padding: 8px 6px 10px;
+	}
+
+	.woocommerce ul.products li.product.tj-product .tj-product-actions > .button,
+	.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn,
+	.tj-product .tj-product-actions > .button,
+	.tj-product .tj-product-actions > .tj-btn {
+		--tj-btn-h-card: 32px;
+		padding: 8px 4px;
+		font-size: .66rem;
+		line-height: 1.2;
+		gap: 3px;
+		/* Held on one line, and clipped rather than spilling over the
+		   neighbouring button if a translated label is still too long. */
+		white-space: nowrap;
+		overflow: hidden;
+	}
+
+	.woocommerce ul.products li.product.tj-product .tj-product-actions .tj-order-now svg.tj-icon,
+	.tj-product .tj-product-actions .tj-order-now svg.tj-icon {
+		width: 13px;
+		height: 13px;
+	}
+}
+
+/* ---------------------------------------------- woo shop archive bar --- */
+
+.tj-page-band { padding: 24px 0; background: var(--tj-dark); color: #fff; text-align: center; }
+.tj-page-band-title { margin: 0; color: #fff; font-size: 1.55rem; }
+.tj-page-band .tj-breadcrumb { display: flex; justify-content: center; padding: 4px 0 0; color: rgba(255, 255, 255, .78); }
+.tj-page-band .tj-breadcrumb ol { justify-content: center; }
+.tj-page-band .tj-breadcrumb a { color: rgba(255, 255, 255, .85); }
+.tj-page-band .tj-breadcrumb a:hover { color: #fff; }
+.tj-page-band .tj-breadcrumb li + li::before { color: rgba(255, 255, 255, .5); }
+
+.woocommerce-products-header { margin-bottom: 10px; }
+.woocommerce-result-count { margin: 0; color: var(--tj-muted); font-size: .82rem; }
+.woocommerce-ordering { margin: 0; }
+.woocommerce-ordering select { padding: 8px 10px; font-size: .85rem; }
+
+.tj-shop-topbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 14px;
+	padding: 10px 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}
+
+.woocommerce nav.woocommerce-pagination { margin: 22px 0; }
+.woocommerce nav.woocommerce-pagination ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; border: 0; list-style: none; }
+.woocommerce nav.woocommerce-pagination ul li { border: 0; margin: 0; }
+.woocommerce nav.woocommerce-pagination ul li a,
+.woocommerce nav.woocommerce-pagination ul li span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	color: var(--tj-text);
+	font-size: .85rem;
+	font-weight: 600;
+}
+
+.woocommerce nav.woocommerce-pagination ul li span.current,
+.woocommerce nav.woocommerce-pagination ul li a:hover { background: var(--tj-primary); border-color: var(--tj-primary); color: #fff; }
+
+.tj-pagination .nav-links { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 22px 0; }
+.tj-pagination .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	font-size: .85rem;
+	font-weight: 600;
+}
+.tj-pagination .page-numbers.current,
+.tj-pagination .page-numbers:hover { background: var(--tj-primary); border-color: var(--tj-primary); color: #fff; }
+/* ------------------------------------------------ variable product picker -- */
+
+/* Size chips and Color swatches for a variable product, shown both on the
+   product card and on the single product page.
+
+   On the product page the real WooCommerce <table class="variations"> is still in
+   the markup - it is what add-to-cart-variation.js reads and submits - so it is
+   hidden here and the chips drive it instead. The chips are plain <button> with
+   aria-pressed rather than a custom widget, so they work without JavaScript
+   (they simply do nothing) and are announced correctly by a screen reader. */
+.tj-var-picker { display: flex; flex-direction: column; gap: 8px; }
+
+.tj-var-attr { display: flex; align-items: center; gap: 8px; }
+
+.tj-var-attr-name {
+	flex: 0 0 auto;
+	color: var(--tj-muted);
+	font-size: .72rem;
+	font-weight: 700;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+}
+
+.tj-var-values { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.tj-var-value {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-width: 34px;
+	height: 30px;
+	padding: 0 10px;
+	border: 1px solid var(--tj-line);
+	border-radius: 8px;
+	background: var(--tj-white);
+	color: var(--tj-text);
+	font-family: inherit;
+	font-size: .78rem;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+
+.tj-var-value:hover { border-color: var(--tj-primary); }
+
+.tj-var-value:focus-visible {
+	outline: 0;
+	border-color: var(--tj-primary);
+	box-shadow: 0 0 0 3px var(--tj-primary-ring);
+}
+
+.tj-var-value[aria-pressed="true"] {
+	border-color: var(--tj-primary);
+	box-shadow: inset 0 0 0 1px var(--tj-primary);
+	color: var(--tj-primary);
+}
+
+.tj-var-value.is-unavailable {
+	opacity: .4;
+	cursor: not-allowed;
+	text-decoration: line-through;
+}
+
+/* Colour swatch: the box is painted with the colour resolved from the term
+   slug on the server, so no image is needed and it cannot go missing. */
+.tj-var-value--color {
+	width: 30px;
+	min-width: 30px;
+	padding: 0;
+	border: 1px solid var(--tj-line);
+	background: var(--tj-swatch, #9ca3af);
+	box-shadow: inset 0 0 0 2px var(--tj-white);
+}
+
+.tj-var-value--color[aria-pressed="true"] {
+	border-color: var(--tj-primary);
+	box-shadow: inset 0 0 0 2px var(--tj-white), 0 0 0 2px var(--tj-primary);
+}
+
+/* On the product page the picker leads the form, left aligned and roomier.
+   "width: 100%" matters because WooCommerce's form is a flex row: without it the
+   chips would shrink to their content width instead of owning the full line. */
+.tj-var-picker--single { width: 100%; margin: 0 0 14px; }
+.tj-var-picker--single .tj-var-attr { flex-wrap: wrap; }
+.tj-var-picker--single .tj-var-attr-name { min-width: 46px; font-size: .74rem; }
+
+/* Hand the form over to the chips. WooCommerce keeps the table for its own
+   script; only the visible dropdowns go away. */
+.tj-var-picker--single ~ table.variations { display: none; }
+.tj-var-picker--single ~ table.variations + .woocommerce-variation { display: none; }
+
+/* ------------------------------------------------------ single product -- */
+
+/* The shop archive is separated from the header by the dark title band, but the
+   single product page has no band: the gallery would start flush against the
+   category navigation. The WooCommerce wrapper therefore carries its own
+   vertical rhythm. The breadcrumb that now prints inside it already adds 12px,
+   so this is a floor rather than the whole gap. */
+.single-product .tj-woo-main { padding-top: 20px; padding-bottom: 20px; }
+
+.single-product div.product { position: relative; }
+.single-product .woocommerce-product-gallery { margin: 0 0 18px; }
+.single-product .woocommerce-product-gallery img { border-radius: var(--tj-radius); }
+
+/* The discount badge sits on the product photo on the single product page.
+
+   The badge is printed from "woocommerce_product_thumbnails", which fires
+   inside .woocommerce-product-gallery__wrapper - the box that holds the main
+   image. That wrapper is made the positioning ancestor here, so the badge
+   anchors to the top-left of the photo exactly as it does on a card.
+
+   Only the positioning context is added. No overflow rule is set: the badge
+   sits 10px in from the corner, comfortably inside the image box, so it never
+   needs clipping, and forcing "overflow: hidden" here would also clip the
+   thumbnail strip and the zoom trigger that share this wrapper. */
+.single-product .woocommerce-product-gallery__wrapper { position: relative; }
+.single-product .onsale.tj-sale-badge { top: 10px; left: 10px; padding: 4px 12px; font-size: .8rem; }
+
+.single-product .woocommerce-product-gallery .flex-control-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
+.single-product .woocommerce-product-gallery .flex-control-thumbs li { width: 68px; }
+.single-product .woocommerce-product-gallery .flex-control-thumbs img { border: 1px solid var(--tj-line); border-radius: 8px; cursor: pointer; }
+
+.single-product .product_title { margin: 0 0 6px; font-size: 1.35rem; }
+.single-product .woocommerce-product-details__short-description { color: var(--tj-muted); font-size: .92rem; }
+.single-product .price { margin: 6px 0; color: var(--tj-text); font-size: 1.5rem; font-weight: 800; }
+.single-product .price del { color: var(--tj-muted); font-size: 1rem; font-weight: 400; }
+.single-product .price ins { text-decoration: none; }
+.single-product .stock { display: inline-block; margin: 0 0 8px; padding: 3px 10px; border-radius: 999px; background: var(--tj-primary-soft); color: var(--tj-primary); font-size: .78rem; font-weight: 600; }
+.single-product .stock.out-of-stock { background: #fef3f2; color: var(--tj-danger); }
+
+.woocommerce div.product form.cart { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
+.woocommerce div.product form.cart .button { flex: 1; justify-content: center; padding: 12px 26px; font-size: .95rem; }
+/* The quantity box and the "Add to cart" button share the row, the "Order Now"
+   button spans the full width underneath it. They are two different widths on
+   purpose but they must still read as one control group, so all three resolve to
+   the same height: the Order Now button otherwise grows ~3px taller than the add
+   to cart button because its 20px card icon is taller than the button's text, and
+   the quantity input then sits visibly shorter than the button beside it.
+   "box-sizing" is repeated because min-height is only the border box under
+   border-box sizing, and the height token would be meaningless without it. */
+.woocommerce div.product form.cart .button,
+.single-product .tj-order-now--single {
+	box-sizing: border-box;
+	min-height: var(--tj-btn-h-single);
+}
+.woocommerce div.product form.cart .quantity,
+.woocommerce div.product form.cart .quantity input.qty {
+	box-sizing: border-box;
+	min-height: var(--tj-btn-h-single);
+}
+/* Variable products show their Size / Color chips inside the form (see the
+   "variable product picker" block above); WooCommerce's dropdown table is hidden
+   there and only kept in the markup for its own script. The small reset link
+   would therefore never be visible, so it is hidden too. */
+.woocommerce div.product form.cart .reset_variations { display: none; }
+.woocommerce div.product form.cart .variations { width: 100%; margin-bottom: 14px; border-collapse: collapse; }
+/* WooCommerce prints the attribute pickers of a variable product as
+   <table class="variations"> with one row per attribute:
+   <th class="label">Size</th><td class="value"><select …></td>.
+
+   The theme only gave the table a width and the cells a font size, so the two
+   columns had no shared rhythm: the label sat on the baseline of a bare select
+   that WooCommerce left at "min-width: 75%", and the rows drifted apart. Giving
+   the label a fixed column, aligning both cells to the top and turning the
+   select into a full width field makes the Size and Color rows read as one
+   deliberate control group.
+
+   Only background-color is set on the select on purpose. WooCommerce paints its
+   chevron with a background-image, and the "background" shorthand would wipe
+   the arrow out. */
+.woocommerce div.product form.cart .variations th.label,
+.woocommerce div.product form.cart .variations th {
+	width: 5.5em;
+	padding: 0 14px 10px 0;
+	vertical-align: top;
+}
+.woocommerce div.product form.cart .variations td.value,
+.woocommerce div.product form.cart .variations td {
+	padding: 0 0 10px;
+	vertical-align: top;
+}
+.woocommerce div.product form.cart .variations label { display: block; font-weight: 700; font-size: .82rem; }
+.woocommerce div.product form.cart .variations select {
+	display: block;
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	padding: 9px 36px 9px 12px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background-color: var(--tj-white);
+	color: var(--tj-text);
+	font-family: inherit;
+	font-size: .9rem;
+	line-height: 1.4;
+}
+.woocommerce div.product form.cart .variations select:focus { border-color: var(--tj-primary); box-shadow: 0 0 0 3px var(--tj-primary-ring); outline: 0; }
+.woocommerce div.product form.cart .reset_variations { display: inline-block; margin-top: 2px; font-size: .8rem; }
+
+.woocommerce .quantity input.qty,
+.tj-qty-input {
+	width: 74px;
+	padding: 9px 6px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	text-align: center;
+	font-weight: 700;
+	-moz-appearance: textfield;
+}
+
+.woocommerce .quantity input.qty::-webkit-outer-spin-button,
+.woocommerce .quantity input.qty::-webkit-inner-spin-button,
+.tj-qty-input::-webkit-outer-spin-button,
+.tj-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.single-product .tj-order-now--single { width: 100%; justify-content: center; padding: 12px 24px; border-radius: 6px; font-size: .95rem; }
+.tj-single-cats { margin: 0 0 6px; font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.tj-single-cats a { color: var(--tj-primary); }
+
+.tj-trust-badges { display: grid; gap: 8px; margin: 16px 0; padding: 14px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); list-style: none; }
+.tj-trust-badges li { display: flex; align-items: center; gap: 8px; font-size: .85rem; }
+.tj-trust-icon { display: inline-flex; color: var(--tj-primary); font-size: 1.05rem; }
+.tj-trust-icon svg.tj-icon { width: 18px; height: 18px; }
+.tj-trust-hotline a { font-weight: 700; }
+
+.tj-share { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.tj-share-label { color: var(--tj-muted); font-size: .82rem; }
+
+.tj-share-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: #eef0f2;
+	color: var(--tj-text);
+	font-size: .8rem;
+	font-weight: 700;
+}
+
+.tj-share-link--facebook { background: #1877f2; color: #fff; }
+.tj-share-link--whatsapp { background: #25d366; color: #fff; }
+.tj-share-link--messenger { background: #0084ff; color: #fff; }
+.tj-share-link--x { background: #111; color: #fff; }
+.tj-share-link--pinterest { background: #e60023; color: #fff; }
+.tj-share-link svg.tj-icon { width: 16px; height: 16px; }
+.tj-share-link:hover { transform: translateY(-1px); }
+
+.product_meta { margin: 10px 0; color: var(--tj-muted); font-size: .82rem; }
+.product_meta a { color: var(--tj-muted); }
+
+/* Product tabs: description, additional information and reviews.
+
+   WooCommerce wraps each tab body in ".woocommerce-tabs .panel.entry-content.wc-tab".
+   The theme previously styled only the panel border, so the generic
+   "h2 { margin: 0 0 .6em }" and "p { margin: 0 0 1em }" rules left a ragged gap
+   under the last line of every panel, the heading of the description panel was
+   not aligned with the heading of the reviews panel, and the review form
+   rendered with unstyled browser default inputs. */
+.woocommerce-tabs { margin: 30px 0 0; }
+.woocommerce-tabs ul.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 14px; padding: 0; border-bottom: 1px solid var(--tj-line); list-style: none; }
+.woocommerce-tabs ul.tabs li { margin: 0; }
+.woocommerce-tabs ul.tabs li a {
+	display: inline-block;
+	padding: 10px 16px;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	color: var(--tj-muted);
+	font-size: .88rem;
+	font-weight: 600;
+}
+.woocommerce-tabs ul.tabs li.active a,
+.woocommerce-tabs ul.tabs li a:hover { background: transparent; border-bottom-color: var(--tj-secondary); color: var(--tj-dark); }
+.woocommerce-tabs .panel { padding: 20px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); }
+.woocommerce-tabs .panel h2 { margin: 0 0 12px; font-size: 1.05rem; }
+.woocommerce-tabs .panel > :first-child { margin-top: 0; }
+/* Kill the trailing margin of the last block so the panel's bottom padding is
+   the only gap, on every tab and for any length of description. */
+.woocommerce-tabs .panel > :last-child { margin-bottom: 0; }
+.woocommerce-tabs .panel p { margin: 0 0 12px; }
+.woocommerce-tabs .panel ul,
+.woocommerce-tabs .panel ol { margin: 0 0 12px; padding-left: 1.3em; }
+.woocommerce-tabs .panel table { width: 100%; border-collapse: collapse; }
+.woocommerce-tabs .panel table th,
+.woocommerce-tabs .panel table td { padding: 8px 10px; border: 1px solid var(--tj-line); text-align: left; }
+.woocommerce-tabs .panel table th { background: #f7f8f9; font-weight: 700; }
+
+/* Reviews tab: the "no reviews yet" notice, the review list and the write a
+   review form are three separate blocks, each with its own rhythm. Without this
+   the form started flush against the notice above it. */
+.woocommerce-tabs #tab-reviews #comments { margin: 0 0 22px; }
+.woocommerce-tabs #tab-reviews .woocommerce-Reviews-title { margin: 0 0 10px; font-size: 1.05rem; }
+.woocommerce-tabs #tab-reviews .woocommerce-noreviews { margin: 0; }
+.woocommerce-tabs #tab-reviews ol.commentlist { margin: 0 0 22px; padding: 0; list-style: none; }
+.woocommerce-tabs #tab-reviews ol.commentlist li { margin: 0 0 14px; padding: 14px 16px 14px 58px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); list-style: none; }
+.woocommerce-tabs #tab-reviews ol.commentlist li img.avatar { position: absolute; top: 14px; left: 14px; float: none; width: 32px; height: auto; padding: 0; border: 0; border-radius: 50%; background: none; }
+.woocommerce-tabs #tab-reviews ol.commentlist li .comment-text { margin: 0; border: 0; padding: 0; }
+.woocommerce-tabs #tab-reviews ol.commentlist li .woocommerce-review__author { font-weight: 700; }
+.woocommerce-tabs #tab-reviews ol.commentlist li p { margin: 0 0 6px; font-size: .9rem; }
+.woocommerce-tabs #tab-reviews ol.commentlist li p:last-child { margin-bottom: 0; }
+.woocommerce-tabs #tab-reviews .star-rating { margin: 0 0 6px; }
+.woocommerce-tabs #tab-reviews #review_form_wrapper { margin: 0; padding: 18px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: #fafbfc; }
+.woocommerce-tabs #tab-reviews #review_form_wrapper #reply-title { display: block; margin: 0 0 14px; font-size: 1.05rem; font-weight: 700; }
+.woocommerce-tabs #tab-reviews #review_form_wrapper #reply-title small { display: block; margin-top: 4px; font-size: .8rem; font-weight: 400; }
+.woocommerce-tabs #tab-reviews #review_form_wrapper #reply-title #cancel-comment-reply-link { display: inline; }
+.woocommerce-tabs #tab-reviews #respond { margin: 0; }
+.woocommerce-tabs #tab-reviews .comment-form p { margin: 0 0 12px; }
+.woocommerce-tabs #tab-reviews .comment-form label { display: block; margin-bottom: 5px; font-size: .85rem; font-weight: 600; }
+.woocommerce-tabs #tab-reviews .comment-form .required { color: var(--tj-danger); text-decoration: none; }
+.woocommerce-tabs #tab-reviews .comment-form input[type="text"],
+.woocommerce-tabs #tab-reviews .comment-form input[type="email"],
+.woocommerce-tabs #tab-reviews .comment-form textarea,
+.woocommerce-tabs #tab-reviews .comment-form select {
+	width: 100%;
+	max-width: 100%;
+	padding: 10px 12px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	color: var(--tj-text);
+	font-family: inherit;
+	font-size: .9rem;
+	line-height: 1.4;
+}
+.woocommerce-tabs #tab-reviews .comment-form input[type="text"]:focus,
+.woocommerce-tabs #tab-reviews .comment-form input[type="email"]:focus,
+.woocommerce-tabs #tab-reviews .comment-form textarea:focus,
+.woocommerce-tabs #tab-reviews .comment-form select:focus { border-color: var(--tj-primary); box-shadow: 0 0 0 3px var(--tj-primary-ring); outline: 0; }
+.woocommerce-tabs #tab-reviews .comment-form .comment-form-rating { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.woocommerce-tabs #tab-reviews .comment-form .comment-form-rating label { margin: 0; }
+.woocommerce-tabs #tab-reviews .comment-form .comment-form-rating select { width: auto; min-width: 160px; }
+.woocommerce-tabs #tab-reviews .comment-form .comment-notes { margin: 0 0 14px; color: var(--tj-muted); font-size: .82rem; }
+.woocommerce-tabs #tab-reviews .comment-form .comment-form-cookies-consent { display: flex; align-items: flex-start; gap: 8px; }
+.woocommerce-tabs #tab-reviews .comment-form .comment-form-cookies-consent input { width: auto; margin-top: 5px; }
+.woocommerce-tabs #tab-reviews .comment-form .comment-form-cookies-consent label { margin: 0; font-weight: 400; }
+.woocommerce-tabs #tab-reviews .comment-form .form-submit { margin: 0; }
+.woocommerce-tabs #tab-reviews .comment-form .form-submit input[type="submit"] {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 11px 24px;
+	border: 0;
+	border-radius: var(--tj-radius);
+	background: var(--tj-primary);
+	color: var(--tj-white);
+	font-family: inherit;
+	font-size: .92rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+.woocommerce-tabs #tab-reviews .comment-form .form-submit input[type="submit"]:hover { background: var(--tj-primary-dark); }
+
+.related.products,
+.upsells.products { margin-top: 30px; }
+.related.products > h2,
+.upsells.products > h2 { font-size: 1.15rem; }
+/* -------------------------------------------------- notices & tables --- */
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error,
+.woocommerce-noreviews,
+p.no-comments {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 16px;
+	padding: 12px 16px;
+	border: 1px solid var(--tj-line);
+	border-left: 4px solid var(--tj-primary);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	list-style: none;
+	font-size: .9rem;
+}
+
+.woocommerce-error { border-left-color: var(--tj-danger); }
+.woocommerce-info { border-left-color: #0b7ec4; }
+
+.woocommerce-message .button,
+.woocommerce-info .button,
+.woocommerce-error .button { margin-left: auto; padding: 7px 14px; font-size: .82rem; }
+
+.woocommerce table.shop_table {
+	width: 100%;
+	margin: 0 0 20px;
+	border: 1px solid var(--tj-line);
+	border-collapse: separate;
+	border-spacing: 0;
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	overflow: hidden;
+}
+
+.woocommerce table.shop_table th,
+.woocommerce table.shop_table td { padding: 10px 12px; border-bottom: 1px solid var(--tj-line); text-align: left; font-size: .88rem; }
+.woocommerce table.shop_table th { background: #f9fafb; font-weight: 700; }
+.woocommerce table.shop_table tfoot th { background: transparent; }
+
+.woocommerce .cart_item .product-thumbnail img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; }
+
+.woocommerce a.remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: #f3f4f6;
+	color: var(--tj-danger) !important;
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.woocommerce a.remove:hover { background: var(--tj-danger); color: #fff !important; }
+
+.woocommerce .cart-collaterals { margin-top: 20px; }
+.woocommerce .cart-collaterals .cart_totals { width: 100%; }
+.woocommerce .cart-collaterals .cart_totals h2 { font-size: 1.1rem; }
+.woocommerce .coupon { display: flex; flex-wrap: wrap; gap: 8px; }
+.woocommerce .coupon input[type="text"] { max-width: 200px; }
+
+.woocommerce form.checkout_coupon,
+.woocommerce form.login,
+.woocommerce form.register,
+.woocommerce .woocommerce-checkout-review-order,
+.woocommerce-checkout #payment {
+	padding: 16px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+}
+
+.woocommerce-checkout #payment { margin-top: 16px; }
+.woocommerce-checkout #payment ul.payment_methods { margin: 0; padding: 0; border: 0; list-style: none; }
+.woocommerce-checkout #payment ul.payment_methods li { padding: 8px 0; border-bottom: 1px solid var(--tj-line); }
+.woocommerce-checkout #payment div.form-row { padding: 12px 0 0; }
+
+.woocommerce form .form-row { margin-bottom: 12px; }
+.woocommerce form .form-row label { display: block; margin-bottom: 4px; font-size: .83rem; font-weight: 600; }
+.woocommerce form .form-row-first,
+.woocommerce form .form-row-last,
+.woocommerce-checkout .col2-set .col-1,
+.woocommerce-checkout .col2-set .col-2 { width: 100%; float: none; }
+
+.tj-cod-notice { margin: 10px 0 0; padding: 10px 12px; border-radius: var(--tj-radius); background: var(--tj-primary-soft); color: var(--tj-primary); font-size: .85rem; font-weight: 600; }
+
+.woocommerce-account .woocommerce-MyAccount-navigation { margin-bottom: 18px; }
+.woocommerce-account .woocommerce-MyAccount-navigation ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.woocommerce-account .woocommerce-MyAccount-navigation ul li a { display: inline-block; padding: 8px 14px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); font-size: .85rem; }
+.woocommerce-account .woocommerce-MyAccount-navigation ul li.is-active a { background: var(--tj-primary); border-color: var(--tj-primary); color: #fff; }
+
+@media (min-width: 768px) {
+	.woocommerce table.shop_table th,
+	.woocommerce table.shop_table td { padding: 12px 16px; }
+	.woocommerce form .form-row-first,
+	.woocommerce form .form-row-last { width: 48%; float: left; }
+	.woocommerce form .form-row-last { float: right; }
+	.woocommerce-checkout .col2-set { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+}
+/* -------------------------------------------- block cart & checkout ------ */
+
+/* The Cart page and the Checkout "Order summary" are built from WooCommerce
+   Blocks rather than from the classic templates styled above, so they need
+   their own rules.
+
+   Each line in both tables repeats the product's short description directly
+   under the name. It is the same copy that already appears on the product page
+   and it pushes the quantity control and the totals further down the screen,
+   so it is hidden here. The markup is written by WooCommerce's own script from
+   the Store API "short_description" field, which exposes no PHP filter, so CSS
+   is the only lever available to a theme. Only the description node is
+   targeted: the sibling element that lists variation attributes (size, colour,
+   ...) keeps rendering normally. */
+.wc-block-components-product-metadata__description { display: none; }
+
+/* The "Add coupons" accordion is already removed on the server by
+   techjossecom_remove_coupon_blocks(), which drops the coupon form block out of
+   the order summary markup. This rule is a safety net for the case where a
+   plugin re-adds that block, or a future WooCommerce release renders the panel
+   under a different block name. */
+.wc-block-components-totals-coupon { display: none; }
+
+/* -------------------------------------------------- blog & content ----- */
+
+.tj-post-grid { display: grid; gap: 14px; }
+
+.tj-card,
+.tj-no-results,
+.tj-entry,
+.tj-404,
+.widget {
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+}
+
+.tj-card { overflow: hidden; }
+.tj-card-thumb { display: block; }
+.tj-card-thumb img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.tj-card-body { padding: 14px; }
+.tj-card-cats { margin: 0 0 6px; font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+.tj-card-title { margin: 0 0 6px; font-size: 1.02rem; line-height: 1.35; }
+.tj-card-title a { color: var(--tj-text); }
+.tj-card-title a:hover { color: var(--tj-primary); }
+.tj-card-meta { margin: 0 0 8px; color: var(--tj-muted); font-size: .78rem; }
+.tj-card-excerpt { margin: 0 0 10px; color: var(--tj-muted); font-size: .88rem; }
+.tj-card-more { font-size: .85rem; font-weight: 700; }
+
+.tj-entry { padding: 18px; }
+.tj-entry-head { margin-bottom: 14px; }
+.tj-entry-cats { margin: 0 0 6px; font-size: .8rem; text-transform: uppercase; }
+.tj-entry-meta { display: flex; flex-wrap: wrap; gap: 12px; margin: 0; color: var(--tj-muted); font-size: .8rem; }
+.tj-entry-share { display: flex; gap: 8px; margin-top: 10px; }
+.tj-entry-thumb { margin: 0 0 16px; }
+.tj-entry-thumb img { border-radius: var(--tj-radius); }
+.tj-entry-content { font-size: .96rem; }
+.tj-entry-content h2 { margin-top: 1.4em; }
+.tj-entry-content h3 { margin-top: 1.2em; }
+.tj-entry-content img { border-radius: var(--tj-radius); }
+.tj-entry-content blockquote { margin: 1.2em 0; padding: 12px 18px; border-left: 4px solid var(--tj-primary); background: var(--tj-primary-soft); }
+.tj-entry-content table { width: 100%; border-collapse: collapse; }
+.tj-entry-content th,
+.tj-entry-content td { padding: 8px 10px; border: 1px solid var(--tj-line); }
+.tj-entry-foot { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--tj-line); }
+
+.tj-post-nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin: 18px 0; }
+.tj-post-nav a { font-size: .85rem; font-weight: 600; }
+
+.tj-intro { padding: 20px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); }
+.tj-intro .tj-section-title { margin-bottom: 12px; }
+
+.tj-no-results { padding: 22px; text-align: center; }
+.tj-no-results-title { margin-bottom: 6px; }
+.tj-no-results-actions,
+.tj-404-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 16px 0; }
+.tj-no-results-cats,
+.tj-404-cats { margin-top: 18px; text-align: left; }
+
+.tj-404 { padding: 28px 18px; text-align: center; }
+.tj-404-code { margin: 0; color: var(--tj-primary); font-size: 3.4rem; font-weight: 900; line-height: 1; letter-spacing: .04em; }
+.tj-404-text { color: var(--tj-muted); }
+.tj-404 .tj-section-title { padding-left: 0; }
+.tj-404 .tj-section-title::before { display: none; }
+
+/* ------------------------------------------------- widgets sidebar ----- */
+
+.widget { padding: 16px; margin-bottom: 16px; font-size: .9rem; }
+.widget-title { margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--tj-line); font-size: 1rem; }
+.widget ul { margin: 0; padding: 0; list-style: none; }
+.widget ul li { padding: 6px 0; border-bottom: 1px dashed var(--tj-line); }
+.widget ul li:last-child { border-bottom: 0; }
+.widget ul li a { color: var(--tj-text); }
+.widget ul li a:hover { color: var(--tj-primary); }
+.widget .tagcloud a { display: inline-block; margin: 0 4px 6px 0; padding: 5px 10px; border: 1px solid var(--tj-line); border-radius: 999px; font-size: .8rem !important; }
+.widget select { margin-top: 6px; }
+
+/* ------------------------------------------------------- comments ------ */
+
+.tj-comments { margin: 26px 0; padding: 18px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); }
+.tj-comments-title { font-size: 1.05rem; }
+.comment-list { margin: 0; padding: 0; list-style: none; }
+.comment-list ol.children { margin: 0; padding-left: 16px; list-style: none; }
+.comment-body { position: relative; padding: 14px 0; border-bottom: 1px solid var(--tj-line); }
+.comment-author { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; }
+.comment-author .avatar { border-radius: 50%; }
+.comment-metadata { margin: 2px 0 8px; color: var(--tj-muted); font-size: .76rem; }
+.comment-content { font-size: .9rem; }
+.comment-reply-link { font-size: .8rem; font-weight: 700; }
+.tj-comment-form { margin-top: 14px; }
+.tj-comment-form p { margin: 0 0 12px; }
+.tj-comment-form label { display: block; margin-bottom: 4px; font-size: .82rem; font-weight: 600; }
+.comment-form-cookies-consent { display: flex; align-items: flex-start; gap: 8px; }
+.comment-form-cookies-consent input { width: auto; }
+.tj-comments-closed { color: var(--tj-muted); font-size: .85rem; }
+/* --------------------------------------------------- mini cart drawer -- */
+
+.tj-drawer {
+	position: fixed;
+	inset: 0;
+	z-index: 130;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.tj-drawer[hidden] { display: none; }
+
+.tj-drawer-panel {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: min(92vw, 400px);
+	height: 100%;
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow-lg);
+	transform: translateX(100%);
+	transition: transform .25s ease;
+}
+
+.tj-drawer.is-open .tj-drawer-panel { transform: translateX(0); }
+
+.tj-drawer-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px var(--tj-gutter);
+	border-bottom: 1px solid var(--tj-line);
+}
+
+.tj-drawer-title { margin: 0; font-size: 1.05rem; }
+.tj-drawer-body { flex: 1; overflow-y: auto; padding: 12px var(--tj-gutter); }
+
+.tj-cart-list { margin: 0; padding: 0; list-style: none; }
+.tj-cart-item { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--tj-line); }
+/* Same deal as the live search thumbnail: the badge is printed before the
+   image and anchors to this box, so the box is the positioning ancestor and
+   the badge needs a z-index to stay above the later image sibling. */
+.tj-cart-item-thumb { position: relative; display: block; width: 56px; height: 56px; }
+.tj-cart-item-thumb img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; }
+.tj-cart-item-thumb .onsale.tj-sale-badge { top: 3px; left: 3px; z-index: 9; padding: 1px 5px; border-radius: 4px; font-size: .6rem; box-shadow: none; }
+.tj-cart-item-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tj-cart-item-title { color: var(--tj-text); font-size: .86rem; font-weight: 600; }
+.tj-cart-item-qty { color: var(--tj-muted); font-size: .78rem; }
+.tj-cart-item-remove { align-self: start; width: 24px; height: 24px; border-radius: 50%; background: #f3f4f6; color: var(--tj-danger); font-size: 1rem; line-height: 1; text-align: center; }
+.tj-cart-item-remove:hover { background: var(--tj-danger); color: #fff; }
+
+.tj-cart-empty { padding: 30px 0; text-align: center; }
+.tj-cart-empty p { color: var(--tj-muted); }
+
+.tj-drawer-footer { padding: 14px var(--tj-gutter); border-top: 1px solid var(--tj-line); background: #fbfbfc; }
+.tj-cart-subtotal { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; font-size: .95rem; font-weight: 700; }
+.tj-cart-subtotal span:last-child { color: var(--tj-accent); font-size: 1.15rem; }
+.tj-cart-note { margin: 0 0 10px; color: var(--tj-muted); font-size: .78rem; }
+.tj-cart-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* ----------------------------------------------------- COD popup ------- */
+
+.tj-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 140;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	overflow-y: auto;
+	padding: 12px;
+}
+
+.tj-modal[hidden] { display: none; }
+
+.tj-modal-backdrop { position: fixed; inset: 0; background: rgba(9, 20, 15, .6); }
+
+.tj-modal-panel {
+	position: relative;
+	z-index: 1;
+	width: min(100%, 560px);
+	margin: auto;
+	padding: 20px;
+	border-radius: var(--tj-radius-lg);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow-lg);
+	animation: tj-pop .2s ease;
+}
+
+@keyframes tj-pop {
+	from { opacity: 0; transform: translateY(12px) scale(.98); }
+	to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tj-modal-close { position: absolute; top: 10px; right: 10px; }
+.tj-modal-title { margin: 0 24px 14px 0; font-size: 1.15rem; }
+
+.tj-cod-product { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding: 10px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: #fbfbfc; }
+.tj-cod-thumb { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border-radius: 8px; background: #fff; }
+.tj-cod-thumb img { width: 64px; height: 64px; object-fit: cover; }
+.tj-cod-thumb-fallback { font-size: 1.6rem; }
+.tj-cod-product-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tj-cod-name { font-size: .95rem; font-weight: 700; }
+.tj-cod-price { color: var(--tj-accent); font-size: .95rem; font-weight: 800; }
+
+.tj-cod-row { margin-bottom: 12px; }
+.tj-cod-label { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 600; }
+
+.tj-qty { display: inline-flex; align-items: center; }
+.tj-qty-btn {
+	width: 38px;
+	height: 38px;
+	border: 1px solid var(--tj-line);
+	background: var(--tj-white);
+	font-size: 1.05rem;
+	line-height: 1;
+	cursor: pointer;
+}
+.tj-qty-btn:first-child { border-radius: var(--tj-radius) 0 0 var(--tj-radius); }
+.tj-qty-btn:last-child { border-radius: 0 var(--tj-radius) var(--tj-radius) 0; }
+.tj-qty-btn:hover { background: var(--tj-primary-soft); color: var(--tj-primary); }
+.tj-qty .tj-qty-input { border-radius: 0; border-left: 0; border-right: 0; }
+
+.tj-cod-shipping-list { display: grid; gap: 8px; }
+.tj-cod-shipping-option { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); font-size: .88rem; cursor: pointer; }
+.tj-cod-shipping-option:hover { border-color: var(--tj-primary); }
+.tj-cod-shipping-option input { width: auto; margin: 0; }
+.tj-cod-shipping-label { flex: 1; }
+.tj-cod-shipping-cost { font-weight: 700; color: var(--tj-accent); }
+.tj-cod-loading { margin: 0; color: var(--tj-muted); font-size: .85rem; }
+
+.tj-cod-grid { display: grid; gap: 0 12px; }
+.tj-cod-summary { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding: 12px; border-radius: var(--tj-radius); background: var(--tj-primary-soft); }
+.tj-cod-summary-label { font-size: .9rem; font-weight: 600; }
+.tj-cod-summary-value { color: var(--tj-primary); font-size: 1.2rem; }
+.tj-cod-message { margin: 10px 0 0; font-size: .85rem; font-weight: 600; }
+.tj-cod-message.is-error { color: var(--tj-danger); }
+.tj-cod-message.is-success { color: var(--tj-success); }
+.tj-cod-terms { margin: 8px 0 0; color: var(--tj-muted); font-size: .76rem; text-align: center; }
+.tj-modal.is-loading .tj-btn--block { opacity: .7; pointer-events: none; }
+/* ----------------------------------------------------------- footer ---- */
+
+.tj-footer { margin-top: 30px; padding-top: 28px; background: var(--tj-dark); color: rgba(255, 255, 255, .78); font-size: .88rem; }
+.tj-footer a { color: rgba(255, 255, 255, .82); }
+.tj-footer a:hover { color: #fff; }
+.tj-footer .tj-text-logo { color: #fff; }
+.tj-footer .tj-text-logo-mark { background: rgba(255, 255, 255, .16); }
+.tj-footer .tj-tagline { display: block; color: rgba(255, 255, 255, .6); }
+
+.tj-footer-top { display: grid; grid-template-columns: 1fr; gap: 24px; padding-bottom: 22px; }
+.tj-footer-about-text { color: rgba(255, 255, 255, .72); font-size: .86rem; }
+.tj-footer-title { margin: 0 0 12px; color: #fff; font-size: .98rem; }
+.tj-footer-menu { margin: 0; padding: 0; list-style: none; }
+.tj-footer-menu li { padding: 4px 0; }
+
+.tj-footer-contact-list { margin: 0 0 12px; padding: 0; list-style: none; }
+.tj-footer-contact-list li { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.tj-footer-contact-list svg.tj-icon { width: 17px; height: 17px; color: rgba(255, 255, 255, .6); }
+
+.tj-contact-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.tj-contact-buttons .tj-btn { padding: 8px 12px; font-size: .8rem; }
+
+.tj-socials { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.tj-social { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 255, 255, .12); color: #fff !important; font-size: .85rem; font-weight: 700; }
+.tj-social:hover { background: var(--tj-primary); }
+
+.tj-footer-bottom { border-top: 1px solid rgba(255, 255, 255, .12); padding: 14px 0; font-size: .8rem; }
+.tj-footer-bottom-inner { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; text-align: center; }
+.tj-copyright,
+.tj-payments { margin: 0; }
+
+.tj-footer .widget { border: 0; background: transparent; padding: 0; margin: 0 0 16px; }
+.tj-footer .widget-title { border-bottom-color: rgba(255, 255, 255, .15); color: #fff; }
+.tj-footer .widget ul li { border-bottom-color: rgba(255, 255, 255, .1); }
+
+/* ------------------------------------------------------ responsive ---- */
+
+/* Very narrow phones (Galaxy Fold, 320px devices): a two column grid leaves each
+   card around 130px wide, which is too narrow to carry two buttons side by side.
+   The card actions used to solve that by stacking the buttons, which broke the
+   layout the rest of the site uses. Dropping to a single column gives the card
+   the full width instead, so the two buttons keep the same side by side design
+   as on every other screen. */
+@media (max-width: 359px) {
+	.woocommerce ul.products,
+	.tj-front-page ul.products { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (min-width: 576px) {
+	.tj-topbar-inner { flex-direction: row; justify-content: space-between; text-align: left; }
+	.tj-topbar-links { display: flex; }
+	.tj-hero-img,
+	.tj-hero-main .tj-placeholder { height: 270px; }
+	.tj-hero-card-img { height: 150px; }
+	.tj-category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.tj-post-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.tj-cod-grid { grid-template-columns: 1fr 1fr; }
+	.tj-footer-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+	:root { --tj-gutter: 22px; }
+	.tj-search { display: block; }
+	.tj-search-cat { display: flex; }
+	.tj-header-inner { gap: 18px; }
+	.tj-features-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.tj-category-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.tj-post-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.woocommerce ul.products, .tj-front-page ul.products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+	.tj-hero-img,
+	.tj-hero-main .tj-placeholder { height: 320px; }
+	.tj-modal-panel { padding: 24px; }
+	.tj-footer-top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.tj-footer-bottom-inner { text-align: left; }
+}
+
+@media (min-width: 992px) {
+	.tj-menu-toggle { display: none; }
+	.tj-nav-bar { display: block; }
+	.tj-bottom-bar { display: none; }
+	.tj-site { padding-bottom: 0; }
+	.tj-hotline { display: flex; }
+	.tj-account-link { display: flex; }
+	.tj-tagline { display: block; }
+	.tj-nav-deal { display: inline-flex; }
+	.tj-catmenu-panel { max-height: none; overflow: visible; }
+	.tj-catmenu-sub { display: none !important; }
+	.tj-catmenu-item:hover > .tj-catmenu-flyout,
+	.tj-catmenu-item:focus-within > .tj-catmenu-flyout { display: flex; }
+	.tj-hero-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; }
+	.tj-hero-side { grid-template-columns: 1fr; }
+	.tj-hero-img,
+	.tj-hero-main .tj-placeholder { height: 100%; min-height: 344px; }
+	.tj-hero-card-img { height: 158px; }
+	.tj-hero-title { font-size: 1.85rem; }
+	.tj-scroll-buttons { display: inline-flex; }
+	.tj-scroller ul.products {
+		display: flex;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		padding-bottom: 4px;
+		scrollbar-width: none;
+	}
+	.tj-scroller ul.products::-webkit-scrollbar { display: none; }
+	.tj-scroller ul.products li.product { flex: 0 0 calc((100% - 42px) / 4 - 10px); scroll-snap-align: start; }
+	.tj-category-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+	.woocommerce ul.products, .tj-front-page ul.products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.woocommerce ul.products li.product.tj-product .tj-product-actions > .button,
+	.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn,
+	.tj-product .tj-product-actions > .button,
+	.tj-product .tj-product-actions > .tj-btn { padding: 10px 8px; font-size: .74rem; }
+	.tj-entry { padding: 26px; }
+	.tj-intro { padding: 28px; }
+	.tj-footer-top { grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr; }
+	.tj-cart-actions { grid-template-columns: 1fr 1fr; }
+}
+
+@media (min-width: 1200px) {
+	:root { --tj-gutter: 24px; }
+	.tj-hero-img,
+	.tj-hero-main .tj-placeholder { min-height: 380px; }
+	.tj-hero-card-img { height: 176px; }
+}
+
+/* ------------------------------------------------------ a11y & print -- */
+
+:focus-visible { outline: 2px solid var(--tj-accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+	* { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+@media print {
+	.tj-topbar, .tj-header, .tj-nav-bar, .tj-bottom-bar, .tj-footer, .tj-drawer, .tj-modal, .tj-overlay { display: none !important; }
+	body { background: #fff; }
+}
+
+
+
+
+
+
+
+
+
+
