@@ -562,30 +562,88 @@ textarea:focus {
 
 .tj-live-search {
 	position: absolute;
-	top: calc(100% + 8px);
+	top: calc(100% + 6px);
 	left: 0;
 	right: 0;
 	z-index: 70;
 	max-height: 70vh;
 	overflow-y: auto;
-	padding: 8px;
+	background: var(--tj-white);
 	border: 1px solid var(--tj-line);
 	border-radius: var(--tj-radius);
-	background: var(--tj-white);
 	box-shadow: var(--tj-shadow-lg);
 }
 
 .tj-live-search-list { margin: 0; padding: 0; list-style: none; }
+
+/* One suggestion per row: thumbnail on the left, name over price on the
+   right, with a hairline between rows and a clear active state for keyboard
+   navigation. */
 .tj-live-search-item + .tj-live-search-item { border-top: 1px solid var(--tj-line); }
-.tj-live-search-item a { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; color: var(--tj-text); }
+
+.tj-live-search-item a {
+	display: grid;
+	grid-template-columns: 52px minmax(0, 1fr);
+	align-items: center;
+	gap: 12px;
+	padding: 10px 12px;
+	color: var(--tj-secondary);
+}
+
 .tj-live-search-item a:hover,
-.tj-live-search-item.is-active a { background: var(--tj-primary-soft); color: var(--tj-text); }
-/* The discount badge anchors to the thumbnail box, so it needs to be the
-   positioning ancestor. The badge is printed before the image, which is why
-   "z-index" is needed here: the 44px image is a later sibling and would
-   otherwise paint over it. */
-.tj-live-search-thumb { position: relative; flex: 0 0 44px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--tj-line); border-radius: 8px; background: #fff; }
-.tj-live-search-thumb img { width: 44px; height: 44px; object-fit: cover; }
+.tj-live-search-item.is-active a { background: var(--tj-primary-soft); }
+
+.tj-live-search-thumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 52px;
+	height: 52px;
+	overflow: hidden;
+	border: 1px solid var(--tj-line);
+	border-radius: 8px;
+	background: #fff;
+}
+
+.tj-live-search-thumb img { width: 52px; height: 52px; object-fit: cover; }
+.tj-live-search-noimg { font-size: 1.1rem; }
+
+.tj-live-search-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+/* Two lines, like the reference design: a long product name wraps instead of
+   being cut off with an ellipsis. */
+.tj-live-search-title {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	color: var(--tj-secondary);
+	font-size: .88rem;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+.tj-live-search-price { color: var(--tj-secondary); font-size: .9rem; font-weight: 700; }
+.tj-live-search-price del { color: var(--tj-muted); font-weight: 400; }
+.tj-live-search-price ins { text-decoration: none; }
+
+.tj-live-search-empty,
+.tj-live-search-loading { margin: 0; padding: 14px 12px; color: var(--tj-muted); font-size: .85rem; }
+
+.tj-live-search-all {
+	display: block;
+	padding: 13px 12px;
+	border-top: 1px solid var(--tj-line);
+	text-align: center;
+	color: var(--tj-text);
+	font-size: .78rem;
+	font-weight: 700;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+}
+
+.tj-live-search-all:hover { color: var(--tj-secondary); }
+
 /* The card badge, spelled out for the product loop.
 
    Two selectors, because the loop renders in two different wrappers:
@@ -614,14 +672,6 @@ textarea:focus {
    selector with a lower specificity than ".woocommerce span.onsale" (0,1,1),
    the top/left/size here would simply lose and the badge would snap back to
    WooCommerce's olive circle. */
-.tj-live-search-thumb .onsale.tj-sale-badge { top: 3px; left: 3px; z-index: 9; padding: 1px 5px; border-radius: 4px; font-size: .6rem; box-shadow: none; }
-.tj-live-search-text { display: flex; flex-direction: column; min-width: 0; }
-.tj-live-search-title { font-size: .88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tj-live-search-price { font-size: .85rem; color: var(--tj-accent); font-weight: 700; text-align: right; white-space: nowrap; }
-.tj-live-search-price del { color: var(--tj-muted); font-weight: 400; }
-.tj-live-search-empty,
-.tj-live-search-loading { margin: 8px; color: var(--tj-muted); font-size: .85rem; }
-.tj-live-search-all { display: block; margin-top: 6px; padding: 10px 8px; border-top: 1px solid var(--tj-line); text-align: center; font-size: .85rem; font-weight: 700; color: var(--tj-primary); }
 
 /* ---------------------------------------------- nav bar & mega menu ---- */
 
@@ -862,6 +912,127 @@ textarea:focus {
 }
 
 .tj-mobile-cat-children a:hover { color: var(--tj-primary); }
+
+/* ------------------------------------------------- mobile search bar ---- */
+
+/* Opened from the search button in the bottom bar. The header search box is
+   hidden below 768px, so this bar is the only way to search on a phone.
+
+   Like the drawer and the overlay, the open/closed state is driven by
+   .is-open rather than the hidden attribute, and [hidden] is overridden, so the
+   bar can slide in and out instead of blinking. */
+.tj-mobile-search {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 115;
+	background: var(--tj-white);
+	box-shadow: 0 8px 22px rgba(16, 24, 40, .16);
+	transform: translateY(-100%);
+	transition: transform .22s ease;
+}
+
+.tj-mobile-search[hidden] { display: block; }
+.tj-mobile-search.is-open { transform: translateY(0); }
+
+/* No side padding here: it lives on .tj-search--bar instead, so the bar's
+   padding box is the full viewport width and the suggestion panel, which is
+   positioned against that padding box, can run edge to edge like the reference
+   design. */
+.tj-mobile-search-inner { position: relative; padding: 10px 0; }
+
+.tj-mobile-search-close {
+	position: absolute;
+	top: 50%;
+	right: 10px;
+	transform: translateY(-50%);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	border-radius: 50%;
+	background: none;
+	color: var(--tj-muted);
+	font-size: 1.5rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.tj-mobile-search-close:hover { color: var(--tj-text); }
+
+/* The bar always shows, unlike the other search boxes which are hidden until
+   768px, and it anchors the suggestion panel underneath. The right padding
+   reserves the lane the close button sits in. */
+.tj-search--bar { display: block; position: relative; padding: 0 48px 0 12px; }
+.tj-search--bar .tj-search-form { display: flex; align-items: center; gap: 8px; }
+
+.tj-search-field {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+}
+
+.tj-search--bar .tj-search-input {
+	width: 100%;
+	min-width: 0;
+	height: 42px;
+	padding: 0 38px 0 14px;
+	border: 1px solid var(--tj-line);
+	border-radius: 999px;
+	background: var(--tj-bg);
+	font-size: .9rem;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.tj-search--bar .tj-search-input:focus { background: var(--tj-white); border-color: var(--tj-secondary); }
+
+/* WebKit renders a native clear widget on type="search"; this is the styled
+   replacement, so hide the native one. */
+.tj-search--bar .tj-search-input::-webkit-search-cancel-button,
+.tj-search--bar .tj-search-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+
+.tj-search-clear {
+	position: absolute;
+	right: 6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--tj-muted);
+	font-size: 1.15rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.tj-search-clear:hover { background: var(--tj-line); color: var(--tj-text); }
+
+/* Only offer the clear button once there is something to clear. */
+.tj-search--bar .tj-search-input:placeholder-shown ~ .tj-search-clear { display: none; }
+
+.tj-search--bar .tj-search-submit {
+	flex: 0 0 auto;
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	background: var(--tj-secondary);
+}
+
+.tj-search--bar .tj-search-submit:hover { background: var(--tj-secondary-dark); }
+
+/* Full-bleed dropdown tucked under the bar, as in the reference design. The
+   panel is positioned against .tj-search--bar, whose padding box is the full
+   bar width, so the right-hand padding for the close button does not clip it. */
+.tj-search--bar .tj-live-search { top: 100%; border-top: 1px solid var(--tj-line); border-radius: 0 0 var(--tj-radius) var(--tj-radius); }
 
 /* ------------------------------------------------- bottom bar (phone) -- */
 

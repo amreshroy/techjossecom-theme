@@ -344,21 +344,28 @@
 		} );
 	} );
 
-	// Highlight the phone number of the search shortcut in the bottom bar.
+	// The bottom bar search shortcut. It carries data-tj-toggle as well, so the
+	// shared panel handler below does the opening, the Escape key and the
+	// aria-expanded bookkeeping; this only has to move the caret into the field
+	// that is actually visible on a phone.
+	//
+	// It used to focus the header input, which is present in the DOM at every
+	// width but only displayed from 768px up, so on a phone the tap focused an
+	// invisible field and looked like a dead button.
 	qsa( '[data-tj-search-focus]' ).forEach( function ( button ) {
 		button.addEventListener( 'click', function () {
-			var field = qs( '.tj-search--header .tj-search-input' );
+			var bar = qs( '#' + button.getAttribute( 'aria-controls' ) );
+			var field = bar ? qs( '[data-tj-search-input]', bar ) : null;
 
 			if ( ! field ) {
-				field = qs( '.tj-search--mobile .tj-search-input' );
-				openPanel( 'tj-mobile-menu' );
+				return;
 			}
 
-			if ( field ) {
-				window.setTimeout( function () {
-					field.focus();
-				}, 120 );
-			}
+			// Let the bar finish sliding down first, otherwise the on-screen
+			// keyboard can open against the pre-animation position.
+			window.setTimeout( function () {
+				field.focus();
+			}, 240 );
 		} );
 	} );
 
@@ -370,97 +377,130 @@
 	}
 	/* ------------------------------------------------------ live search -- */
 
-	var searchBox = qs( '.tj-search--header' ) || qs( '.tj-search' );
+	// Every search box on the page is wired, not just the first one. The header
+	// box, the drawer box and the mobile bar are separate elements, and binding
+	// only the header one left the mobile search without suggestions.
+	if ( data.liveSearch ) {
+		var suggestionPanels = [];
 
-	if ( searchBox && data.liveSearch ) {
-		var searchInput = qs( '[data-tj-search-input]', searchBox );
-		var results = qs( '[data-tj-search-results]', searchBox );
-		var activeIndex = -1;
+		qsa( '[data-tj-search]' ).forEach( function ( searchBox ) {
+			var searchInput = qs( '[data-tj-search-input]', searchBox );
+			var results = qs( '[data-tj-search-results]', searchBox );
 
-		var search = debounce( function () {
-			var term = searchInput.value.trim();
-
-			if ( term.length < 2 ) {
-				results.hidden = true;
-				results.innerHTML = '';
-				searchInput.setAttribute( 'aria-expanded', 'false' );
+			if ( ! searchInput || ! results ) {
 				return;
 			}
 
-			results.hidden = false;
-			results.innerHTML = '<p class="tj-live-search-loading">' + strings.searching + '</p>';
+			suggestionPanels.push( results );
 
-			var body = new FormData();
-			body.append( 'action', 'techjossecom_live_search' );
-			body.append( 'nonce', data.searchNonce || '' );
-			body.append( 'term', term );
+			var activeIndex = -1;
 
-			window.fetch( data.ajaxUrl, {
-				method: 'POST',
-				credentials: 'same-origin',
-				body: body
-			} )
-				.then( function ( response ) {
-					return response.json();
-				} )
-				.then( function ( payload ) {
-					if ( ! payload || ! payload.success ) {
-						results.innerHTML = '<p class="tj-live-search-empty">' + strings.error + '</p>';
-						return;
-					}
+			var search = debounce( function () {
+				var term = searchInput.value.trim();
 
-					results.innerHTML = payload.data.html || '<p class="tj-live-search-empty">' + strings.noResults + '</p>';
-					activeIndex = -1;
-					searchInput.setAttribute( 'aria-expanded', 'true' );
-				} )
-				.catch( function () {
-					results.innerHTML = '<p class="tj-live-search-empty">' + strings.error + '</p>';
-				} );
-		}, 300 );
-
-		searchInput.addEventListener( 'input', search );
-
-		searchInput.addEventListener( 'focus', function () {
-			if ( searchInput.value.trim().length >= 2 && results.innerHTML ) {
-				results.hidden = false;
-			}
-		} );
-
-		searchInput.addEventListener( 'keydown', function ( event ) {
-			var items = qsa( '.tj-live-search-item', results );
-
-			if ( ! items.length ) {
-				return;
-			}
-
-			if ( 'ArrowDown' === event.key ) {
-				event.preventDefault();
-				activeIndex = ( activeIndex + 1 ) % items.length;
-			} else if ( 'ArrowUp' === event.key ) {
-				event.preventDefault();
-				activeIndex = ( activeIndex - 1 + items.length ) % items.length;
-			} else if ( 'Enter' === event.key && activeIndex > -1 ) {
-				event.preventDefault();
-				var link = qs( 'a', items[ activeIndex ] );
-
-				if ( link ) {
-					window.location.href = link.href;
+				if ( term.length < 2 ) {
+					results.hidden = true;
+					results.innerHTML = '';
+					searchInput.setAttribute( 'aria-expanded', 'false' );
+					return;
 				}
 
-				return;
-			} else {
-				return;
-			}
+				results.hidden = false;
+				results.innerHTML = '<p class="tj-live-search-loading">' + strings.searching + '</p>';
 
-			items.forEach( function ( item, index ) {
-				item.classList.toggle( 'is-active', index === activeIndex );
+				var body = new FormData();
+				body.append( 'action', 'techjossecom_live_search' );
+				body.append( 'nonce', data.searchNonce || '' );
+				body.append( 'term', term );
+
+				window.fetch( data.ajaxUrl, {
+						method: 'POST',
+						credentials: 'same-origin',
+						body: body
+					} )
+					.then( function ( response ) {
+						return response.json();
+					} )
+					.then( function ( payload ) {
+						if ( ! payload || ! payload.success ) {
+							results.innerHTML = '<p class="tj-live-search-empty">' + strings.error + '</p>';
+							return;
+						}
+
+						results.innerHTML = payload.data.html || '<p class="tj-live-search-empty">' + strings.noResults + '</p>';
+						activeIndex = -1;
+						searchInput.setAttribute( 'aria-expanded', 'true' );
+					} )
+					.catch( function () {
+						results.innerHTML = '<p class="tj-live-search-empty">' + strings.error + '</p>';
+					} );
+			}, 300 );
+
+			searchInput.addEventListener( 'input', search );
+
+			searchInput.addEventListener( 'focus', function () {
+				if ( searchInput.value.trim().length >= 2 && results.innerHTML ) {
+					results.hidden = false;
+				}
 			} );
+
+			searchInput.addEventListener( 'keydown', function ( event ) {
+				var items = qsa( '.tj-live-search-item', results );
+
+				if ( ! items.length ) {
+					return;
+				}
+
+				if ( 'ArrowDown' === event.key ) {
+					event.preventDefault();
+					activeIndex = ( activeIndex + 1 ) % items.length;
+				} else if ( 'ArrowUp' === event.key ) {
+					event.preventDefault();
+					activeIndex = ( activeIndex - 1 + items.length ) % items.length;
+				} else if ( 'Enter' === event.key && activeIndex > -1 ) {
+					event.preventDefault();
+					var link = qs( 'a', items[ activeIndex ] );
+
+					if ( link ) {
+						window.location.href = link.href;
+					}
+
+					return;
+				} else {
+					return;
+				}
+
+				items.forEach( function ( item, index ) {
+					item.classList.toggle( 'is-active', index === activeIndex );
+				} );
+			} );
+
+			// Clear the field and dismiss the suggestions, so the shopper can
+			// start a different search without reloading the page.
+			var clear = qs( '[data-tj-search-clear]', searchBox );
+
+			if ( clear ) {
+				clear.addEventListener( 'click', function () {
+					searchInput.value = '';
+					results.hidden = true;
+					results.innerHTML = '';
+					activeIndex = -1;
+					searchInput.setAttribute( 'aria-expanded', 'false' );
+					searchInput.focus();
+				} );
+			}
 		} );
 
+		// One listener for every box: a click anywhere outside a given search
+		// box dismisses that box only.
 		document.addEventListener( 'click', function ( event ) {
-			if ( ! searchBox.contains( event.target ) ) {
-				results.hidden = true;
-			}
+			suggestionPanels.forEach( function ( results ) {
+				var box = results.closest( '[data-tj-search]' );
+
+				if ( box && ! box.contains( event.target ) ) {
+					results.hidden = true;
+				}
+			} );
 		} );
 	}
 

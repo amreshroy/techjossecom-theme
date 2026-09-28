@@ -98,37 +98,30 @@ function techjossecom_ajax_live_search() {
 				? get_the_post_thumbnail( $post_id, 'thumbnail', array( 'loading' => 'lazy', 'alt' => get_the_title() ) )
 				: '';
 			$price_html = '';
-			$badge_html = '';
 
 			if ( class_exists( 'WooCommerce' ) ) {
 				$product = wc_get_product( $post_id );
 
 				if ( $product ) {
 					$price_html = $product->get_price_html();
-
-					// Same discount badge as the product cards, so an offer is
-					// visible while typing instead of only after the shopper
-					// opens the product. Built here, inside the WooCommerce
-					// guard, because $product is only defined there - passing
-					// it later would reuse the previous row's product when
-					// WooCommerce is inactive or the ID resolves to nothing.
-					$badge_html = techjossecom_sale_badge( $product, 'search' );
 				}
 			}
 
+			// No discount badge here on purpose: the suggestion row is already
+			// thumbnail, name and price, and a fourth corner badge crowds it.
 			$html .= '<li class="tj-live-search-item">';
 			$html .= '<a href="' . esc_url( get_permalink() ) . '">';
-			$html .= '<span class="tj-live-search-thumb">' . $badge_html;
+			$html .= '<span class="tj-live-search-thumb">';
 			$html .= ( $thumbnail ? $thumbnail : '<span class="tj-live-search-noimg" aria-hidden="true">&#128230;</span>' );
 			$html .= '</span>';
 			$html .= '<span class="tj-live-search-text">';
 			$html .= '<span class="tj-live-search-title">' . esc_html( get_the_title() ) . '</span>';
-			$html .= '</span>';
 
 			if ( $price_html ) {
 				$html .= '<span class="tj-live-search-price">' . wp_kses_post( $price_html ) . '</span>';
 			}
 
+			$html .= '</span>';
 			$html .= '</a></li>';
 		}
 

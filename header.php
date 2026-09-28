@@ -110,3 +110,5 @@ $techjossecom_hotline = techjossecom_mod( 'hotline_number' );
 			?>
 		</div>
 	</div>
+
+	<?php get_template_part( 'template-parts/mobile-search' ); ?>

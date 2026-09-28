@@ -96,7 +96,7 @@ $techjossecom_copyright = techjossecom_mod( 'footer_copyright' );
 	<nav class="tj-bottom-bar" aria-label="<?php esc_attr_e( 'Quick links', 'techjossecom' ); ?>">
 		<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><span aria-hidden="true"><?php echo techjossecom_icon( 'home' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php esc_html_e( 'Home', 'techjossecom' ); ?></a>
 		<a href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><span aria-hidden="true"><?php echo techjossecom_icon( 'store' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php esc_html_e( 'Shop', 'techjossecom' ); ?></a>
-		<button type="button" data-tj-search-focus><span aria-hidden="true"><?php echo techjossecom_icon( 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php esc_html_e( 'Search', 'techjossecom' ); ?></button>
+		<button type="button" data-tj-search-focus data-tj-toggle="tj-mobile-search" aria-expanded="false" aria-controls="tj-mobile-search"><span aria-hidden="true"><?php echo techjossecom_icon( 'search' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php esc_html_e( 'Search', 'techjossecom' ); ?></button>
 		<?php if ( techjossecom_has_woocommerce() ) : ?>
 			<button type="button" data-tj-open-cart><span aria-hidden="true"><?php echo techjossecom_icon( 'cart' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php esc_html_e( 'Cart', 'techjossecom' ); ?></button>
 		<?php endif; ?>
