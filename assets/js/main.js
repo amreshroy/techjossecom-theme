@@ -322,6 +322,28 @@
 		window.addEventListener( 'scroll', stuck, { passive: true } );
 	}
 
+	// Mobile category accordion. A parent that has children renders a chevron
+	// and its list folded, so the drawer starts compact; tapping the chevron
+	// reveals the children and flips the arrow, tapping again folds them back.
+	// aria-expanded carries the state so the arrow and the list cannot drift
+	// apart, and each row folds independently of the others.
+	qsa( '.tj-mobile-cat-toggle' ).forEach( function ( toggle ) {
+		toggle.addEventListener( 'click', function ( event ) {
+			event.preventDefault();
+
+			var list = document.getElementById( toggle.getAttribute( 'aria-controls' ) );
+
+			if ( ! list ) {
+				return;
+			}
+
+			var expanded = 'true' === toggle.getAttribute( 'aria-expanded' );
+
+			toggle.setAttribute( 'aria-expanded', expanded ? 'false' : 'true' );
+			list.hidden = expanded;
+		} );
+	} );
+
 	// Highlight the phone number of the search shortcut in the bottom bar.
 	qsa( '[data-tj-search-focus]' ).forEach( function ( button ) {
 		button.addEventListener( 'click', function () {

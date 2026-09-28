@@ -795,25 +795,48 @@ textarea:focus {
 
 .tj-mobile-cats-list { margin: 0; padding: 0; list-style: none; }
 
-/* Every category is a row of its own: the parent links to the archive, and the
-   children are looped underneath it. There is no disclosure widget and no
-   "View all" shortcut, so the whole branch is reachable in one flat pass. */
+/* A category with children gets a chevron on the right and starts folded; one
+   without children is a single link. The row is not a button: the name still
+   leads to the category archive and the chevron alone does the expanding. */
 .tj-mobile-cat { border-bottom: 1px solid var(--tj-line); }
 
-.tj-mobile-cat > a,
-.tj-mobile-cat-children a {
+.tj-mobile-cat-row { display: flex; align-items: stretch; }
+
+.tj-mobile-cat-link {
+	flex: 1;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 10px;
-	padding: 10px 2px;
+	padding: 11px 2px;
 	color: var(--tj-text);
 	font-size: .9rem;
+	font-weight: 600;
 }
 
-.tj-mobile-cat > a { font-weight: 600; }
-.tj-mobile-cat > a:hover,
-.tj-mobile-cat-children a:hover { color: var(--tj-primary); }
+.tj-mobile-cat-link:hover { color: var(--tj-primary); }
+
+.tj-mobile-cat-toggle {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--tj-muted);
+	cursor: pointer;
+}
+
+.tj-mobile-cat-toggle:hover { color: var(--tj-primary); }
+.tj-mobile-cat-chevron { display: inline-flex; transition: transform .2s ease; }
+.tj-mobile-cat-chevron svg.tj-icon { width: 17px; height: 17px; }
+
+/* Folded points down, open flips to point up. */
+.tj-mobile-cat-toggle[aria-expanded="true"] .tj-mobile-cat-chevron { transform: rotate(180deg); }
 
 .tj-mobile-cat-name { min-width: 0; }
 
@@ -824,7 +847,21 @@ textarea:focus {
 	border-left: 2px solid var(--tj-line);
 }
 
-.tj-mobile-cat-children a { padding: 7px 2px; color: var(--tj-muted); font-size: .85rem; }
+/* Belt and braces: an author "display" on the list would otherwise beat the
+   user agent rule for [hidden] and leave the folded list on screen. */
+.tj-mobile-cat-children[hidden] { display: none; }
+
+.tj-mobile-cat-children a {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 7px 2px;
+	color: var(--tj-muted);
+	font-size: .85rem;
+}
+
+.tj-mobile-cat-children a:hover { color: var(--tj-primary); }
 
 /* ------------------------------------------------- bottom bar (phone) -- */
 

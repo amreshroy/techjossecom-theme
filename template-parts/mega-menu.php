@@ -50,16 +50,33 @@ if ( $techjossecom_is_mobile ) :
 	<div class="tj-mobile-cats">
 		<h3 class="tj-mobile-cats-title"><?php esc_html_e( 'Shop by Category', 'techjossecom' ); ?></h3>
 		<ul class="tj-mobile-cats-list">
-			<?php foreach ( $techjossecom_categories as $techjossecom_term ) : ?>
-				<?php $techjossecom_children = $techjossecom_children_of( $techjossecom_term, 0 ); ?>
+			<?php
+			foreach ( $techjossecom_categories as $techjossecom_term ) :
+				$techjossecom_children    = $techjossecom_children_of( $techjossecom_term, 0 );
+				$techjossecom_children_id = 'tj-mobile-cat-children-' . (int) $techjossecom_term->term_id;
+				?>
 				<li class="tj-mobile-cat">
-					<a href="<?php echo esc_url( get_term_link( $techjossecom_term ) ); ?>">
-						<span class="tj-mobile-cat-name"><?php echo esc_html( $techjossecom_term->name ); ?></span>
-						<span class="tj-cat-count">(<?php echo esc_html( $techjossecom_term->count ); ?>)</span>
-					</a>
+					<div class="tj-mobile-cat-row">
+						<a class="tj-mobile-cat-link" href="<?php echo esc_url( get_term_link( $techjossecom_term ) ); ?>">
+							<span class="tj-mobile-cat-name"><?php echo esc_html( $techjossecom_term->name ); ?></span>
+							<span class="tj-cat-count">(<?php echo esc_html( $techjossecom_term->count ); ?>)</span>
+						</a>
+
+						<?php if ( $techjossecom_children ) : ?>
+							<button
+								type="button"
+								class="tj-mobile-cat-toggle"
+								aria-expanded="false"
+								aria-controls="<?php echo esc_attr( $techjossecom_children_id ); ?>"
+							>
+								<span class="tj-mobile-cat-chevron" aria-hidden="true"><?php echo techjossecom_icon( 'chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+								<span class="screen-reader-text"><?php esc_html_e( 'Show subcategories', 'techjossecom' ); ?></span>
+							</button>
+						<?php endif; ?>
+					</div>
 
 					<?php if ( $techjossecom_children ) : ?>
-						<ul class="tj-mobile-cat-children">
+						<ul class="tj-mobile-cat-children" id="<?php echo esc_attr( $techjossecom_children_id ); ?>" hidden>
 							<?php foreach ( $techjossecom_children as $techjossecom_child ) : ?>
 								<li>
 									<a href="<?php echo esc_url( get_term_link( $techjossecom_child ) ); ?>">
