@@ -99,14 +99,14 @@ $techjossecom_hotline = techjossecom_mod( 'hotline_number' );
 		<div class="tj-mobile-menu-body">
 			<?php get_template_part( 'template-parts/live-search', null, array( 'context' => 'mobile' ) ); ?>
 			<?php
-			techjossecom_nav_menu(
-				array(
-					'theme_location' => techjossecom_has_menu( 'mobile' ) ? 'mobile' : 'primary',
-					'menu_class'     => 'tj-mobile-menu-list',
-					'depth'          => 2,
-				)
-			);
+			/*
+			 * The mobile drawer intentionally does not repeat the desktop
+			 * primary menu. On a small screen it would only repeat the shop
+			 * pages, push the category list far down the drawer and add a
+			 * second way to reach the same links. The category list below
+			 * already covers navigation on mobile.
+			 */
+			get_template_part( 'template-parts/mega-menu', null, array( 'context' => 'mobile' ) );
 			?>
-			<?php get_template_part( 'template-parts/mega-menu', null, array( 'context' => 'mobile' ) ); ?>
 		</div>
 	</div>

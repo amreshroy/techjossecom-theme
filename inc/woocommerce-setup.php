@@ -1124,7 +1124,7 @@ function techjossecom_on_sale_products( $limit = 8 ) {
 /**
  * Top level product categories ordered by product count.
  *
- * @param int $limit Maximum number of categories.
+ * @param int $limit Maximum number of categories. Pass 0 for no limit.
  * @return array Array of WP_Term objects.
  */
 function techjossecom_product_categories( $limit = 12 ) {
@@ -1137,6 +1137,8 @@ function techjossecom_product_categories( $limit = 12 ) {
 			'taxonomy'   => 'product_cat',
 			'hide_empty' => true,
 			'parent'     => 0,
+			// WP_Term_Query reads "number" => 0 as "return everything", which is
+			// exactly what the mobile drawer asks for.
 			'number'     => absint( $limit ),
 			'orderby'    => 'count',
 			'order'      => 'DESC',

@@ -8,63 +8,67 @@
  */
 
 $techjossecom_context    = isset( $args['context'] ) ? $args['context'] : 'desktop';
-$techjossecom_categories = techjossecom_product_categories( 12 );
+$techjossecom_is_mobile  = 'mobile' === $techjossecom_context;
+
+/*
+ * The desktop dropdown is a fixed, short panel, so it shows the twelve most
+ * populated categories. The mobile drawer scrolls, so it lists every category
+ * instead of silently dropping the tail. A limit of 0 means "no limit".
+ */
+$techjossecom_categories = techjossecom_product_categories( $techjossecom_is_mobile ? 0 : 12 );
 
 if ( ! $techjossecom_categories ) {
 	return;
 }
 
 /**
- * Children for one category, limited to eight.
+ * Children for one category.
  *
- * @param WP_Term $term Parent term.
+ * The desktop fly-out has room for a handful of links, so it caps the list at
+ * eight. The mobile drawer loops every child instead, so it asks for 0, which
+ * means "no limit".
+ *
+ * @param WP_Term $term  Parent term.
+ * @param int     $limit Maximum children, 0 for no limit.
  * @return array
  */
-$techjossecom_children_of = function ( $term ) {
+$techjossecom_children_of = function ( $term, $limit = 8 ) {
 	$children = get_terms(
 		array(
 			'taxonomy'   => 'product_cat',
 			'parent'     => $term->term_id,
 			'hide_empty' => true,
-			'number'     => 8,
+			'number'     => absint( $limit ),
 		)
 	);
 
 	return ( is_wp_error( $children ) || empty( $children ) ) ? array() : $children;
 };
 
-if ( 'mobile' === $techjossecom_context ) :
+if ( $techjossecom_is_mobile ) :
 	?>
 	<div class="tj-mobile-cats">
 		<h3 class="tj-mobile-cats-title"><?php esc_html_e( 'Shop by Category', 'techjossecom' ); ?></h3>
 		<ul class="tj-mobile-cats-list">
 			<?php foreach ( $techjossecom_categories as $techjossecom_term ) : ?>
-				<?php $techjossecom_children = $techjossecom_children_of( $techjossecom_term ); ?>
+				<?php $techjossecom_children = $techjossecom_children_of( $techjossecom_term, 0 ); ?>
 				<li class="tj-mobile-cat">
+					<a href="<?php echo esc_url( get_term_link( $techjossecom_term ) ); ?>">
+						<span class="tj-mobile-cat-name"><?php echo esc_html( $techjossecom_term->name ); ?></span>
+						<span class="tj-cat-count">(<?php echo esc_html( $techjossecom_term->count ); ?>)</span>
+					</a>
+
 					<?php if ( $techjossecom_children ) : ?>
-						<details>
-							<summary><?php echo esc_html( $techjossecom_term->name ); ?></summary>
-							<ul>
-								<?php foreach ( $techjossecom_children as $techjossecom_child ) : ?>
-									<li>
-										<a href="<?php echo esc_url( get_term_link( $techjossecom_child ) ); ?>">
-											<?php echo esc_html( $techjossecom_child->name ); ?>
-											<span class="tj-cat-count">(<?php echo esc_html( $techjossecom_child->count ); ?>)</span>
-										</a>
-									</li>
-								<?php endforeach; ?>
+						<ul class="tj-mobile-cat-children">
+							<?php foreach ( $techjossecom_children as $techjossecom_child ) : ?>
 								<li>
-									<a class="tj-mobile-cat-all" href="<?php echo esc_url( get_term_link( $techjossecom_term ) ); ?>">
-										<?php esc_html_e( 'View all', 'techjossecom' ); ?>
+									<a href="<?php echo esc_url( get_term_link( $techjossecom_child ) ); ?>">
+										<span class="tj-mobile-cat-name"><?php echo esc_html( $techjossecom_child->name ); ?></span>
+										<span class="tj-cat-count">(<?php echo esc_html( $techjossecom_child->count ); ?>)</span>
 									</a>
 								</li>
-							</ul>
-						</details>
-					<?php else : ?>
-						<a href="<?php echo esc_url( get_term_link( $techjossecom_term ) ); ?>">
-							<?php echo esc_html( $techjossecom_term->name ); ?>
-							<span class="tj-cat-count">(<?php echo esc_html( $techjossecom_term->count ); ?>)</span>
-						</a>
+							<?php endforeach; ?>
+						</ul>
 					<?php endif; ?>
 				</li>
 			<?php endforeach; ?>

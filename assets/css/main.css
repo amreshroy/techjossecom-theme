@@ -791,33 +791,40 @@ textarea:focus {
 .tj-mobile-menu-body { padding: 12px var(--tj-gutter) 32px; }
 .tj-search--mobile { display: block; margin-bottom: 14px; }
 
-.tj-mobile-menu-list { margin: 0 0 14px; padding: 0; list-style: none; }
-.tj-mobile-menu-list li { border-bottom: 1px solid var(--tj-line); }
-.tj-mobile-menu-list a { display: block; padding: 11px 2px; color: var(--tj-text); font-size: .95rem; font-weight: 600; }
-.tj-mobile-menu-list .sub-menu { display: block; padding-left: 14px; }
-.tj-mobile-menu-list .sub-menu a { font-weight: 400; font-size: .88rem; color: var(--tj-muted); }
+.tj-mobile-cats-title { margin: 0 0 8px; padding-top: 4px; font-size: .95rem; }
 
-.tj-mobile-cats-title { margin: 18px 0 8px; font-size: .95rem; }
 .tj-mobile-cats-list { margin: 0; padding: 0; list-style: none; }
+
+/* Every category is a row of its own: the parent links to the archive, and the
+   children are looped underneath it. There is no disclosure widget and no
+   "View all" shortcut, so the whole branch is reachable in one flat pass. */
+.tj-mobile-cat { border-bottom: 1px solid var(--tj-line); }
+
 .tj-mobile-cat > a,
-.tj-mobile-cat summary {
+.tj-mobile-cat-children a {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	gap: 10px;
 	padding: 10px 2px;
-	border-bottom: 1px solid var(--tj-line);
 	color: var(--tj-text);
 	font-size: .9rem;
-	cursor: pointer;
 }
 
-.tj-mobile-cat summary { list-style: none; }
-.tj-mobile-cat summary::-webkit-details-marker { display: none; }
-.tj-mobile-cat summary::after { content: "+"; color: var(--tj-muted); }
-.tj-mobile-cat details[open] summary::after { content: "−"; }
-.tj-mobile-cat details ul { margin: 0; padding: 0 0 6px 12px; list-style: none; }
-.tj-mobile-cat details a { display: block; padding: 7px 0; color: var(--tj-muted); font-size: .85rem; }
-.tj-mobile-cat-all { color: var(--tj-primary) !important; font-weight: 600; }
+.tj-mobile-cat > a { font-weight: 600; }
+.tj-mobile-cat > a:hover,
+.tj-mobile-cat-children a:hover { color: var(--tj-primary); }
+
+.tj-mobile-cat-name { min-width: 0; }
+
+.tj-mobile-cat-children {
+	margin: 0 0 0 2px;
+	padding: 0 0 6px 14px;
+	list-style: none;
+	border-left: 2px solid var(--tj-line);
+}
+
+.tj-mobile-cat-children a { padding: 7px 2px; color: var(--tj-muted); font-size: .85rem; }
 
 /* ------------------------------------------------- bottom bar (phone) -- */
 
@@ -2234,7 +2241,24 @@ p.no-comments {
 
 @media (min-width: 992px) {
 	.tj-menu-toggle { display: none; }
-	.tj-nav-bar { display: block; }
+
+	/* The nav bar sticks directly beneath the sticky header, so an open category
+	   panel stays put while the page scrolls instead of riding up over the
+	   header. Sticky keeps its slot in the flow, so nothing shifts.
+
+	   The offset is published by main.js as --tj-header-h, measured from the
+	   real header, because that height changes with the logo, the hotline and
+	   the cart badge. z-index sits one below .tj-header (60) so the panel can
+	   never cover the header. */
+	.tj-nav-bar {
+		display: block;
+		position: sticky;
+		top: var(--tj-header-h, 0px);
+		z-index: 59;
+	}
+
+	.tj-nav-bar.is-stuck { box-shadow: 0 6px 16px rgba(16, 24, 40, .09); }
+
 	.tj-bottom-bar { display: none; }
 	.tj-site { padding-bottom: 0; }
 	.tj-hotline { display: flex; }

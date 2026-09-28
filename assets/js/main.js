@@ -241,6 +241,87 @@
 		}
 	} );
 
+	// The category panel is a fly-out, so on a mouse it should follow the
+	// pointer rather than wait for a second click. Clicking still works, so
+	// touch and keyboard keep the behaviour they had.
+	qsa( '.tj-catmenu' ).forEach( function ( catmenu ) {
+		var trigger = qs( '[data-tj-toggle]', catmenu );
+
+		if ( ! trigger ) {
+			return;
+		}
+
+		var panelId = trigger.getAttribute( 'data-tj-toggle' );
+		var closeTimer = null;
+
+		function cancelClose() {
+			if ( closeTimer ) {
+				window.clearTimeout( closeTimer );
+				closeTimer = null;
+			}
+		}
+
+		catmenu.addEventListener( 'mouseenter', function () {
+			cancelClose();
+			openPanel( panelId );
+		} );
+
+		// The panel and the fly-out are positioned outside the button box, so the
+		// pointer has to travel across the gap between them. A short delay keeps
+		// the panel open while it crosses instead of snapping shut underneath.
+		catmenu.addEventListener( 'mouseleave', function () {
+			cancelClose();
+			closeTimer = window.setTimeout( function () {
+				closeTimer = null;
+				closePanel( panelId );
+			}, 180 );
+		} );
+
+		// Re-entering before the timer fires must not leave a stale close pending,
+		// and moving the pointer away while a link is focused should still close.
+		catmenu.addEventListener( 'focusin', function () {
+			cancelClose();
+			openPanel( panelId );
+		} );
+
+		catmenu.addEventListener( 'focusout', function ( event ) {
+			if ( ! catmenu.contains( event.relatedTarget ) ) {
+				closePanel( panelId );
+			}
+		} );
+	} );
+
+	// Scroll the topbar away, then pin the nav bar directly under the header.
+	// The offset is the measured header height rather than a fixed number: the
+	// header grows and shrinks with the logo, the hotline and the cart badge.
+	var header = qs( '.tj-header' );
+	var navBar = qs( '.tj-nav-bar' );
+
+	if ( header && navBar ) {
+		var stickyOffset = function () {
+			var height = header.getBoundingClientRect().height;
+
+			document.documentElement.style.setProperty( '--tj-header-h', height + 'px' );
+		};
+
+		stickyOffset();
+
+		// Re-measure when the header resizes, so a wrapped hotline or a larger
+		// logo cannot leave the nav bar overlapping the header.
+		if ( window.ResizeObserver ) {
+			new window.ResizeObserver( stickyOffset ).observe( header );
+		}
+
+		window.addEventListener( 'resize', debounce( stickyOffset, 150 ) );
+
+		var stuck = function () {
+			navBar.classList.toggle( 'is-stuck', window.scrollY > 0 );
+		};
+
+		stuck();
+		window.addEventListener( 'scroll', stuck, { passive: true } );
+	}
+
 	// Highlight the phone number of the search shortcut in the bottom bar.
 	qsa( '[data-tj-search-focus]' ).forEach( function ( button ) {
 		button.addEventListener( 'click', function () {
