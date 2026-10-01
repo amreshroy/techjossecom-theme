@@ -229,7 +229,10 @@ function techjossecom_master_field_type( $key ) {
 		return 'checkbox';
 	}
 
-	if ( '_limit' === substr( $key, -6 ) ) {
+	// Both "..._limit" and the newer "..._mobile_limit" counts are numbers.
+	// The older check alone missed the mobile keys, because the last six
+	// characters of "deals_mobile_limit" are "e_limit", not "_limit".
+	if ( '_limit' === substr( $key, -6 ) || '_mobile_limit' === substr( $key, -13 ) ) {
 		return 'number';
 	}
 

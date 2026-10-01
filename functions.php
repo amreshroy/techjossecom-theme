@@ -20,6 +20,7 @@ define( 'TECHJOSSECOM_URI', get_template_directory_uri() );
  * Load theme modules.
  */
 require_once TECHJOSSECOM_DIR . '/inc/customizer.php';
+require_once TECHJOSSECOM_DIR . '/inc/admin-settings.php';
 require_once TECHJOSSECOM_DIR . '/inc/performance-seo.php';
 require_once TECHJOSSECOM_DIR . '/inc/woocommerce-setup.php';
 require_once TECHJOSSECOM_DIR . '/inc/ajax-handlers.php';
@@ -54,17 +55,44 @@ function techjossecom_defaults() {
 		'hero3_badge'         => 'Best Price',
 		'hero3_title'         => 'Top Rated Items',
 		'hero3_url'           => '',
+		/* Hero layout. "split" is the original big banner plus two smaller
+		   cards; "slider" is the image only slider. Both read their own
+		   settings, so switching back and forth never loses anything. */
+		'hero_layout'         => 'split',
+		'hero_slider_autoplay'       => true,
+		'hero_slider_speed'         => 5,
+		'hero_slide1_image'         => '',
+		'hero_slide1_mobile_image'  => '',
+		'hero_slide1_url'           => '',
+		'hero_slide2_image'         => '',
+		'hero_slide2_mobile_image'  => '',
+		'hero_slide2_url'           => '',
+		'hero_slide3_image'         => '',
+		'hero_slide3_mobile_image'  => '',
+		'hero_slide3_url'           => '',
+		'hero_slide4_image'         => '',
+		'hero_slide4_mobile_image'  => '',
+		'hero_slide4_url'           => '',
+		'hero_slide5_image'         => '',
+		'hero_slide5_mobile_image'  => '',
+		'hero_slide5_url'           => '',
 		'show_front_heading'  => true,
 		'front_heading'       => 'Shop Online in Bangladesh — Genuine Products, Fast Delivery',
 		'show_intro'          => true,
 		'intro_title'         => 'Your Trusted Online Shop in Bangladesh',
 		'intro_text'          => '',
-		'show_categories'     => true,
-		'categories_title'    => 'Shop by Category',
-		'categories_limit'    => 12,
-		'show_deals'          => true,
-		'deals_title'         => 'Best Deals',
-		'deals_limit'         => 8,
+		'show_categories'        => true,
+		'categories_title'       => 'Shop by Category',
+		'categories_limit'       => 12,
+		'categories_mobile_limit' => 0,
+		'show_deals'             => true,
+		'deals_title'            => 'Best Deals',
+		'deals_limit'            => 8,
+		'deals_mobile_limit'     => 0,
+		'show_latest'            => true,
+		'latest_title'           => 'New Arrivals',
+		'latest_limit'           => 8,
+		'latest_mobile_limit'    => 0,
 		'show_features'       => true,
 		'feature1_title'      => '100% Genuine Products',
 		'feature1_text'       => 'Verified quality items',
@@ -107,6 +135,207 @@ function techjossecom_defaults() {
 }
 
 /**
+ * How many banner slots the hero slider offers.
+ *
+ * The count lives in one place so the settings screen, the defaults and the
+ * front end all agree. Raising it adds a slide everywhere at once.
+ *
+ * @return int Number of slider slides.
+ */
+function techjossecom_hero_slide_count() {
+	return (int) apply_filters( 'techjossecom_hero_slide_count', 5 );
+}
+
+/**
+ * The setting names that make up one hero slider slide.
+ *
+ * The master JSON importer and the settings screen both need the same list of
+ * slide keys, and generating it keeps them from drifting apart.
+ *
+ * @return array List of "hero_slideN_image", "hero_slideN_mobile_image" and
+ *               "hero_slideN_url" keys.
+ */
+function techjossecom_hero_slider_keys() {
+	$keys = array();
+
+	for ( $i = 1; $i <= techjossecom_hero_slide_count(); $i++ ) {
+		$keys[] = 'hero_slide' . $i . '_image';
+		$keys[] = 'hero_slide' . $i . '_mobile_image';
+		$keys[] = 'hero_slide' . $i . '_url';
+	}
+
+	return $keys;
+}
+
+/**
+ * The hero layouts the site owner can pick from.
+ *
+ * Each key maps to a template part, template-parts/hero-{key}.php, so adding a
+ * third design means adding one entry here and one template file.
+ *
+ * @return array Layout key => label.
+ */
+function techjossecom_hero_layouts() {
+	$layouts = array(
+		'split'  => __( 'Layout 1 — One big banner with two small banners', 'techjossecom' ),
+		'slider' => __( 'Layout 2 — Image slider (image + link only)', 'techjossecom' ),
+	);
+
+	/** This filter is documented above. */
+	return apply_filters( 'techjossecom_hero_layouts', $layouts );
+}
+
+/**
+ * The stored hero layout, guaranteed to be one the theme can render.
+ *
+ * A hand edited database or a removed layout must never produce a blank hero,
+ * so an unknown value falls back to the first available layout.
+ *
+ * @return string Layout key.
+ */
+function techjossecom_hero_layout() {
+	$layouts = techjossecom_hero_layouts();
+	$stored  = techjossecom_mod( 'hero_layout' );
+
+	if ( ! isset( $layouts[ $stored ] ) ) {
+		$stored = 'split';
+	}
+
+	/** This filter is documented above. */
+	return apply_filters( 'techjossecom_hero_layout', $stored );
+}
+
+/**
+ * Collect the hero slider slides that actually have an image.
+ *
+ * Empty slots are skipped rather than rendered as a blank panel, so the site
+ * owner can leave slide 3 empty and still get a working slider.
+ *
+ * A slide needs only one of the two pictures to appear. When the phone picture
+ * is the only one uploaded it is used for every screen, so a banner can be
+ * added from a phone alone and still work on a desktop.
+ *
+ * @return array List of array( 'id' => int, 'mobile_id' => int, 'url' => string ).
+ */
+function techjossecom_hero_slides() {
+	$slides = array();
+
+	for ( $i = 1; $i <= techjossecom_hero_slide_count(); $i++ ) {
+		$image_id  = (int) techjossecom_mod( 'hero_slide' . $i . '_image' );
+		$mobile_id = (int) techjossecom_mod( 'hero_slide' . $i . '_mobile_image' );
+
+		if ( $image_id <= 0 && $mobile_id <= 0 ) {
+			continue;
+		}
+
+		$slides[] = array(
+			'id'        => $image_id ? $image_id : $mobile_id,
+			'mobile_id' => $mobile_id ? $mobile_id : $image_id,
+			'url'       => techjossecom_mod( 'hero_slide' . $i . '_url' ),
+		);
+	}
+
+	/**
+	 * Filter the homepage hero slider slides.
+	 *
+	 * @param array $slides List of array( 'id' => int, 'mobile_id' => int, 'url' => string ).
+	 */
+	return apply_filters( 'techjossecom_hero_slides', $slides );
+}
+
+/**
+ * How each layout 1 banner should be designed, and how big it is drawn.
+ *
+ * One entry per banner slot, holding the three things that have to agree:
+ *
+ *   width / height  the size to design the artwork at. The desktop layout is a
+ *                   flush wall of pictures: one large banner beside two small
+ *                   ones, all the same height, so all three share one 2.5:1
+ *                   ratio and the row lines up. A file that is close but not
+ *                   exact is cropped to fill, never stretched.
+ *   image_size      the registered size the front end asks WordPress for, so a
+ *                   4k upload is never sent to a 392px slot.
+ *   sizes           the sizes attribute, telling the browser the real width at
+ *                   each breakpoint so it can pick the right copy of the file.
+ *                   The container stops growing at 1280px and takes a 24px
+ *                   gutter on each side, so past a 1328px screen the large
+ *                   banner is 824px and a small one 392px no matter how wide the
+ *                   window gets.
+ *
+ * The 2.5:1 ratio is what the 2.1fr / 1fr grid and the 330px row height in
+ * assets/css/main.css work out to, so the three slots line up on a desktop and
+ * the two small ones split the large one's height exactly. Change the ratio
+ * here and the artwork recommendations follow; the stylesheet does not.
+ *
+ * The settings screen and the customizer read the same numbers for their help
+ * text, so the advice a site owner is given can never drift from the layout
+ * that renders it.
+ *
+ * @return array Slot ('main', 'side') => array of width, height, image_size, sizes.
+ */
+function techjossecom_hero_banner_specs() {
+	$specs = array(
+		'main' => array(
+			'width'      => 1200,
+			'height'     => 480,
+			'image_size' => 'techjossecom-hero-main',
+			'sizes'      => '(min-width: 1328px) 824px, (min-width: 992px) 68vw, 100vw',
+		),
+		'side' => array(
+			'width'      => 600,
+			'height'     => 240,
+			'image_size' => 'techjossecom-hero-side',
+			'sizes'      => '(min-width: 1328px) 392px, (min-width: 992px) 33vw, 50vw',
+		),
+	);
+
+	/**
+	 * Filter the layout 1 banner specifications.
+	 *
+	 * @param array $specs Slot ('main', 'side') => array of width, height,
+	 *                      image_size and sizes.
+	 */
+	return apply_filters( 'techjossecom_hero_banner_specs', $specs );
+}
+
+/**
+ * One banner slot's specification, always complete.
+ *
+ * A filter that leaves a slot out would otherwise produce an undefined index
+ * warning on the front page, so an unknown slot falls back to the large banner
+ * and a slot missing a key is filled in with the default for that key.
+ *
+ * @param string $slot Either 'main' or 'side'.
+ * @return array Specification array.
+ */
+function techjossecom_hero_banner_spec( $slot ) {
+	$specs = techjossecom_hero_banner_specs();
+
+	if ( ! isset( $specs[ $slot ] ) ) {
+		$slot = 'main';
+	}
+
+	$specs[ $slot ] = wp_parse_args(
+		isset( $specs[ $slot ] ) ? $specs[ $slot ] : array(),
+		$specs['main']
+	);
+
+	return $specs[ $slot ];
+}
+
+/**
+ * A banner slot's recommended size, written for a person to read.
+ *
+ * @param string $slot Either 'main' or 'side'.
+ * @return string For example "1200 x 480 px".
+ */
+function techjossecom_hero_banner_size_label( $slot ) {
+	$spec = techjossecom_hero_banner_spec( $slot );
+
+	return sprintf( '%1$d × %2$d px', $spec['width'], $spec['height'] );
+}
+
+/**
  * Read a theme setting with a sensible default.
  *
  * @param string $key      Setting name without the theme prefix.
@@ -118,6 +347,59 @@ function techjossecom_mod( $key, $fallback = '' ) {
 	$default  = isset( $defaults[ $key ] ) ? $defaults[ $key ] : $fallback;
 
 	return get_theme_mod( 'techjossecom_' . $key, $default );
+}
+
+/**
+ * How many items a homepage section has to fetch, whatever the screen.
+ *
+ * Each section has a "limit" box for wide screens and an optional "phone limit"
+ * box. A phone limit of 0 means "no separate setting", so the section uses the
+ * wide screen number on every device and behaves exactly as it did before the
+ * option existed.
+ *
+ * The number this returns is always the larger of the two, because the same
+ * markup is served to every visitor: deciding by user agent here would make the
+ * answer depend on who asked, and a cached page would then hand a phone the
+ * desktop list or a desktop the phone list. So the extra items are fetched and
+ * techjossecom_section_mobile_limit() lets the stylesheet hide the ones a given
+ * screen must not see.
+ *
+ * @param string $key Setting name of the wide screen count, e.g. "deals_limit".
+ * @return int Number of items to fetch and render.
+ */
+function techjossecom_section_limit( $key ) {
+	$desktop = (int) techjossecom_mod( $key );
+	$mobile  = (int) techjossecom_mod( preg_replace( '/_limit$/', '_mobile_limit', $key ) );
+
+	$limit = max( 1, $desktop, $mobile );
+
+	/** This filter is documented above. */
+	$limit = (int) apply_filters( 'techjossecom_section_limit', $limit, $key, $desktop, $mobile );
+
+	return max( 1, $limit );
+}
+
+/**
+ * The phone-only count for a section, or 0 when it should match the desktop one.
+ *
+ * The stylesheet needs this as a number it can build an nth-child rule out of,
+ * which is what drops the surplus items on a phone without a second round trip
+ * to the server and without the two screen sizes fighting over one cached page.
+ *
+ * @param string $key Setting name of the wide screen count, e.g. "deals_limit".
+ * @return int Phone count, or 0 when there is no separate phone setting.
+ */
+function techjossecom_section_mobile_limit( $key ) {
+	$desktop = (int) techjossecom_mod( $key );
+	$mobile  = (int) techjossecom_mod( preg_replace( '/_limit$/', '_mobile_limit', $key ) );
+
+	// A phone count that matches the desktop one adds a rule for no reason.
+	if ( $mobile < 1 || $mobile >= $desktop ) {
+		return 0;
+	}
+
+	/** This filter is documented above. */
+	return (int) apply_filters( 'techjossecom_section_mobile_limit', $mobile, $key, $desktop );
 }
 
 /**
@@ -198,7 +480,7 @@ function techjossecom_setup() {
 		)
 	);
 	add_theme_support( 'wc-product-gallery-zoom' );
-	add_theme_support( 'wc-product-gallery-lightbox' );
+	// add_theme_support( 'wc-product-gallery-lightbox' );
 	add_theme_support( 'wc-product-gallery-slider' );
 
 	register_nav_menus(
@@ -214,6 +496,20 @@ function techjossecom_setup() {
 
 	add_image_size( 'techjossecom-card', 400, 400, true );
 	add_image_size( 'techjossecom-category', 120, 120, true );
+
+	/*
+	 * Layout 1 banners, capped at the size they are actually drawn at. The large
+	 * one is never wider than 824px and a small one never wider than 392px, so
+	 * asking for the full width original would hand the browser a file several
+	 * times heavier than the space it is painted into.
+	 *
+	 * Neither size crops: the picture keeps the proportions it was designed at
+	 * and the stylesheet frames it, so an upload that is a little off the
+	 * recommended ratio is trimmed rather than squashed. See
+	 * techjossecom_hero_banner_specs() for the sizes to design at.
+	 */
+	add_image_size( 'techjossecom-hero-main', 1200, 0 );
+	add_image_size( 'techjossecom-hero-side', 600, 0 );
 
 	$GLOBALS['content_width'] = 1240;
 }
@@ -318,6 +614,7 @@ function techjossecom_assets() {
 			'wcAjaxUrl'      => $wc_ajax_url,
 			'searchNonce'    => wp_create_nonce( 'techjossecom_search' ),
 			'codNonce'       => wp_create_nonce( 'techjossecom_cod' ),
+			'cartNonce'      => wp_create_nonce( 'techjossecom_cart' ),
 			'cartUrl'        => class_exists( 'WooCommerce' ) ? wc_get_cart_url() : '',
 			'checkoutUrl'    => class_exists( 'WooCommerce' ) ? wc_get_checkout_url() : '',
 			'isWooCommerce'  => class_exists( 'WooCommerce' ),
@@ -332,16 +629,18 @@ function techjossecom_assets() {
 				'position'          => class_exists( 'WooCommerce' ) ? get_option( 'woocommerce_currency_pos', 'left' ) : 'left',
 			),
 			'i18n'           => array(
-				'searching'    => __( 'Searching...', 'techjossecom' ),
-				'noResults'    => __( 'No products found.', 'techjossecom' ),
-				'viewAll'      => __( 'View all results', 'techjossecom' ),
-				'adding'       => __( 'Adding...', 'techjossecom' ),
-				'orderPlacing' => __( 'Placing your order...', 'techjossecom' ),
-				'error'        => __( 'Something went wrong. Please try again.', 'techjossecom' ),
-				'required'     => __( 'Please fill in your name, mobile number and address.', 'techjossecom' ),
-				'close'        => __( 'Close', 'techjossecom' ),
-				'free'         => __( 'Free', 'techjossecom' ),
-				'outOfStock'   => __( 'Out of stock', 'techjossecom' ),
+				'searching'     => __( 'Searching...', 'techjossecom' ),
+				'noResults'     => __( 'No products found.', 'techjossecom' ),
+				'viewAll'       => __( 'View all results', 'techjossecom' ),
+				'adding'        => __( 'Adding...', 'techjossecom' ),
+				'orderPlacing'  => __( 'Placing your order...', 'techjossecom' ),
+				'error'         => __( 'Something went wrong. Please try again.', 'techjossecom' ),
+				'required'      => __( 'Please fill in your name, mobile number and address.', 'techjossecom' ),
+				'close'         => __( 'Close', 'techjossecom' ),
+				'free'          => __( 'Free', 'techjossecom' ),
+				'outOfStock'    => __( 'Out of stock', 'techjossecom' ),
+				// %s is the list of options still to choose, for example "Size, Color".
+				'chooseOptions' => __( 'Please choose %s before adding this to your cart.', 'techjossecom' ),
 			),
 		)
 	);
@@ -622,6 +921,8 @@ function techjossecom_icon( $name, $class = '' ) {
 		'grid'          => '<rect x="3" y="3" width="7.5" height="7.5" rx="1.4"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.4"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.4"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.4"/>',
 		'chevron-down'  => '<path d="m6 9 6 6 6-6"/>',
 		'chevron-right' => '<path d="m9 6 6 6-6 6"/>',
+		'arrow-left'    => '<path d="M20 12H4"/><path d="m10 5-7 7 7 7"/>',
+		'arrow-right'   => '<path d="M4 12h16"/><path d="m14 5 7 7-7 7"/>',
 		'tag'           => '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8Z"/><path d="M7 7h.01"/>',
 		'card'          => '<rect x="2.5" y="5" width="19" height="14" rx="2.4"/><path d="M2.5 10h19"/>',
 		'store'         => '<path d="M3 9.5 5.5 3h13L21 9.5"/><path d="M4 9.5h16V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/><path d="M9 21v-6h6v6"/>',
@@ -689,6 +990,122 @@ function techjossecom_image( $attachment_id, $size = 'large', $attr = array() ) 
 	);
 
 	return wp_get_attachment_image( $attachment_id, $size, false, $attr );
+}
+
+/**
+ * The media query that marks a screen as a phone for the hero slider.
+ *
+ * The stylesheet draws its phone rules at the same width, so the two must agree:
+ * a banner laid out for a phone that then fetched the desktop artwork would be
+ * cropped, and the other way round would leave a banner floating in a small box.
+ * Keeping the number in one place stops the two from drifting apart.
+ *
+ * @return string A media query.
+ */
+function techjossecom_hero_slide_mobile_query() {
+	/** This filter is documented above. */
+	return apply_filters( 'techjossecom_hero_slide_mobile_query', '(max-width: 767px)' );
+}
+
+/**
+ * The sizes attribute a banner advertises to the browser.
+ *
+ * The banner sits inside .tj-container, which stops growing at 1280px and takes
+ * a 24px gutter on each side, so past a 1328px screen the picture is 1232px
+ * wide no matter how wide the window gets. Saying "100vw" everywhere would make
+ * a large monitor ask for a file far wider than the space it is drawn in, which
+ * is wasted bandwidth for no visible gain.
+ *
+ * The same value is used on the <img> and on the phone <source>, so the
+ * browser is told the same thing whichever picture it picks.
+ *
+ * @return string A sizes attribute value.
+ */
+function techjossecom_hero_slide_sizes() {
+	/** This filter is documented above. */
+	return apply_filters( 'techjossecom_hero_slide_sizes', '(min-width: 1328px) 1232px, 100vw' );
+}
+
+/**
+ * Render one hero slider banner, with an optional phone-sized alternative.
+ *
+ * When a slide has its own phone picture the markup is wrapped in a <picture>
+ * element, so the browser downloads only the file it can actually show: a
+ * phone fetches the small artwork instead of the full width desktop one, and a
+ * desktop never downloads the phone artwork at all.
+ *
+ * This is the markup search engines already understand. <picture> with a media
+ * query on the <source> is the standard way to offer an alternative image, and
+ * the <img> stays the one canonical image for the slide - a single alt text, a
+ * single indexable element, and no duplicate banner content for a crawler to
+ * trip over. The phone file is never hidden with CSS, so it costs nothing when
+ * it is not the one being displayed.
+ *
+ * A slide with no separate phone picture is returned as a plain <img>, which
+ * keeps the markup of a site that has not used the option completely unchanged.
+ *
+ * @param array $slide Slide from techjossecom_hero_slides().
+ * @param int   $index Zero based position of the slide in the track.
+ * @return string Image markup, or an empty string when the slide has no image.
+ */
+function techjossecom_hero_slide_image( $slide, $index = 0 ) {
+	$image_id  = isset( $slide['id'] ) ? (int) $slide['id'] : 0;
+	$mobile_id = isset( $slide['mobile_id'] ) ? (int) $slide['mobile_id'] : 0;
+
+	if ( $image_id <= 0 ) {
+		return '';
+	}
+
+	$first   = 0 === (int) $index;
+	$picture = array(
+		'class'    => 'tj-slider__img',
+		'loading'  => $first ? 'eager' : 'lazy',
+		'decoding' => $first ? 'sync' : 'async',
+		// Without this the browser would guess the width from the whole page
+		// and could ask for a file far wider than the banner is drawn.
+		'sizes'    => techjossecom_hero_slide_sizes(),
+	);
+
+	/*
+	 * The first banner is the largest picture above the fold, so it is the one
+	 * image the browser must not be left waiting on.
+	 */
+	if ( $first ) {
+		$picture['fetchpriority'] = 'high';
+	}
+
+	$img = techjossecom_image( $image_id, 'full', $picture );
+
+	if ( '' === $img || $mobile_id <= 0 || $mobile_id === $image_id ) {
+		return $img;
+	}
+
+	$mobile = wp_get_attachment_image_src( $mobile_id, 'full' );
+
+	if ( ! $mobile ) {
+		return $img;
+	}
+
+	// The phone file gets its own srcset so a narrow screen is never handed a
+	// needlessly large copy of a picture it is about to shrink.
+	$srcset = wp_get_attachment_image_srcset( $mobile_id, 'full' );
+
+	/*
+	 * A srcset is a comma separated list of URLs and widths, not a single URL,
+	 * so it must not go through esc_url(): that would turn the separating
+	 * spaces and commas into %20 and %2C and leave the browser with a list it
+	 * cannot read. WordPress core escapes the same value with esc_attr(), and
+	 * the URLs inside it are already sanitised by the time they get here.
+	 */
+	return sprintf(
+		'<picture class="tj-slider__picture"><source media="%1$s" srcset="%2$s" sizes="%6$s" width="%3$d" height="%4$d" />%5$s</picture>',
+		esc_attr( techjossecom_hero_slide_mobile_query() ),
+		esc_attr( $srcset ? $srcset : $mobile[0] ),
+		(int) $mobile[1],
+		(int) $mobile[2],
+		$img,
+		esc_attr( techjossecom_hero_slide_sizes() )
+	);
 }
 
 /**

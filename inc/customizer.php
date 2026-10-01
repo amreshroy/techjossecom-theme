@@ -296,15 +296,33 @@ function techjossecom_customize_register( $wp_customize ) {
 	);
 
 	// ---------------------------------------------------------------------
-	// 3. Hero banners (one large banner plus two stacked banners).
+	// 3. Hero design and the layout 1 banners.
 	// ---------------------------------------------------------------------
+
+	/*
+	 * The design picker comes first, then the settings layout 1 uses. The
+	 * slider settings live in their own section below, so the picker and the
+	 * two option sets are never confused for one another. Appearance ->
+	 * Theme Settings offers the same options without opening the customizer.
+	 */
 	techjossecom_add_fields(
 		$wp_customize,
 		'techjossecom_section_hero',
 		array(
+			'hero_layout'         => array(
+				'label'       => __( 'Hero design', 'techjossecom' ),
+				'description' => __( 'Choose which design is used at the top of the homepage.', 'techjossecom' ),
+				'type'        => 'select',
+				'choices'     => techjossecom_hero_layouts(),
+				'priority'    => 5,
+			),
 			'hero1_image'       => array(
 				'label'       => __( 'Main banner image', 'techjossecom' ),
-				'description' => __( 'Recommended size 1200 × 600 px.', 'techjossecom' ),
+				'description' => sprintf(
+					/* translators: %s: recommended image size, e.g. "1200 × 480 px". */
+					__( 'The large banner on the left. Recommended %s. Shown wider and shorter on a desktop, with the title, subtitle and button over the foot of the picture.', 'techjossecom' ),
+					techjossecom_hero_banner_size_label( 'main' )
+				),
 				'type'        => 'image',
 				'priority'    => 10,
 			),
@@ -330,9 +348,14 @@ function techjossecom_customize_register( $wp_customize ) {
 				'priority'    => 50,
 			),
 			'hero2_image'       => array(
-				'label'    => __( 'Side banner 1 image', 'techjossecom' ),
-				'type'     => 'image',
-				'priority' => 60,
+				'label'       => __( 'Side banner 1 image', 'techjossecom' ),
+				'description' => sprintf(
+					/* translators: %s: recommended image size, e.g. "600 × 240 px". */
+					__( 'The small banner on the right, top. Recommended %s, the same ratio as the main banner at half the height. The badge and title below sit over its foot on a desktop.', 'techjossecom' ),
+					techjossecom_hero_banner_size_label( 'side' )
+				),
+				'type'        => 'image',
+				'priority'    => 60,
 			),
 			'hero2_badge'       => array(
 				'label'    => __( 'Side banner 1 badge', 'techjossecom' ),
@@ -350,9 +373,14 @@ function techjossecom_customize_register( $wp_customize ) {
 				'priority' => 90,
 			),
 			'hero3_image'       => array(
-				'label'    => __( 'Side banner 2 image', 'techjossecom' ),
-				'type'     => 'image',
-				'priority' => 100,
+				'label'       => __( 'Side banner 2 image', 'techjossecom' ),
+				'description' => sprintf(
+					/* translators: %s: recommended image size, e.g. "600 × 240 px". */
+					__( 'The small banner on the right, bottom. Recommended %s, the same ratio as the main banner at half the height.', 'techjossecom' ),
+					techjossecom_hero_banner_size_label( 'side' )
+				),
+				'type'        => 'image',
+				'priority'    => 100,
 			),
 			'hero3_badge'       => array(
 				'label'    => __( 'Side banner 2 badge', 'techjossecom' ),
@@ -371,6 +399,68 @@ function techjossecom_customize_register( $wp_customize ) {
 			),
 		)
 	);
+	// ---------------------------------------------------------------------
+	// 3b. Hero slider banners (layout 2).
+	// ---------------------------------------------------------------------
+
+	$wp_customize->add_section(
+		'techjossecom_section_hero_slider',
+		array(
+			'title'       => __( 'Hero Slider Banners', 'techjossecom' ),
+			'description' => __( 'Used when the hero design is set to the image slider. Each banner is an image with an optional link; a slide with no image is skipped.', 'techjossecom' ),
+			'priority'    => 31,
+		)
+	);
+
+	$slider_fields = array(
+		'hero_slider_autoplay' => array(
+			'label'       => __( 'Slide the banners automatically', 'techjossecom' ),
+			'description' => __( 'The banner holds still while the visitor is hovering over it, and respects the "reduce motion" browser setting.', 'techjossecom' ),
+			'type'        => 'checkbox',
+			'priority'    => 10,
+		),
+		'hero_slider_speed'    => array(
+			'label'   => __( 'Seconds per banner', 'techjossecom' ),
+			'type'    => 'number',
+			'priority' => 20,
+		),
+	);
+
+	// The image and link pair for each slide, numbered in the order shown.
+	$priority = 30;
+
+	for ( $techjossecom_i = 1; $techjossecom_i <= techjossecom_hero_slide_count(); $techjossecom_i++ ) {
+		$slider_fields[ 'hero_slide' . $techjossecom_i . '_image' ] = array(
+			/* translators: %d: slide number. */
+			'label'       => sprintf( __( 'Banner %d image', 'techjossecom' ), $techjossecom_i ),
+			'description' => 1 === $techjossecom_i ? __( 'Recommended 1600 x 300 px.', 'techjossecom' ) : '',
+			'type'        => 'image',
+			'priority'    => $priority,
+		);
+
+		$slider_fields[ 'hero_slide' . $techjossecom_i . '_mobile_image' ] = array(
+			/* translators: %d: slide number. */
+			'label'       => sprintf( __( 'Banner %d phone image', 'techjossecom' ), $techjossecom_i ),
+			'description' => 1 === $techjossecom_i
+				? __( 'Optional. Shown instead of the banner above on phones, which saves a phone from downloading the wide desktop file. Recommended 800 x 300 px. Leave empty to use one picture everywhere.', 'techjossecom' )
+				: '',
+			'type'        => 'image',
+			'priority'    => $priority + 1,
+		);
+
+		$slider_fields[ 'hero_slide' . $techjossecom_i . '_url' ] = array(
+			/* translators: %d: slide number. */
+			'label'       => sprintf( __( 'Banner %d link', 'techjossecom' ), $techjossecom_i ),
+			'description' => 1 === $techjossecom_i ? __( 'Leave empty to show the image without a link.', 'techjossecom' ) : '',
+			'type'        => 'url',
+			'priority'    => $priority + 2,
+		);
+
+		$priority += 10;
+	}
+
+	techjossecom_add_fields( $wp_customize, 'techjossecom_section_hero_slider', $slider_fields );
+
 	// ---------------------------------------------------------------------
 	// 4. Homepage sections.
 	// ---------------------------------------------------------------------
@@ -422,6 +512,14 @@ function techjossecom_customize_register( $wp_customize ) {
 				'max'      => 24,
 				'priority' => 50,
 			),
+			'categories_mobile_limit' => array(
+				'label'       => __( 'Categories on mobile', 'techjossecom' ),
+				'description' => __( 'Leave 0 to use the desktop number. Set a smaller number to show fewer categories on phones.', 'techjossecom' ),
+				'type'        => 'number',
+				'min'         => 0,
+				'max'         => 24,
+				'priority'    => 55,
+			),
 			'show_deals'       => array(
 				'label'    => __( 'Show the "Best Deals" grid', 'techjossecom' ),
 				'type'     => 'checkbox',
@@ -438,6 +536,39 @@ function techjossecom_customize_register( $wp_customize ) {
 				'min'      => 2,
 				'max'      => 16,
 				'priority' => 80,
+			),
+			'deals_mobile_limit' => array(
+				'label'       => __( 'Deal products on mobile', 'techjossecom' ),
+				'description' => __( 'Leave 0 to use the desktop number. Set a smaller number to show fewer deals on phones.', 'techjossecom' ),
+				'type'        => 'number',
+				'min'         => 0,
+				'max'         => 16,
+				'priority'    => 85,
+			),
+			'show_latest'      => array(
+				'label'    => __( 'Show the "New Arrivals" grid', 'techjossecom' ),
+				'type'     => 'checkbox',
+				'priority' => 86,
+			),
+			'latest_title'     => array(
+				'label'    => __( 'New Arrivals section heading', 'techjossecom' ),
+				'type'     => 'text',
+				'priority' => 87,
+			),
+			'latest_limit'     => array(
+				'label'    => __( 'Number of new arrival products', 'techjossecom' ),
+				'type'     => 'number',
+				'min'      => 2,
+				'max'      => 16,
+				'priority' => 88,
+			),
+			'latest_mobile_limit' => array(
+				'label'       => __( 'New arrival products on mobile', 'techjossecom' ),
+				'description' => __( 'Leave 0 to use the desktop number. Set a smaller number to show fewer new arrivals on phones.', 'techjossecom' ),
+				'type'        => 'number',
+				'min'         => 0,
+				'max'         => 16,
+				'priority'    => 89,
 			),
 			'show_features'    => array(
 				'label'       => __( 'Show the service highlight bar', 'techjossecom' ),
@@ -731,8 +862,12 @@ function techjossecom_customizer_schema() {
 	return array(
 		'topbar'  => array( 'show_topbar', 'topbar_text', 'hotline_label', 'hotline_number', 'whatsapp_number', 'messenger_username' ),
 		'header'  => array( 'search_placeholder', 'show_live_search' ),
-		'hero'    => array( 'hero1_image', 'hero1_title', 'hero1_subtitle', 'hero1_button_text', 'hero1_button_url', 'hero2_image', 'hero2_badge', 'hero2_title', 'hero2_url', 'hero3_image', 'hero3_badge', 'hero3_title', 'hero3_url' ),
-		'home'    => array( 'show_front_heading', 'front_heading', 'show_intro', 'intro_title', 'intro_text', 'show_categories', 'categories_title', 'categories_limit', 'show_deals', 'deals_title', 'deals_limit', 'show_features', 'feature1_title', 'feature1_text', 'feature2_title', 'feature2_text', 'feature3_title', 'feature3_text', 'feature4_title', 'feature4_text' ),
+		'hero'    => array( 'hero_layout', 'hero1_image', 'hero1_title', 'hero1_subtitle', 'hero1_button_text', 'hero1_button_url', 'hero2_image', 'hero2_badge', 'hero2_title', 'hero2_url', 'hero3_image', 'hero3_badge', 'hero3_title', 'hero3_url' ),
+		'hero_slider' => array_merge(
+			array( 'hero_slider_autoplay', 'hero_slider_speed' ),
+			techjossecom_hero_slider_keys()
+		),
+		'home'    => array( 'show_front_heading', 'front_heading', 'show_intro', 'intro_title', 'intro_text', 'show_categories', 'categories_title', 'categories_limit', 'categories_mobile_limit', 'show_deals', 'deals_title', 'deals_limit', 'deals_mobile_limit', 'show_latest', 'latest_title', 'latest_limit', 'latest_mobile_limit', 'show_features', 'feature1_title', 'feature1_text', 'feature2_title', 'feature2_text', 'feature3_title', 'feature3_text', 'feature4_title', 'feature4_text' ),
 		'cod'     => array( 'enable_cod', 'cod_button_text', 'cod_modal_title', 'cod_success_message' ),
 		'product' => array( 'show_single_share' ),
 		'footer'  => array( 'footer_about', 'contact_address', 'contact_email', 'footer_payments', 'social_facebook', 'social_youtube', 'social_x', 'social_linkedin', 'social_instagram', 'social_pinterest', 'footer_copyright' ),

@@ -146,6 +146,7 @@ hr { border: 0; border-top: 1px solid var(--tj-line); margin: 2em 0; }
 
 .tj-section-title {
 	position: relative;
+	min-width: 0;
 	margin: 0;
 	font-size: 1.15rem;
 	padding-left: 12px;
@@ -164,31 +165,145 @@ hr { border: 0; border-top: 1px solid var(--tj-line); margin: 2em 0; }
 
 .tj-section-link { font-size: .85rem; font-weight: 600; white-space: nowrap; }
 
-.tj-section-tools { display: flex; align-items: center; gap: 12px; }
+/*
+ * The tools group holds everything that acts on the row from the right hand
+ * side of the heading: the carousel arrows and the "View All" link. It is
+ * centred against the title rather than sitting on its baseline, because the
+ * arrows are circles of a fixed height and a baseline would drop them below
+ * the heading instead of lining up with it.
+ */
+.tj-section-tools {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-shrink: 0;
+	/* The heading aligns its children on their baseline, which suits a line of
+	   text but would push a fixed height circle below the title. */
+	align-self: center;
+}
 
 .tj-section--intro .tj-section-title { text-align: center; font-size: 1.5rem; }
 
-.tj-scroll-buttons { display: none; gap: 6px; }
+/*
+ * The arrows sit in the section heading, on the left of the "View All" link,
+ * at every screen size, so the control reads the same way on a phone as on a
+ * desktop and the two controls that act on the row are found together.
+ *
+ * They used to sit in a row of their own under the products, and before that
+ * floated over the middle of the row, which covered the very pictures they
+ * exist to scroll and forced padding around the track so the buttons had
+ * somewhere to live. In the heading they cover nothing, the track keeps the
+ * full width of the section, and the buttons stay clear of the cards.
+ *
+ * The pair are printed by techjossecom_scroll_buttons(), so a new product
+ * section is finished by wrapping its grid in [data-tj-scroller] and calling
+ * that inside its .tj-section-tools: no copied markup, no new positioning
+ * rule and no new JavaScript. The script pairs each button with the track
+ * inside the same section, so two carousels on one page can never drive
+ * each other.
+ */
+/*
+ * The wrapper is a paint containment box.
+ *
+ * The track below is deliberately wider than the screen - that is the whole
+ * point of a carousel - and a row that scrolls sideways must never be able to
+ * make the *page* scroll sideways as well. Without this the front page measured
+ * 1515px wide inside a 375px phone viewport, so the document could be dragged
+ * 400px to the right, and because .tj-header is position: sticky it travelled
+ * with it and ended up at x-300..75, i.e. off the side of the screen. The bottom
+ * bar stayed put, which is why only the header looked broken.
+ *
+ * Pages without a carousel (the shop, a single product) were never 1px too wide,
+ * which is why the problem only ever showed up on the home page.
+ *
+ * Paint containment is used rather than "overflow: hidden" on purpose: measured
+ * on the real page, overflow: hidden / overflow: clip on .tj-carousel,
+ * .tj-scroller, the section, the container, <main>, <body> and <html> all left
+ * the document at its full 1515px, while "contain: paint" brought it back to
+ * the 375px of the viewport. The row keeps its own scrolling either way - the
+ * track still reports a 1584px scrollWidth inside a 355px box and still scrolls
+ * on its own.
+ *
+ * The arrows are not inside this box (they live in the section heading), so
+ * containment cannot clip them, and the cards are already clipped by .tj-card.
+ */
+.tj-carousel {
+	min-width: 0;
+	contain: paint;
+}
 
+/*
+ * The track is a scroll-snap strip at every screen size, not a grid that only
+ * becomes one on a wide screen. That is what makes the arrows worth showing on
+ * a phone: the script hides them when a row fits (has-no-overflow), and a grid
+ * always fits, so on a phone they would simply never appear. With a strip the
+ * control is real at both sizes and the row matches the supplied design.
+ *
+ * Two cards and a peek of the third on a phone, four on a desktop, so the
+ * visitor can see there is more to the side without an arrow being pressed.
+ *
+ * The .tj-carousel prefix is what makes this beat the shared product grid
+ * further down the file, which is display: grid at the same specificity and
+ * would otherwise win on order. Keeping the track's display here is the whole
+ * point of the class, so the extra weight is deliberate rather than a patch.
+ */
+.tj-carousel .tj-scroller ul.products {
+	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	padding-bottom: 4px;
+	/* The arrows live in the heading, out of the way of the row, so the
+	   scrollbar is the one thing that must never appear. Firefox and the
+	   WebKit engines each need their own. */
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.tj-carousel .tj-scroller ul.products::-webkit-scrollbar { display: none; }
+.tj-carousel .tj-scroller ul.products li.product { flex: 0 0 72%; scroll-snap-align: start; }
+
+.tj-scroll-buttons {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+/*
+ * A solid brand circle with a real arrow in it, rather than a thin chevron
+ * character. The icon is an inline SVG from techjossecom_icon(), so it takes
+ * the button's colour with currentColor and stays sharp on every screen.
+ */
 .tj-scroll-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 34px;
-	height: 34px;
-	border: 1px solid var(--tj-line);
+	width: 36px;
+	height: 36px;
+	border: 0;
 	border-radius: 50%;
-	background: var(--tj-white);
-	color: var(--tj-dark);
-	font-size: 1.05rem;
-	line-height: 1;
+	background: var(--tj-primary);
+	color: var(--tj-white);
 	cursor: pointer;
+	box-shadow: 0 4px 14px rgba(10, 125, 79, .32);
+	transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease;
 }
 
-.tj-scroll-btn:hover { background: var(--tj-dark); border-color: var(--tj-dark); color: #fff; }
+.tj-scroll-btn .tj-icon { width: 18px; height: 18px; stroke-width: 2; }
+
+.tj-scroll-btn:hover { background: var(--tj-primary-dark); box-shadow: 0 8px 20px rgba(10, 125, 79, .38); transform: translateY(-2px); }
+.tj-scroll-btn:active { transform: translateY(0) scale(.94); box-shadow: 0 2px 8px rgba(10, 125, 79, .3); }
+.tj-scroll-btn:focus-visible { outline: 2px solid var(--tj-primary); outline-offset: 3px; }
 
 .tj-section.is-at-start .tj-scroll-btn[data-tj-scroll="prev"],
-.tj-section.is-at-end .tj-scroll-btn[data-tj-scroll="next"] { opacity: .4; cursor: default; }
+.tj-section.is-at-end .tj-scroll-btn[data-tj-scroll="next"] { opacity: .4; cursor: default; box-shadow: none; }
+
+/* Nothing left to scroll to, so the arrows would only be dead controls. */
+.tj-section.has-no-overflow .tj-scroll-buttons { display: none; }
 
 .tj-page-head { padding: 18px 0 6px; }
 .tj-page-title { margin: 0 0 8px; font-size: 1.45rem; }
@@ -1114,9 +1229,18 @@ body.tj-locked { overflow: hidden; }
 	display: block;
 }
 
+/*
+ * The large banner is a link in its own right, so the "Shop Now" button it
+ * carries on a phone is a shortcut rather than the only way into the shop. The
+ * overlay is placed above it (see .tj-hero-content below) so the button stays
+ * clickable where the two overlap.
+ */
+.tj-hero-link { display: block; }
+
 .tj-hero-content {
 	position: absolute;
 	inset: auto 0 0 0;
+	z-index: 1;
 	padding: 18px;
 	background: linear-gradient(to top, rgba(9, 20, 15, .88), rgba(9, 20, 15, .25) 70%, transparent);
 	color: #fff;
@@ -1141,6 +1265,190 @@ body.tj-locked { overflow: hidden; }
 .tj-hero-card-badge { color: var(--tj-accent); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .tj-hero-card-title { color: var(--tj-text); font-size: .9rem; font-weight: 700; }
 .tj-hero-card:hover .tj-hero-card-title { color: var(--tj-primary); }
+
+/* ------------------------------------------------------ hero slider ---- */
+
+/* Layout 2. The track is a scroll-snap container rather than a transform
+   carousel, so a touch swipe works even with JavaScript disabled; the script
+   only layers the arrows, the dots and the auto rotation on top. */
+.tj-hero--slider { padding: 14px 0 0; }
+
+.tj-slider { position: relative; }
+
+.tj-slider__track {
+	display: flex;
+	align-items: stretch;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	border-radius: var(--tj-radius-lg);
+	background: var(--tj-dark);
+	/* The arrows and dots ride on top of the track, so the scrollbar is the
+	   one thing that must not appear. Firefox and the WebKit engines need
+	   their own rule each. */
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.tj-slider__track::-webkit-scrollbar { display: none; }
+
+.tj-slider__slide {
+	flex: 0 0 100%;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	scroll-snap-align: start;
+}
+
+.tj-slider__link { display: block; }
+
+/*
+ * A slide with a phone-sized alternative is wrapped in a <picture> element.
+ * The element is inline by default, which would leave a few pixels of stray
+ * space under the banner inside the block level link.
+ */
+.tj-slider__picture { display: block; width: 100%; }
+
+/*
+ * A banner is a wide, short image (roughly 1920 x 300, a 6:1 strip). Filling a
+ * tall box with "cover" crops it to a narrow band of its middle, so on a phone
+ * most of the message was thrown away.
+ *
+ * Phones therefore switch to "contain": the banner keeps its own proportions
+ * and the whole of it stays readable inside the 180px strip. Because a 6:1
+ * picture is shorter than a 180px box, the space above and below it is filled
+ * with white rather than a dark colour, so the banner reads as sitting on a
+ * clean surface instead of floating in a black box. The dots move below the
+ * strip for the same reason, so nothing is drawn on top of the artwork.
+ */
+.tj-slider__img {
+	display: block;
+	width: 100%;
+	height: 250px;
+	object-fit: cover;
+}
+
+/* Phones and small tablets: show the whole banner instead of a crop of it. */
+@media (max-width: 767px) {
+	.tj-slider__track,
+	.tj-slider__slide { background: var(--tj-white); }
+
+	.tj-slider__slide {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.tj-slider__link { display: block; width: 100%; }
+
+	.tj-slider__img {
+		height: 180px;
+		object-fit: contain;
+	}
+
+	/*
+	 * A banner that was drawn for a phone is not the wide desktop strip, so
+	 * there is nothing to letterbox and nothing to crop: let it fill the space
+	 * it was designed for instead of being shrunk into a fixed height.
+	 */
+	.tj-slider__picture .tj-slider__img {
+		height: auto;
+		max-height: 300px;
+		object-fit: cover;
+	}
+
+	/* Below the picture rather than over it, so a contained banner stays
+	   completely unobstructed. */
+	.tj-slider__dots {
+		position: static;
+		padding: 6px 0 8px;
+	}
+}
+
+/* The arrows carry no plate of their own: the chevron is drawn in white with
+   a soft shadow so it stays readable on top of any banner artwork, and the
+   button box itself is only a transparent hit area. */
+.tj-slider__arrow {
+	position: absolute;
+	top: 50%;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--tj-white);
+	cursor: pointer;
+	transform: translateY( -50% );
+	transition: transform .15s ease;
+}
+
+.tj-slider__arrow span {
+	display: block;
+	font-size: 2rem;
+	line-height: 1;
+	/* The glyphs are thin on their own; the shadow is what keeps them legible
+	   over a pale banner. */
+	text-shadow: 0 1px 4px rgba( 0, 0, 0, .55 );
+	transition: transform .15s ease;
+}
+
+.tj-slider__arrow:hover span { transform: scale( 1.18 ); }
+.tj-slider__arrow--prev { left: 8px; }
+.tj-slider__arrow--next { right: 8px; }
+
+.tj-slider__arrow:focus-visible,
+.tj-slider__dot:focus-visible { outline: 2px solid var(--tj-white); outline-offset: 2px; }
+
+.tj-slider__dots {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 10px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+}
+
+.tj-slider__dot {
+	width: 9px;
+	height: 9px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: rgba( 255, 255, 255, .55 );
+	box-shadow: 0 0 0 1px rgba( 0, 0, 0, .12 );
+	cursor: pointer;
+	transition: background-color .15s ease, transform .15s ease;
+}
+
+.tj-slider__dot:hover { background: rgba( 255, 255, 255, .85 ); }
+.tj-slider__dot.is-active { background: var(--tj-white); transform: scale( 1.25 ); }
+
+@media (max-width: 575px) {
+	.tj-slider__arrow { width: 32px; height: 32px; }
+	.tj-slider__arrow span { font-size: 1.6rem; }
+	.tj-slider__arrow--prev { left: 4px; }
+	.tj-slider__arrow--next { right: 4px; }
+	.tj-slider__dots { bottom: 8px; }
+}
+
+/* A visitor who asked for less motion gets the manual controls only. */
+@media (prefers-reduced-motion: reduce) {
+	.tj-slider__track { scroll-behavior: auto; }
+	.tj-slider__dot,
+	.tj-slider__arrow,
+	.tj-slider__arrow span { transition: none; }
+}
 
 /* --------------------------------------------------------- features ---- */
 
@@ -1536,6 +1844,38 @@ body.tj-locked { overflow: hidden; }
 	.tj-container { --tj-gutter: 10px; }
 }
 
+/*
+ * Phones keep the carousel arrows, only a little smaller: a tap target well
+ * under 36px is awkward to hit. Same control, same place, every screen.
+ */
+@media (max-width: 575px) {
+	.tj-scroll-btn {
+		width: 32px;
+		height: 32px;
+		box-shadow: 0 3px 10px rgba(10, 125, 79, .3);
+	}
+
+	.tj-scroll-btn .tj-icon { width: 16px; height: 16px; }
+
+	/*
+	 * The heading now carries the arrows and the "View All" link together, so
+	 * the gap between them tightens on a narrow screen to leave the title the
+	 * room it needs. The title is allowed to shrink and wrap (min-width: 0 on
+	 * .tj-section-title), so a long one never pushes the controls off screen.
+	 */
+	.tj-section-tools { gap: 8px; }
+}
+
+/*
+ * A section with its own phone count drops the surplus items here. The rule is
+ * written by the script from the data-tj-mobile-limit number in the markup, so
+ * any count the settings screen allows works, not a fixed list of them. A
+ * section with no phone setting never gets the attribute and keeps them all.
+ */
+@media (max-width: 767px) {
+	[data-tj-mobile-limit] > li.tj-over-mobile-limit { display: none; }
+}
+
 /* Phones: the card actions keep the desktop layout - "Add to Cart" and
    "Order Now" side by side on a single row, filling the card. They used to wrap
    onto two rows because the labels no longer fit once the grid is two columns
@@ -1782,26 +2122,144 @@ body.tj-locked { overflow: hidden; }
 .single-product .stock { display: inline-block; margin: 0 0 8px; padding: 3px 10px; border-radius: 999px; background: var(--tj-primary-soft); color: var(--tj-primary); font-size: .78rem; font-weight: 600; }
 .single-product .stock.out-of-stock { background: #fef3f2; color: var(--tj-danger); }
 
-.woocommerce div.product form.cart { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
-.woocommerce div.product form.cart .button { flex: 1; justify-content: center; padding: 12px 26px; font-size: .95rem; }
-/* The quantity box and the "Add to cart" button share the row, the "Order Now"
-   button spans the full width underneath it. They are two different widths on
-   purpose but they must still read as one control group, so all three resolve to
-   the same height: the Order Now button otherwise grows ~3px taller than the add
-   to cart button because its 20px card icon is taller than the button's text, and
-   the quantity input then sits visibly shorter than the button beside it.
-   "box-sizing" is repeated because min-height is only the border box under
-   border-box sizing, and the height token would be meaningless without it. */
+/* The three controls of the buy row - quantity, "Add to cart", "Order Now" -
+   share one line, laid out as the reference shops do: a compact -/+ stepper,
+   then the two buttons taking the rest of the row between them.
+
+   The stepper is sized to its content rather than stretched, so it reads as
+   a small quantity control and the two buttons get the width a shopper's
+   thumb actually wants. The buttons share what is left equally (flex 1 1 0
+   and the same basis), so they stay the same width whatever their labels
+   say - renaming "Order Now" in the customizer cannot make the pair
+   lopsided.
+
+   flex-wrap stays on so a very narrow screen drops the buttons onto their
+   own lines rather than squeezing three controls until none of them is
+   readable. */
+.woocommerce div.product form.cart { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin: 12px 0; }
+.woocommerce div.product form.cart .quantity { flex: 0 0 auto; display: inline-flex; align-items: stretch; margin: 0; }
+.woocommerce div.product form.cart .button,
+.single-product .tj-order-now--single { flex: 1 1 auto; min-width: 96px; justify-content: center; }
+/* Neither button may wrap its label, and each needs room for it.
+
+   The buttons used to be "min-width: 0", which let flex squeeze one below
+   the width of its own text: "Order Now" broke over two lines, grew taller
+   than the quantity box beside it, and broke the row apart. Removing that
+   floor and setting nowrap keeps each label whole, and the basis of auto
+   with equal growth still divides the leftover space evenly, so the pair
+   come out the same width on a desktop column.
+
+   The 96px floor is the width "Order Now" needs at this font size plus its
+   padding. It is deliberately not a media query: a phone in portrait, a
+   landscape phone and a small tablet all differ here, and a fixed pixel
+   rule on the button itself holds on every one of them. Where the row
+   genuinely runs out, the wrap below moves a button to its own line, which
+   is the only honest outcome when two labels cannot both fit. */
+.woocommerce div.product form.cart .single_add_to_cart_button,
+.single-product .tj-order-now--single { white-space: nowrap; }
+/* The three hidden fields the form posts - add-to-cart, product_id and
+   variation_id - are laid out after the buttons and count as flex children,
+   so the gap lands between the buttons as well as between them and the
+   quantity box. They take no part in the row, so they are taken out of it:
+   position: absolute removes them from the flow without hiding them, which
+   would stop the form posting. */
+.woocommerce div.product form.cart input[type="hidden"] { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* The price of the variation a shopper has chosen.
+
+   On a variable product the summary prints a price of its own before this,
+   and WooCommerce fills this one in as the Size and Color chips change. Left
+   alone it sits hard against the row of buttons below it, which reads as one
+   crowded block; the space keeps it as its own line and gives the eye a
+   moment between the amount and the actions. The margin is not collapsed
+   away by the form's own top margin because the price sits outside the form,
+   inside the summary column. */
+.woocommerce-variation-price { margin-bottom: 10px; }
+/* On a variable product WooCommerce wraps the quantity box and the add button
+   in one div of its own. Left as a plain block it takes the full width and the
+   gap above stops working, so the row is given the same treatment as the form
+   above it: the wrapper lays its children out, the stepper keeps its own
+   width, and the two buttons split what is left. */
+.woocommerce div.product form.cart .variations_button { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; width: 100%; }
+.woocommerce div.product form.cart .variations_button .quantity { flex: 0 0 auto; }
+.woocommerce div.product form.cart .variations_button .single_add_to_cart_button,
+.woocommerce div.product form.cart .variations_button .tj-order-now--single { flex: 1 1 auto; min-width: 96px; white-space: nowrap; }
+/* All three controls resolve to one height. The "Order Now" button carries a
+   20px card icon that is taller than the add button's text, so without a
+   floor on both it grows a few pixels past its neighbour and the pair stops
+   reading as a matched set. "box-sizing" is restated because min-height is
+   only the border box under border-box sizing, and the height token would be
+   meaningless without it. */
 .woocommerce div.product form.cart .button,
 .single-product .tj-order-now--single {
 	box-sizing: border-box;
 	min-height: var(--tj-btn-h-single);
 }
-.woocommerce div.product form.cart .quantity,
+/* The quantity input is the middle third of the stepper.
+
+   The width is tight on purpose: a count never runs past two digits, so a
+   wider box only pushes the two buttons right and steals the width the add
+   to cart and Order Now buttons need. The padding is what stops a two digit
+   number from touching the edges. */
 .woocommerce div.product form.cart .quantity input.qty {
 	box-sizing: border-box;
+	width: 40px;
 	min-height: var(--tj-btn-h-single);
+	padding: 0 2px;
+	border-right: 0;
+	border-left: 0;
+	border-radius: 0;
 }
+
+/* The -/+ buttons either side of the number.
+
+   They are real <button> elements, not decoration drawn over the input, so
+   they are reachable from the keyboard and announced as controls. They share
+   the input's height and the form's line border, with the rounded corners
+   kept on the outer two, which is what makes the three read as one control
+   rather than as three separate boxes.
+
+   The background is set with background-color rather than the shorthand
+   because the hover rule changes only the fill; the shorthand would also
+   clear the border colour the rule just set. */
+.tj-qty-btn {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 32px;
+	min-height: var(--tj-btn-h-single);
+	padding: 0;
+	border: 1px solid var(--tj-line);
+	background-color: var(--tj-white);
+	color: var(--tj-text);
+	font-family: inherit;
+	font-size: .95rem;
+	font-weight: 700;
+	line-height: 1;
+	cursor: pointer;
+	transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+}
+
+.tj-qty-btn:hover {
+	border-color: var(--tj-primary);
+	color: var(--tj-primary);
+}
+
+.tj-qty-btn:focus-visible {
+	position: relative;
+	z-index: 1;
+	outline: 0;
+	border-color: var(--tj-primary);
+	box-shadow: 0 0 0 3px var(--tj-primary-ring);
+}
+
+.tj-qty-btn--minus { border-radius: var(--tj-radius) 0 0 var(--tj-radius); }
+.tj-qty-btn--plus { border-radius: 0 var(--tj-radius) var(--tj-radius) 0; }
+
+/* A box that already cannot be changed needs no buttons either side of it. */
+.woocommerce div.product form.cart .quantity input[type="hidden"] ~ .tj-qty-btn { display: none; }
 /* Variable products show their Size / Color chips inside the form (see the
    "variable product picker" block above); WooCommerce's dropdown table is hidden
    there and only kept in the markup for its own script. The small reset link
@@ -1851,10 +2309,29 @@ body.tj-locked { overflow: hidden; }
 .woocommerce div.product form.cart .variations select:focus { border-color: var(--tj-primary); box-shadow: 0 0 0 3px var(--tj-primary-ring); outline: 0; }
 .woocommerce div.product form.cart .reset_variations { display: inline-block; margin-top: 2px; font-size: .8rem; }
 
+/* The add to cart form answers in place when a product still needs an option
+   chosen, or when WooCommerce refuses the add. It sits under the button it
+   belongs to rather than in a banner at the top of the page, so the shopper
+   reads it while looking at the Size and Color chips the message is about.
+   The border picks up the same danger colour the notice bars already use, and
+   the form is a flex row, so the message takes the full width underneath. */
+.tj-form-notice {
+	flex: 1 0 100%;
+	margin: 4px 0 0;
+	padding: 9px 12px;
+	border-left: 3px solid var(--tj-danger);
+	border-radius: 0 var(--tj-radius) var(--tj-radius) 0;
+	background-color: #fef3f2;
+	color: var(--tj-danger);
+	font-size: .86rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
 .woocommerce .quantity input.qty,
 .tj-qty-input {
-	width: 74px;
-	padding: 9px 6px;
+	width: 52px;
+	padding: 9px 4px;
 	border: 1px solid var(--tj-line);
 	border-radius: var(--tj-radius);
 	text-align: center;
@@ -1867,7 +2344,16 @@ body.tj-locked { overflow: hidden; }
 .tj-qty-input::-webkit-outer-spin-button,
 .tj-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-.single-product .tj-order-now--single { width: 100%; justify-content: center; padding: 12px 24px; border-radius: 6px; font-size: .95rem; }
+/* "Order Now" sits beside "Add to cart" and takes half the row, so the old
+   full-width rule is dropped in favour of the flex basis set above. Only the
+   box is restated here: padding and the centred label are what keep the two
+   buttons reading as a matched pair at every width. */
+/* "Order Now" matches the rounded corners of the button beside it. It was
+   left at the 6px it inherited from an earlier layout, against the 10px the
+   theme uses everywhere else, so the pair read as two different controls
+   rather than one matched set. The padding stays tight so the label still
+   fits its minimum width on a narrow phone. */
+.single-product .tj-order-now--single { justify-content: center; padding: 12px 12px; border-radius: 10px; font-size: .95rem; }
 .tj-single-cats { margin: 0 0 6px; font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .tj-single-cats a { color: var(--tj-primary); }
 
@@ -1928,7 +2414,23 @@ body.tj-locked { overflow: hidden; }
 }
 .woocommerce-tabs ul.tabs li.active a,
 .woocommerce-tabs ul.tabs li a:hover { background: transparent; border-bottom-color: var(--tj-secondary); color: var(--tj-dark); }
+/* The panel's padding.
+
+   WooCommerce ships ".woocommerce div.product .woocommerce-tabs .panel" with
+   "padding: 0", and that selector carries four classes against the two here,
+   so it outranks this rule and left the panel flush with its border: the
+   heading and the review form sat hard against the edge. Matching its shape
+   - "div.product" included - settles the contest by source order, the theme
+   loading after the plugin, without resorting to !important. */
+.woocommerce div.product .woocommerce-tabs .panel { padding: 20px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); }
+/* The same file, kept for any panel rendered outside a product page. */
 .woocommerce-tabs .panel { padding: 20px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); }
+/* The description panel's duplicate "Description" heading is removed on the
+   server (see techjossecom_description_tab_heading), so the panel opens on the
+   text itself. The heading rule below therefore only ever applies to the tabs
+   that do need one - reviews and additional information - which is why the
+   top padding stays put: it is the space the panel was designed with, not a
+   leftover gap. */
 .woocommerce-tabs .panel h2 { margin: 0 0 12px; font-size: 1.05rem; }
 .woocommerce-tabs .panel > :first-child { margin-top: 0; }
 /* Kill the trailing margin of the last block so the panel's bottom padding is
@@ -2247,7 +2749,10 @@ p.no-comments {
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	width: min(92vw, 400px);
+	/* A little wider than a bare list needs: each row carries a thumbnail, a
+	   product name, an SKU, a stepper and a line total side by side, and at
+	   400px the name was wrapping to three lines on a long title. */
+	width: min(94vw, 430px);
 	height: 100%;
 	background: var(--tj-white);
 	box-shadow: var(--tj-shadow-lg);
@@ -2261,35 +2766,133 @@ p.no-comments {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 14px var(--tj-gutter);
+	gap: 12px;
+	padding: 16px var(--tj-gutter);
 	border-bottom: 1px solid var(--tj-line);
 }
 
-.tj-drawer-title { margin: 0; font-size: 1.05rem; }
-.tj-drawer-body { flex: 1; overflow-y: auto; padding: 12px var(--tj-gutter); }
+.tj-drawer-title { margin: 0; font-size: 1.15rem; font-weight: 700; }
+
+/* The close control is a small bordered box holding the word and the cross
+   together. It reuses the shared .tj-icon-btn only for its reset; the fixed
+   42px square is dropped because the label needs to sit beside the cross. */
+.tj-drawer--cart .tj-drawer-close { width: auto; height: auto; padding: 6px 12px; gap: 6px; font-size: .85rem; font-weight: 600; }
+.tj-drawer--cart .tj-drawer-close-label { color: var(--tj-muted); }
+.tj-drawer--cart .tj-drawer-close:hover .tj-drawer-close-label { color: var(--tj-primary); }
+.tj-drawer--cart .tj-drawer-close-mark { font-size: 1.15rem; line-height: 1; }
+
+.tj-drawer-body { flex: 1; overflow-y: auto; padding: 0 var(--tj-gutter); }
 
 .tj-cart-list { margin: 0; padding: 0; list-style: none; }
-.tj-cart-item { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--tj-line); }
+
+/* Image on the left, the details in the middle, the cross in its own column on
+   the right. align-items: start keeps the cross beside the product name rather
+   than drifting to the middle of a row whose height the name alone sets. */
+.tj-cart-item { display: grid; grid-template-columns: 72px 1fr auto; gap: 14px; align-items: start; padding: 18px 0; border-bottom: 1px solid var(--tj-line); }
+.tj-cart-item:last-child { border-bottom: 0; }
+
 /* Same deal as the live search thumbnail: the badge is printed before the
    image and anchors to this box, so the box is the positioning ancestor and
    the badge needs a z-index to stay above the later image sibling. */
-.tj-cart-item-thumb { position: relative; display: block; width: 56px; height: 56px; }
-.tj-cart-item-thumb img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; }
-.tj-cart-item-thumb .onsale.tj-sale-badge { top: 3px; left: 3px; z-index: 9; padding: 1px 5px; border-radius: 4px; font-size: .6rem; box-shadow: none; }
-.tj-cart-item-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.tj-cart-item-title { color: var(--tj-text); font-size: .86rem; font-weight: 600; }
-.tj-cart-item-qty { color: var(--tj-muted); font-size: .78rem; }
-.tj-cart-item-remove { align-self: start; width: 24px; height: 24px; border-radius: 50%; background: #f3f4f6; color: var(--tj-danger); font-size: 1rem; line-height: 1; text-align: center; }
-.tj-cart-item-remove:hover { background: var(--tj-danger); color: #fff; }
+.tj-cart-item-thumb { position: relative; display: block; width: 72px; height: 72px; }
+.tj-cart-item-thumb img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--tj-radius); }
+.tj-cart-item-thumb .onsale.tj-sale-badge { top: 4px; left: 4px; z-index: 9; padding: 2px 6px; border-radius: 4px; font-size: .6rem; box-shadow: none; }
+
+.tj-cart-item-info { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+
+/* Name and chosen options share one line that wraps, so "Red" and "M" read as
+   part of what was ordered rather than as a note underneath it. */
+.tj-cart-item-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+
+.tj-cart-item-title { color: var(--tj-text); font-size: .92rem; font-weight: 700; line-height: 1.35; }
+
+/* One badge per option the shopper chose: Color Red, Size M, Weight 500 g.
+   The label is muted and the value carries the weight, so a glance separates
+   "what kind of thing" from "which one" without reading either in full. */
+.tj-cart-item-attrs { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+
+.tj-cart-item-attr { display: inline-flex; align-items: baseline; gap: 3px; padding: 1px 7px; border: 1px solid var(--tj-line); border-radius: 999px; background: var(--tj-bg); font-size: .7rem; line-height: 1.6; white-space: nowrap; }
+.tj-cart-item-attr-name { color: var(--tj-muted); }
+.tj-cart-item-attr-value { color: var(--tj-text); font-weight: 600; }
+
+.tj-cart-item-meta { margin: 0; color: var(--tj-muted); font-size: .78rem; }
+.tj-cart-item-meta span { color: var(--tj-text); }
+.tj-cart-item-meta-sep { margin: 0 5px; color: var(--tj-line) !important; }
+
+/* The line total. Only the amount is picked out in the accent colour; the
+   multiplier beside it stays muted so the eye lands on the money. */
+.tj-cart-item-total { margin: 0; color: var(--tj-secondary); font-size: .9rem; font-weight: 700; }
+.tj-cart-item-multiple { margin-right: 4px; color: var(--tj-muted); font-weight: 400; }
+
+.tj-cart-item-remove { align-self: start; width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: var(--tj-muted); font-size: 1.2rem; line-height: 1; cursor: pointer; }
+.tj-cart-item-remove:hover { background: var(--tj-primary-soft); color: var(--tj-danger); }
+
+/* Quantity stepper: three cells in one bordered box, the number held between
+   two rules so the steppers and the count read as a single control. */
+.tj-cart-qty { display: inline-flex; align-items: stretch; overflow: hidden; border: 1px solid var(--tj-line); border-radius: 8px; }
+.tj-cart-qty-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; border: 0; background: var(--tj-white); color: var(--tj-text); font-size: 1rem; line-height: 1; cursor: pointer; }
+.tj-cart-qty-btn:hover:not(:disabled) { background: var(--tj-primary-soft); color: var(--tj-primary); }
+.tj-cart-qty-btn:disabled { color: #c4c9d1; cursor: default; }
+.tj-cart-qty-value { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; padding: 0 4px; border-right: 1px solid var(--tj-line); border-left: 1px solid var(--tj-line); color: var(--tj-text); font-size: .85rem; font-weight: 600; }
+
+/* A row whose change is still in flight. Clicks are blocked so a second tap
+   cannot queue a conflicting update against a stale number, and a small
+   spinner sits over the thumbnail: enough to show the row is being worked on,
+   light enough that the row stays readable underneath. Only the details fade,
+   so the spinner is never dimmed along with them. */
+.tj-cart-item.is-busy { pointer-events: none; }
+
+.tj-cart-item.is-busy .tj-cart-item-info,
+.tj-cart-item.is-busy .tj-cart-item-remove { opacity: .45; }
+
+.tj-cart-item.is-busy .tj-cart-item-thumb::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	border-radius: var(--tj-radius);
+	background: rgba(255, 255, 255, .7);
+}
+
+.tj-cart-item.is-busy .tj-cart-item-thumb::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 11;
+	width: 18px;
+	height: 18px;
+	margin: -9px 0 0 -9px;
+	border: 2px solid var(--tj-line);
+	border-top-color: var(--tj-primary);
+	border-radius: 50%;
+	animation: tj-spin .6s linear infinite;
+}
+
+/* Spinner for the add to cart button. The label is swapped for this in the
+   script, so the button keeps its width and the layout does not jump. */
+.tj-btn.is-loading,
+.single_add_to_cart_button.is-loading { position: relative; color: transparent; pointer-events: none; }
+
+.tj-btn.is-loading::after,
+.single_add_to_cart_button.is-loading::after { content: ""; position: absolute; top: 50%; left: 50%; width: 15px; height: 15px; margin: -8px 0 0 -8px; border: 2px solid rgba(255, 255, 255, .4); border-top-color: #fff; border-radius: 50%; animation: tj-spin .6s linear infinite; }
+
+@keyframes tj-spin { to { transform: rotate(360deg); } }
 
 .tj-cart-empty { padding: 30px 0; text-align: center; }
 .tj-cart-empty p { color: var(--tj-muted); }
 
-.tj-drawer-footer { padding: 14px var(--tj-gutter); border-top: 1px solid var(--tj-line); background: #fbfbfc; }
-.tj-cart-subtotal { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; font-size: .95rem; font-weight: 700; }
-.tj-cart-subtotal span:last-child { color: var(--tj-accent); font-size: 1.15rem; }
-.tj-cart-note { margin: 0 0 10px; color: var(--tj-muted); font-size: .78rem; }
-.tj-cart-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tj-drawer-footer { padding: 16px var(--tj-gutter) 20px; border-top: 1px solid var(--tj-line); background: var(--tj-white); }
+.tj-cart-subtotal { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 6px; font-size: 1rem; font-weight: 700; }
+.tj-cart-subtotal span:last-child { color: var(--tj-secondary); font-size: 1.25rem; }
+.tj-cart-note { margin: 0 0 14px; color: var(--tj-muted); font-size: .78rem; }
+
+/* One button per row, full width. The first is the softer of the two so the
+   route to checkout stays the obvious one. */
+.tj-cart-actions { display: grid; gap: 10px; }
+.tj-cart-actions .tj-btn { width: 100%; min-height: 46px; }
+.tj-cart-actions .tj-btn--ghost { background: var(--tj-bg); }
+.tj-cart-actions .tj-btn--ghost:hover { background: var(--tj-line); }
 
 /* ----------------------------------------------------- COD popup ------- */
 
@@ -2339,20 +2942,27 @@ p.no-comments {
 .tj-cod-row { margin-bottom: 12px; }
 .tj-cod-label { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 600; }
 
-.tj-qty { display: inline-flex; align-items: center; }
-.tj-qty-btn {
+/* The stepper in the cash on delivery popup, not the single product form.
+   These used to be bare .tj-qty-btn rules, which meant they landed on the
+   single product stepper as well and overrode its sizing there: the popup's
+   fixed 38px square and white fill won on order, so the buttons stopped
+   matching the height of the add to cart button beside them. Scoping to
+   .tj-cod keeps the two controls independent. */
+.tj-cod .tj-qty { display: inline-flex; align-items: center; }
+.tj-cod .tj-qty-btn {
 	width: 38px;
 	height: 38px;
 	border: 1px solid var(--tj-line);
-	background: var(--tj-white);
+	background-color: var(--tj-white);
+	color: var(--tj-text);
 	font-size: 1.05rem;
 	line-height: 1;
 	cursor: pointer;
 }
-.tj-qty-btn:first-child { border-radius: var(--tj-radius) 0 0 var(--tj-radius); }
-.tj-qty-btn:last-child { border-radius: 0 var(--tj-radius) var(--tj-radius) 0; }
-.tj-qty-btn:hover { background: var(--tj-primary-soft); color: var(--tj-primary); }
-.tj-qty .tj-qty-input { border-radius: 0; border-left: 0; border-right: 0; }
+.tj-cod .tj-qty-btn:first-child { border-radius: var(--tj-radius) 0 0 var(--tj-radius); }
+.tj-cod .tj-qty-btn:last-child { border-radius: 0 var(--tj-radius) var(--tj-radius) 0; }
+.tj-cod .tj-qty-btn:hover { background-color: var(--tj-primary-soft); color: var(--tj-primary); }
+.tj-cod .tj-qty .tj-qty-input { border-radius: 0; border-left: 0; border-right: 0; }
 
 .tj-cod-shipping-list { display: grid; gap: 8px; }
 .tj-cod-shipping-option { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); font-size: .88rem; cursor: pointer; }
@@ -2450,22 +3060,19 @@ p.no-comments {
 @media (min-width: 992px) {
 	.tj-menu-toggle { display: none; }
 
-	/* The nav bar sticks directly beneath the sticky header, so an open category
-	   panel stays put while the page scrolls instead of riding up over the
-	   header. Sticky keeps its slot in the flow, so nothing shifts.
+	/* The nav bar scrolls away with the page instead of sticking under the
+	   header, so an open category panel travels with it rather than hovering
+	   over the content.
 
-	   The offset is published by main.js as --tj-header-h, measured from the
-	   real header, because that height changes with the logo, the hotline and
-	   the cart badge. z-index sits one below .tj-header (60) so the panel can
-	   never cover the header. */
+	   It keeps position: relative and a z-index below .tj-header (60), but not
+	   for sticking - for the stacking. That keeps the panel (z-index 66) inside
+	   the nav bar's own context, where it can never paint over the header that
+	   stays pinned at the top. */
 	.tj-nav-bar {
 		display: block;
-		position: sticky;
-		top: var(--tj-header-h, 0px);
+		position: relative;
 		z-index: 59;
 	}
-
-	.tj-nav-bar.is-stuck { box-shadow: 0 6px 16px rgba(16, 24, 40, .09); }
 
 	.tj-bottom-bar { display: none; }
 	.tj-site { padding-bottom: 0; }
@@ -2477,23 +3084,68 @@ p.no-comments {
 	.tj-catmenu-sub { display: none !important; }
 	.tj-catmenu-item:hover > .tj-catmenu-flyout,
 	.tj-catmenu-item:focus-within > .tj-catmenu-flyout { display: flex; }
-	.tj-hero-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; }
-	.tj-hero-side { grid-template-columns: 1fr; }
+	/*
+	 * Layout 1 on a wide screen is one large banner beside two small ones, all
+	 * three the same height, running edge to edge with no card, no shadow and
+	 * no radius between them.
+	 *
+	 * The large banner takes a shade more than two thirds of the row and the row
+	 * itself is kept short, so the pair reads as one wide band of pictures
+	 * rather than a tall block. The two small banners split the height the large
+	 * one sets, so the row can never come out ragged. The recommended artwork is
+	 * 2.5:1 for all three - 1200 x 480 px for the large one and 600 x 240 px for
+	 * the small ones - and object-fit: cover trims the few percent of difference
+	 * the grid gap introduces rather than stretching the picture. See
+	 * techjossecom_hero_banner_specs(), which is where those numbers live.
+	 */
+	.tj-hero-grid { grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); gap: 16px; }
+
+	.tj-hero-side { grid-template-columns: 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); }
+
 	.tj-hero-img,
-	.tj-hero-main .tj-placeholder { height: 100%; min-height: 344px; }
-	.tj-hero-card-img { height: 158px; }
-	.tj-hero-title { font-size: 1.85rem; }
-	.tj-scroll-buttons { display: inline-flex; }
-	.tj-scroller ul.products {
-		display: flex;
-		flex-wrap: nowrap;
-		overflow-x: auto;
-		scroll-snap-type: x mandatory;
-		padding-bottom: 4px;
-		scrollbar-width: none;
+	.tj-hero-main .tj-placeholder { height: 100%; min-height: 300px; }
+
+	.tj-hero-card { min-height: 0; border-radius: 0; background: var(--tj-dark); box-shadow: none; }
+	.tj-hero-card-img { height: 100%; }
+
+	/*
+	 * The heading, the subtitle and the button are kept on a desktop, over a
+	 * gradient at the foot of the picture rather than in a box of their own, so
+	 * the words stay readable while the artwork still runs edge to edge behind
+	 * them. The gradient is deepened a little and the block is capped in width,
+	 * because a short wide banner with a long heading would otherwise set the
+	 * text across the whole row in one thin line.
+	 *
+	 * The same overlay carries the badge and title of each small banner, which
+	 * is what puts the text typed into the theme options onto the two right hand
+	 * pictures. The main banner's own link wraps the picture only, and this
+	 * overlay sits above it, so the button inside stays clickable where the two
+	 * overlap.
+	 */
+	.tj-hero-content {
+		inset: auto 0 0 0;
+		max-width: 62%;
+		padding: 40px 26px 22px;
+		background: linear-gradient(to top, rgba(9, 20, 15, .92), rgba(9, 20, 15, .45) 55%, transparent);
 	}
-	.tj-scroller ul.products::-webkit-scrollbar { display: none; }
-	.tj-scroller ul.products li.product { flex: 0 0 calc((100% - 42px) / 4 - 10px); scroll-snap-align: start; }
+
+	.tj-hero-title { font-size: 1.75rem; }
+	.tj-hero-subtitle { font-size: .95rem; }
+	.tj-hero-card-text {
+		position: absolute;
+		inset: auto 0 0 0;
+		z-index: 1;
+		gap: 1px;
+		padding: 26px 16px 12px;
+		background: linear-gradient(to top, rgba(9, 20, 15, .9), rgba(9, 20, 15, .35) 60%, transparent);
+	}
+
+	.tj-hero-card-badge { color: rgba(255, 255, 255, .82); }
+	.tj-hero-card-title { color: #fff; font-size: .95rem; }
+	.tj-hero-card:hover .tj-hero-card-title { color: #fff; text-decoration: underline; }
+
+	/* Four across on a desktop, where there is room for a full row of cards. */
+	.tj-carousel .tj-scroller ul.products li.product { flex: 0 0 calc((100% - 42px) / 4 - 10px); }
 	.tj-category-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 	.woocommerce ul.products, .tj-front-page ul.products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 	.woocommerce ul.products li.product.tj-product .tj-product-actions > .button,
@@ -2508,9 +3160,16 @@ p.no-comments {
 
 @media (min-width: 1200px) {
 	:root { --tj-gutter: 24px; }
+
+	/*
+	 * Past 1200px the row is allowed a little more height, but only a little:
+	 * the large banner is 824px wide there, so 330px is what keeps it at the
+	 * 2.5:1 the artwork is designed at, and the two small banners split exactly.
+	 * Raising this further would push the row back towards the tall block the
+	 * shorter height was chosen to avoid, and would crop the artwork.
+	 */
 	.tj-hero-img,
-	.tj-hero-main .tj-placeholder { min-height: 380px; }
-	.tj-hero-card-img { height: 176px; }
+	.tj-hero-main .tj-placeholder { min-height: 330px; }
 }
 
 /* ------------------------------------------------------ a11y & print -- */

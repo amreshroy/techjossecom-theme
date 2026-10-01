@@ -40,6 +40,101 @@ function techjossecom_shop_url() {
 }
 
 /**
+ * Fold cart lines that are genuinely the same item into one.
+ *
+ * WooCommerce keys a line on the product, the variation and the attribute
+ * values, so an add that arrives with a slightly different payload - a
+ * different attribute order, an extra piece of cart item data from a plugin -
+ * produces a second line instead of raising the quantity on the first. The
+ * shopper then sees the same product twice and no way to tell the rows apart.
+ *
+ * This walks the cart and sums any lines that resolve to the same signature
+ * into the first of them, so the stored cart holds one line and the quantity
+ * simply goes up. It matches WooCommerce's own definition of a line, so a
+ * difference another plugin deliberately stored still keeps its own row.
+ *
+ * Only ever acts when there is something to merge, so the common case costs a
+ * single count() and nothing is written.
+ *
+ * @return void
+ */
+function techjossecom_merge_duplicate_cart_items() {
+	static $done = false;
+
+	if ( $done || ! techjossecom_has_woocommerce() ) {
+		return;
+	}
+
+	$done = true;
+
+	$cart = WC()->cart;
+
+	if ( ! $cart ) {
+		return;
+	}
+
+	$contents = $cart->get_cart();
+
+	if ( count( $contents ) < 2 ) {
+		return;
+	}
+
+	$seen  = array();
+	$merge = array();
+
+	foreach ( $contents as $cart_item_key => $cart_item ) {
+		$variation = isset( $cart_item['variation'] ) && is_array( $cart_item['variation'] ) ? $cart_item['variation'] : array();
+
+		// Sorted, so the same attributes in a different order hash the same.
+		ksort( $variation );
+
+		$data = isset( $cart_item['data'] ) ? $cart_item['data'] : null;
+		$sku  = $data && is_callable( array( $data, 'get_sku' ) ) ? $data->get_sku() : '';
+
+		$signature = md5(
+			wp_json_encode(
+				array(
+					(int) ( isset( $cart_item['product_id'] ) ? $cart_item['product_id'] : 0 ),
+					(int) ( isset( $cart_item['variation_id'] ) ? $cart_item['variation_id'] : 0 ),
+					$variation,
+					(string) $sku,
+				)
+			)
+		);
+
+		if ( ! isset( $seen[ $signature ] ) ) {
+			$seen[ $signature ] = array(
+				'key'      => $cart_item_key,
+				'quantity' => (int) $cart_item['quantity'],
+			);
+
+			continue;
+		}
+
+		$seen[ $signature ]['quantity'] += (int) $cart_item['quantity'];
+		$merge[] = $cart_item_key;
+	}
+
+	if ( ! $merge ) {
+		return;
+	}
+
+	foreach ( $merge as $cart_item_key ) {
+		$cart->remove_cart_item( $cart_item_key );
+	}
+
+	foreach ( $seen as $line ) {
+		$item = $cart->get_cart_item( $line['key'] );
+
+		if ( $item && (int) $item['quantity'] !== $line['quantity'] ) {
+			$cart->set_quantity( $line['key'], $line['quantity'], false );
+		}
+	}
+
+	$cart->calculate_totals();
+}
+
+/**
  * Render one part of the slide-in mini cart.
  *
  * Used both by the drawer template and by the WooCommerce cart fragments, so
@@ -67,6 +162,14 @@ function techjossecom_mini_cart_part( $part ) {
 	if ( 'body' === $part ) {
 		ob_start();
 
+		/*
+		 * Tidy the stored cart before it is read, so what is drawn is what the
+		 * cart page, the checkout and the order will all use. Without this a
+		 * duplicate that slipped in at add time would be hidden here but still
+		 * sitting in the cart as two lines.
+		 */
+		techjossecom_merge_duplicate_cart_items();
+
 		echo '<div id="tj-mini-cart-body" class="tj-drawer-body">';
 
 		if ( $cart->is_empty() ) {
@@ -79,7 +182,19 @@ function techjossecom_mini_cart_part( $part ) {
 			);
 			echo '</div>';
 		} else {
-			echo '<ul class="tj-cart-list">';
+			/*
+			 * WooCommerce keys a cart line on the product, the variation and the
+			 * chosen attributes, so the same product added more than once can be
+			 * spread over several lines. A shopper reads this drawer as a list of
+			 * products, never as a list of keys, so the lines are folded together
+			 * here: one row per product and variation, carrying the summed
+			 * quantity.
+			 *
+			 * The row keeps every cart key behind it in data-tj-cart-keys, so
+			 * removing it or changing the count tidies up all of the copies in
+			 * one request instead of leaving the strays behind.
+			 */
+			$lines = array();
 
 			foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 				$product = isset( $cart_item['data'] ) ? $cart_item['data'] : false;
@@ -88,31 +203,217 @@ function techjossecom_mini_cart_part( $part ) {
 					continue;
 				}
 
+				$variation_id = ! empty( $cart_item['variation_id'] ) ? (int) $cart_item['variation_id'] : 0;
+				$group        = $variation_id ? 'v' . $variation_id : 'p' . (int) $cart_item['product_id'];
+
+				if ( ! isset( $lines[ $group ] ) ) {
+					$lines[ $group ] = array(
+						'product'   => $product,
+						'keys'      => array(),
+						'quantity'  => 0,
+						'variation' => array(),
+					);
+				}
+
+				$lines[ $group ]['keys'][]     = $cart_item_key;
+				$lines[ $group ]['quantity'] += (int) $cart_item['quantity'];
+
+				/*
+				 * The attribute values the shopper actually chose, which is not
+				 * the same thing as the variation's own attributes.
+				 *
+				 * A variation that leaves an attribute open - an "Any" value -
+				 * stores an empty string for it, so reading the variation back
+				 * would drop that option from the row and leave two lines
+				 * looking identical. The cart records what was picked, so that
+				 * is what the row is labelled with.
+				 */
+				if ( empty( $lines[ $group ]['variation'] ) && ! empty( $cart_item['variation'] ) && is_array( $cart_item['variation'] ) ) {
+					$lines[ $group ]['variation'] = $cart_item['variation'];
+				}
+			}
+
+			echo '<ul class="tj-cart-list">';
+
+			foreach ( $lines as $line ) {
+				$product   = $line['product'];
+				$quantity  = (int) $line['quantity'];
+				$keys      = implode( ',', $line['keys'] );
+				$max       = (int) $product->get_max_purchase_quantity();
+				$sku       = $product->get_sku();
 				$thumbnail = $product->get_image( 'thumbnail', array( 'loading' => 'lazy' ) );
 
-				echo '<li class="tj-cart-item">';
+				/*
+				 * What makes this row different from a lookalike. A variation
+				 * whose title is inherited from its parent reads as the bare
+				 * product name, so two lines for a size M and a size L end up
+				 * with identical text and no way for the shopper to tell them
+				 * apart. The chosen attributes say which one this is.
+				 */
+				$meta = array();
+
+				if ( $sku ) {
+					$meta[] = esc_html__( 'SKU:', 'techjossecom' ) . ' <span>' . esc_html( $sku ) . '</span>';
+				}
+
+				/*
+				 * The options this copy was ordered with, as badges beside the
+				 * title: Color Red, Size M, Weight 500 g.
+				 *
+				 * Read from the cart line rather than from the variation, and
+				 * rendered one badge at a time rather than as one joined
+				 * string. A variation that leaves an attribute open stores an
+				 * empty value for it, which is exactly the option the shopper
+				 * picked and the one most needs naming, so the cart's record of
+				 * the choice is what is shown.
+				 *
+				 * The colon belongs to the label rather than to the CSS. The
+				 * gap that separates the name from the value cannot stand in
+				 * for punctuation: "Size M" beside "Color Green" leaves the
+				 * shopper pairing the halves up by eye, while "Size: M" says
+				 * on its own that the first word names the option.
+				 */
+				$attributes = array();
+
+				if ( ! empty( $line['variation'] ) && is_array( $line['variation'] ) ) {
+					foreach ( $line['variation'] as $name => $value ) {
+						$taxonomy = str_replace( 'attribute_', '', $name );
+						$value    = (string) $value;
+
+						if ( '' === $value ) {
+							continue;
+						}
+
+						// Turn the slug a shopper never sees, "m", into "M".
+						if ( taxonomy_exists( $taxonomy ) ) {
+							$term = get_term_by( 'slug', $value, $taxonomy );
+
+							if ( ! is_wp_error( $term ) && $term && null !== $term->name && '' !== $term->name ) {
+								$value = $term->name;
+							}
+						}
+
+						$attributes[] = sprintf(
+							'<span class="tj-cart-item-attr"><span class="tj-cart-item-attr-name">%1$s</span><span class="tj-cart-item-attr-value">%2$s</span></span>',
+							esc_html( wc_attribute_label( $taxonomy, $product ) . ':' ),
+							esc_html( rawurldecode( $value ) )
+						);
+					}
+				}
+
+				if ( ! $attributes && $product->is_type( 'variation' ) ) {
+					// Added by a link rather than the form, so nothing was
+					// recorded: fall back to whatever the variation itself holds.
+					$formatted = wc_get_formatted_variation( $product, true, true, true );
+
+					if ( $formatted ) {
+						$attributes[] = '<span class="tj-cart-item-attr">' . esc_html( $formatted ) . '</span>';
+					}
+				}
+
+				printf(
+					'<li class="tj-cart-item" data-tj-cart-item data-tj-cart-keys="%1$s" data-tj-cart-qty="%2$d" data-tj-cart-max="%3$d">',
+					esc_attr( $keys ),
+					$quantity,
+					$max
+				);
+
 				echo '<a class="tj-cart-item-thumb" href="' . esc_url( $product->get_permalink() ) . '">';
 				echo techjossecom_sale_badge( $product, 'cart' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo $thumbnail; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				echo '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
 				echo '<div class="tj-cart-item-info">';
+
+				/*
+				 * Name and chosen options sit together on one line that wraps,
+				 * so "Red" and "M" read as part of what was ordered rather than
+				 * as a note underneath it. The badges come after the name, which
+				 * is what a shopper looks at first.
+				 */
+				echo '<div class="tj-cart-item-heading">';
 				printf(
 					'<a class="tj-cart-item-title" href="%1$s">%2$s</a>',
 					esc_url( $product->get_permalink() ),
 					esc_html( $product->get_name() )
 				);
-				printf(
-					'<span class="tj-cart-item-qty">%1$s &times; %2$s</span>',
-					esc_html( $cart_item['quantity'] ),
-					wp_kses_post( WC()->cart->get_product_price( $product ) )
-				);
+
+				if ( $attributes ) {
+					printf(
+						'<span class="tj-cart-item-attrs">%s</span>',
+						implode( '', $attributes ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each part is escaped above.
+					);
+				}
+
 				echo '</div>';
+
+				// With nothing to tell it apart by, a row simply carries no meta
+				// line rather than an empty label the shopper would puzzle over.
+				if ( $meta ) {
+					printf(
+						'<p class="tj-cart-item-meta">%s</p>',
+						implode( '<span class="tj-cart-item-meta-sep">&middot;</span>', $meta ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each part is escaped above.
+					);
+				}
+
+				/*
+				 * The stepper stops at one rather than removing the row: taking
+				 * the last copy away is what the cross is for, and a control that
+				 * silently deleted the product would be a trap. The same goes
+				 * for the top of the range, which is the stock ceiling when the
+				 * product is managed.
+				 */
 				printf(
-					'<a href="%1$s" class="tj-cart-item-remove" data-cart_item_key="%2$s" aria-label="%3$s">&times;</a>',
-					esc_url( wc_get_cart_remove_url( $cart_item_key ) ),
-					esc_attr( $cart_item_key ),
+					'<div class="tj-cart-qty">
+						<button type="button" class="tj-cart-qty-btn" data-tj-cart-step="-1" aria-label="%1$s"%2$s>&minus;</button>
+						<span class="tj-cart-qty-value" data-tj-cart-qty-value>%3$s</span>
+						<button type="button" class="tj-cart-qty-btn" data-tj-cart-step="1" aria-label="%4$s"%5$s>+</button>
+					</div>',
+					esc_attr__( 'Decrease the quantity', 'techjossecom' ),
+					$quantity <= 1 ? ' disabled' : '',
+					esc_html( $quantity ),
+					esc_attr__( 'Increase the quantity', 'techjossecom' ),
+					$max > 0 && $quantity >= $max ? ' disabled' : ''
+				);
+
+				/*
+					* The row reads "2 x 155": the multiplier and the price of a
+					* single copy, so the number beside the "2" is the same
+					* price the shopper was shown on the product page and does
+					* not move when they change the count. The multiplied
+					* amount is not lost - it is the Subtotal under the list,
+					* and it moves with every row.
+					*
+					* This used to ask get_product_subtotal() for the price,
+					* which multiplies by the quantity, so each press of the
+					* "+" doubled the unit price too: a 155 shirt at two
+					* copies was drawn as "2 x 310" and four copies as
+					* "4 x 620", which reads as the product having become
+					* dearer. Only the subtotal should carry the count.
+					*
+					* The copy is priced at one rather than taken from
+					* get_price() directly so a store displaying prices with
+					* tax keeps doing so, and the usual filters still run.
+					*/
+				printf(
+					'<p class="tj-cart-item-total"><span class="tj-cart-item-multiple">%1$s&times;</span>%2$s</p>',
+					esc_html( $quantity ),
+					wp_kses_post( wc_price( wc_get_price_to_display( $product, array( 'qty' => 1 ) ) ) )
+				);
+
+				echo '</div>';
+
+				/*
+					* A button, not a link: the drawer is only reachable once the script has
+					* opened it, so there is no no-script path to fall back to, and a
+					* control that never navigates should not be a link.
+					*/
+				printf(
+					'<button type="button" class="tj-cart-item-remove" data-tj-cart-remove data-tj-cart-keys="%1$s" aria-label="%2$s">&times;</button>',
+					esc_attr( $keys ),
 					esc_attr__( 'Remove this item', 'techjossecom' )
 				);
+
 				echo '</li>';
 			}
 
@@ -178,6 +479,59 @@ function techjossecom_cart_fragments( $fragments ) {
 	return $fragments;
 }
 add_filter( 'woocommerce_add_to_cart_fragments', 'techjossecom_cart_fragments' );
+
+/**
+ * Drop WooCommerce's own cart banners on the single product page.
+ *
+ * Adds and removals both go over AJAX and the mini cart drawer is opened
+ * straight away, so the "… has been added to your cart. View cart" bar and the
+ * "… removed. Undo?" bar are the same news told twice, and a removal made on
+ * the cart page would otherwise still be waiting in the session to appear here.
+ *
+ * Errors are deliberately left alone. A rejected add, a sold out size or an
+ * out of stock warning has to reach the shopper in writing, because the drawer
+ * only opens on success and would otherwise swallow it silently.
+ *
+ * @return void
+ */
+function techjossecom_suppress_add_to_cart_notice() {
+	if ( ! techjossecom_has_woocommerce() || ! function_exists( 'is_product' ) || ! is_product() ) {
+		return;
+	}
+
+	$notices = WC()->session->get( 'wc_notices', array() );
+
+	if ( empty( $notices ) ) {
+		return;
+	}
+
+	/*
+	 * A cart notice always carries a link out to the cart: "View cart" after an
+	 * add, the undo link after a removal. Matching on those is what separates a
+	 * cart banner from a notice about something else that happens to share the
+	 * success type, and it survives translation.
+	 */
+	foreach ( array( 'success', 'notice' ) as $type ) {
+		if ( empty( $notices[ $type ] ) ) {
+			continue;
+		}
+
+		foreach ( $notices[ $type ] as $index => $notice ) {
+			$message = is_array( $notice ) && isset( $notice['notice'] ) ? $notice['notice'] : $notice;
+
+			if ( false !== strpos( $message, 'wc-forward' ) || false !== strpos( $message, 'restore-item' ) ) {
+				unset( $notices[ $type ][ $index ] );
+			}
+		}
+
+		if ( empty( $notices[ $type ] ) ) {
+			unset( $notices[ $type ] );
+		}
+	}
+
+	WC()->session->set( 'wc_notices', $notices );
+}
+add_action( 'woocommerce_before_single_product', 'techjossecom_suppress_add_to_cart_notice', 5 );
 /**
  * Register the WooCommerce hooks.
  *
@@ -272,7 +626,25 @@ function techjossecom_woocommerce_init() {
 	// the table in favour of the chips would not match. The real <select>
 	// elements stay in the markup; the script mirrors a chip click onto them.
 	add_action( 'woocommerce_before_variations_form', 'techjossecom_single_variation_picker', 5 );
+
+	/*
+	 * "Order Now" belongs beside "Add to cart", not below it.
+	 *
+	 * It used to hang off woocommerce_single_product_summary, which fires
+	 * after the add-to-cart form has closed, so the two controls could never
+	 * share a row: the form laid out the quantity box and the add button,
+	 * ended, and only then did the Order Now button appear underneath as a
+	 * block of its own. That left two buttons of different widths stacked
+	 * on top of each other - one tall strip each - for two actions a shopper
+	 * weighs up side by side.
+	 *
+	 * woocommerce_after_add_to_cart_button fires inside the form, right
+	 * after the add button, which puts both under one row of CSS. On a
+	 * product with no add-to-cart form at all - an out of stock one, say -
+	 * there is no such hook and no button either way, so nothing is lost.
+	 */
 	add_action( 'woocommerce_single_product_summary', 'techjossecom_single_order_now', 31 );
+	add_action( 'woocommerce_after_add_to_cart_button', 'techjossecom_single_order_now' );
 	add_action( 'woocommerce_single_product_summary', 'techjossecom_single_trust_badges', 35 );
 	remove_action( 'woocommerce_share', 'woocommerce_share' );
 	add_action( 'woocommerce_share', 'techjossecom_single_share' );
@@ -620,41 +992,10 @@ function techjossecom_order_now_button( $product = null, $context = 'loop' ) {
 		return;
 	}
 
-	$image_id  = $product->get_image_id();
-	$image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
-	$price     = $product->get_price();
-	$variations = array();
-
-	if ( $product->is_type( 'variable' ) && method_exists( $product, 'get_available_variations' ) ) {
-		foreach ( $product->get_available_variations() as $variation_data ) {
-			$variation = wc_get_product( $variation_data['variation_id'] );
-
-			if ( ! $variation instanceof WC_Product || ! $variation->is_purchasable() ) {
-				continue;
-			}
-
-			// "attributes" maps "attribute_pa_size" => "l" for this variation.
-			// The cash on delivery popup and the inline product card picker both
-			// need it to work out which variation a shopper's choice points at,
-			// so it travels with the button instead of being fetched again.
-			$attributes = array();
-
-			if ( ! empty( $variation_data['attributes'] ) && is_array( $variation_data['attributes'] ) ) {
-				foreach ( $variation_data['attributes'] as $key => $value ) {
-					$attributes[ (string) $key ] = (string) $value;
-				}
-			}
-
-			$variations[] = array(
-				'id'         => (int) $variation->get_id(),
-				'label'      => wc_get_formatted_variation( $variation, true, true ),
-				'price'      => (float) $variation->get_price(),
-				'price_html' => wp_strip_all_tags( $variation->get_price_html() ),
-				'in_stock'   => $variation->is_in_stock(),
-				'attributes' => $attributes,
-			);
-		}
-	}
+	$image_id   = $product->get_image_id();
+	$image_url  = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
+	$price      = $product->get_price();
+	$variations = techjossecom_variation_data( $product );
 
 	printf(
 		'<button type="button" class="tj-btn tj-btn--cod tj-order-now tj-order-now--%6$s" data-product-id="%1$d" data-product-name="%2$s" data-product-price="%3$s" data-product-image="%4$s" data-product-type="%5$s" data-selected-variation=""%8$s>%7$s</button>',
@@ -737,6 +1078,57 @@ function techjossecom_swatch_color( $slug ) {
 }
 
 /**
+ * Collect the purchasable variations of a variable product for the front end.
+ *
+ * Both the Size / Color chips and the cash on delivery button have to work out
+ * which variation a shopper's choice points at, and they must never disagree
+ * about it. Building the list once, here, is what guarantees that: the chips
+ * carry it themselves, so they keep working when the cash on delivery button is
+ * switched off, rather than reading it off a button that is not printed.
+ *
+ * @param WC_Product|null $product Product object.
+ * @return array List of variations, empty for anything but a variable product.
+ */
+function techjossecom_variation_data( $product = null ) {
+	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) || ! method_exists( $product, 'get_available_variations' ) ) {
+		return array();
+	}
+
+	$variations = array();
+
+	foreach ( $product->get_available_variations() as $variation_data ) {
+		$variation = wc_get_product( $variation_data['variation_id'] );
+
+		if ( ! $variation instanceof WC_Product || ! $variation->is_purchasable() ) {
+			continue;
+		}
+
+		// "attributes" maps "attribute_pa_size" => "l" for this variation.
+		// The front end needs it to work out which variation a shopper's choice
+		// points at, so it travels with the markup instead of being fetched
+		// again on every click.
+		$attributes = array();
+
+		if ( ! empty( $variation_data['attributes'] ) && is_array( $variation_data['attributes'] ) ) {
+			foreach ( $variation_data['attributes'] as $key => $value ) {
+				$attributes[ (string) $key ] = (string) $value;
+			}
+		}
+
+		$variations[] = array(
+			'id'         => (int) $variation->get_id(),
+			'label'      => wc_get_formatted_variation( $variation, true, true ),
+			'price'      => (float) $variation->get_price(),
+			'price_html' => wp_strip_all_tags( $variation->get_price_html() ),
+			'in_stock'   => $variation->is_in_stock(),
+			'attributes' => $attributes,
+		);
+	}
+
+	return $variations;
+}
+
+/**
  * Render the Size / Color picker of a variable product.
  *
  * WooCommerce's own picker is a <table class="variations"> of <select> dropdowns,
@@ -768,9 +1160,21 @@ function techjossecom_variation_picker( $product = null, $context = 'single' ) {
 		return;
 	}
 
+	/*
+	 * The list of variations rides along on the picker itself.
+	 *
+	 * The script used to read it off the cash on delivery button, which meant
+	 * that switching cash on delivery off left the chips inert: no variation
+	 * data, no selection, and an "Add to cart" that posted an empty form and
+	 * reloaded the page. The chips are a product control in their own right, so
+	 * they carry what they need.
+	 */
+	$variations = techjossecom_variation_data( $product );
+
 	printf(
-		'<div class="tj-var-picker tj-var-picker--%1$s" data-tj-variation-picker>',
-		esc_attr( $context )
+		'<div class="tj-var-picker tj-var-picker--%1$s" data-tj-variation-picker data-tj-variations="%2$s">',
+		esc_attr( $context ),
+		esc_attr( wp_json_encode( $variations ) )
 	);
 
 	foreach ( $attributes as $name => $values ) {
@@ -782,9 +1186,31 @@ function techjossecom_variation_picker( $product = null, $context = 'single' ) {
 		$is_color = (bool) preg_match( '/colou?r/i', $taxonomy . ' ' . wc_attribute_label( $taxonomy ) );
 		$label    = wc_attribute_label( $taxonomy );
 
+		/*
+		 * The full cart name of the attribute, "attribute_pa_color".
+		 *
+		 * get_variation_attributes() hands back the bare name, "pa_color", but
+		 * both things the script has to line this group up with are keyed by
+		 * the full name: the variation data carried on this same picker
+		 * (WC_Product_Variation::get_variation_attributes() prefixes it) and
+		 * the real <select name="attribute_pa_color"> that
+		 * add-to-cart-variation.js reads.
+		 *
+		 * Printing the bare name made every one of those lookups miss. The
+		 * script found no entry for the attribute on any variation, took
+		 * that to mean "any value will do", and settled on the first
+		 * variation in the list whatever the shopper had picked; the chips
+		 * could not reach the hidden dropdowns either. The add then went out
+		 * carrying that first variation's id alongside the colour actually
+		 * chosen, and WooCommerce refused it with "Invalid value posted for
+		 * Color" - every time, because the choice could never change. One
+		 * name for all three is what keeps them in step.
+		 */
+		$cart_name = 0 === strpos( $name, 'attribute_' ) ? $name : 'attribute_' . $name;
+
 		printf(
 			'<div class="tj-var-attr" data-attribute="%1$s"><span class="tj-var-attr-name">%2$s</span><div class="tj-var-values" role="group" aria-label="%3$s">',
-			esc_attr( $name ),
+			esc_attr( $cart_name ),
 			esc_html( $label ),
 			esc_attr( $label )
 		);
@@ -918,6 +1344,23 @@ function techjossecom_single_order_now() {
 		return;
 	}
 
+	/*
+	 * Printed once, even though it is hooked into two places.
+	 *
+	 * The summary hook is the fallback for a product whose template prints no
+	 * add-to-cart form, and the in-form hook is where it belongs when there
+	 * is one. Both fire on an ordinary purchasable product, so without this
+	 * the shopper would be offered the same button twice, the lower one
+	 * pushed away down the page by the block above it.
+	 */
+	static $printed = false;
+
+	if ( $printed ) {
+		return;
+	}
+
+	$printed = true;
+
 	techjossecom_order_now_button( $product, 'single' );
 }
 
@@ -993,6 +1436,27 @@ function techjossecom_single_share() {
 
 	echo '</div>';
 }
+
+/**
+ * Drop the repeated heading from the description tab.
+ *
+ * WooCommerce's description panel opens with an <h2> reading "Description",
+ * which is the label on the tab the shopper has just clicked. The word then
+ * appears twice within a couple of centimetres, and the copy itself is pushed
+ * down by a heading that adds nothing. Returning an empty string is the
+ * filter's own way of saying "no heading" - the template checks it before
+ * printing - so nothing is emitted and the panel starts with the text.
+ *
+ * The panel keeps its padding either way, so this only removes the duplicate
+ * line; it does not change the spacing the panel was designed with.
+ *
+ * @param string $heading Heading WooCommerce is about to print.
+ * @return string Empty to suppress it.
+ */
+function techjossecom_description_tab_heading( $heading ) {
+	return '';
+}
+add_filter( 'woocommerce_product_description_heading', 'techjossecom_description_tab_heading' );
 
 /**
  * Fewer, larger related products.
@@ -1197,6 +1661,38 @@ function techjossecom_product_grid( $query, $columns = 4 ) {
 
 	wp_reset_postdata();
 	wc_reset_loop();
+}
+
+/**
+ * Print the previous / next arrows for a scrollable product row.
+ *
+ * Every section that shows a product carousel calls this, so the buttons, their
+ * labels and their icons are written once instead of being copied into each
+ * template. A new homepage section therefore needs nothing but a .tj-carousel
+ * wrapper, a [data-tj-scroller] track and one call to this function: the script
+ * in assets/js/main.js finds the arrows from the section that owns the track,
+ * and the stylesheet styles them the same way, so no new CSS and no new
+ * JavaScript are ever written for a new row.
+ *
+ * Call it inside the section's .tj-section-tools, which puts the arrows in the
+ * heading on the left of the "View All" link, the arrangement the homepage
+ * design uses. The section is what ties a button to its track: the script looks
+ * the scroller up from the section around the button, so the two can sit in
+ * different parts of the markup.
+ *
+ * The icons are the theme's own inline SVGs, which means they inherit the
+ * button colour and stay sharp on every screen, unlike a text character.
+ *
+ * @return void
+ */
+function techjossecom_scroll_buttons() {
+	printf(
+		'<div class="tj-scroll-buttons" data-tj-scroll-buttons><button type="button" class="tj-scroll-btn" data-tj-scroll="prev" aria-label="%1$s">%3$s</button><button type="button" class="tj-scroll-btn" data-tj-scroll="next" aria-label="%2$s">%4$s</button></div>',
+		esc_attr__( 'Previous products', 'techjossecom' ),
+		esc_attr__( 'Next products', 'techjossecom' ),
+		techjossecom_icon( 'arrow-left' ),
+		techjossecom_icon( 'arrow-right' )
+	);
 }
 
 

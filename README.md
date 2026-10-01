@@ -18,6 +18,7 @@ Delivery "Order Now" popup.
 functions.php              Theme bootstrap: constants, defaults, asset enqueue, icons
 style.css                  Theme header only, plus a minimal base reset
 inc/customizer.php         Customizer panels, settings and the generated colour CSS
+inc/admin-settings.php     Appearance → Theme Settings screen (no customizer needed)
 inc/performance-seo.php     Head cleanup, meta tags, structured data, asset tweaks
 inc/woocommerce-setup.php  WooCommerce integration: hooks, sale badge, single product
 inc/ajax-handlers.php      AJAX live search, shipping options, COD quick order
@@ -57,6 +58,31 @@ Colours are CSS custom properties on `:root` in `assets/css/main.css`
 (`--tj-primary`, `--tj-accent`, `--tj-sale`, and so on). The primary, accent,
 dark and secondary values are also editable in the Customizer, which writes them
 back as an inline `:root` block.
+
+## Adding a new theme setting
+
+`Appearance → Theme Settings` edits the same theme mods the customizer uses,
+so the site can be configured without opening the customizer at all. Every
+field is a single array entry in `techjossecom_admin_fields()` in
+`inc/admin-settings.php`:
+
+```php
+'my_new_setting' => array(
+    'type'        => 'text',        // text|textarea|url|email|number|checkbox|image|select|color
+    'label'       => __( 'My setting', 'techjossecom' ),
+    'description' => __( 'Optional help text.', 'techjossecom' ),
+    'section'     => 'banners',     // which group it appears in
+),
+```
+
+Adding the entry is all that is needed: the form row, the save handling and
+the sanitising are all driven from that array. New groups can be registered
+through the `techjossecom_admin_sections` filter, and extra fields through the
+`techjossecom_admin_fields` filter.
+
+Every key must also have an entry in `techjossecom_defaults()` in
+`functions.php`, so the theme falls back to a sensible value before anything
+has been saved.
 
 ## Local development notes
 

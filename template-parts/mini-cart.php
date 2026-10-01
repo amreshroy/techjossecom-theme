@@ -13,7 +13,12 @@ if ( ! techjossecom_has_woocommerce() ) {
 	<div class="tj-drawer-panel" role="dialog" aria-modal="true">
 		<div class="tj-drawer-head">
 			<h2 id="tj-mini-cart-title" class="tj-drawer-title"><?php esc_html_e( 'Your Cart', 'techjossecom' ); ?></h2>
-			<button type="button" class="tj-icon-btn tj-drawer-close" data-tj-close="tj-mini-cart" aria-label="<?php esc_attr_e( 'Close the cart', 'techjossecom' ); ?>">&times;</button>
+			<?php // The word next to the cross gives the close control a name a shopper can aim at, not just a small target to find. ?>
+			<button type="button" class="tj-icon-btn tj-drawer-close" data-tj-close="tj-mini-cart">
+				<span class="tj-drawer-close-label"><?php esc_html_e( 'Close', 'techjossecom' ); ?></span>
+				<span class="tj-drawer-close-mark" aria-hidden="true">&times;</span>
+				<span class="screen-reader-text"><?php esc_html_e( 'Close the cart', 'techjossecom' ); ?></span>
+			</button>
 		</div>
 
 		<?php

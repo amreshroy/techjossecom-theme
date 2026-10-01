@@ -8,9 +8,7 @@
 
 get_header();
 
-$techjossecom_hero_button_url = techjossecom_mod( 'hero1_button_url' );
-$techjossecom_hero_button_url = $techjossecom_hero_button_url ? $techjossecom_hero_button_url : techjossecom_shop_url();
-$techjossecom_has_woo        = class_exists( 'WooCommerce' );
+$techjossecom_has_woo = class_exists( 'WooCommerce' );
 ?>
 <main id="tj-main" class="tj-main tj-front-page" role="main">
 
@@ -22,81 +20,24 @@ $techjossecom_has_woo        = class_exists( 'WooCommerce' );
 		</div>
 	<?php endif; ?>
 
-	<section class="tj-hero">
-		<div class="tj-container tj-hero-grid">
-			<div class="tj-hero-main">
-				<?php
-				$techjossecom_hero1 = techjossecom_mod( 'hero1_image' );
+	<?php
+	/*
+	 * The hero design is chosen in Appearance -> Theme Settings. Each layout is
+	 * its own template part, so swapping (or adding) a design never touches
+	 * this file.
+	 *
+	 * A slider with no banners uploaded would leave a gap at the top of the
+	 * page, so the split layout is used instead until at least one slide has
+	 * an image.
+	 */
+	$techjossecom_hero_layout = techjossecom_hero_layout();
 
-				if ( $techjossecom_hero1 ) {
-					echo techjossecom_image( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						$techjossecom_hero1,
-						'full',
-						array(
-							'class'         => 'tj-hero-img',
-							'loading'       => 'eager',
-							'fetchpriority' => 'high',
-							'decoding'      => 'sync',
-						)
-					);
-				} else {
-					echo techjossecom_placeholder( 'tj-hero-img' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				}
-				?>
+	if ( 'slider' === $techjossecom_hero_layout && ! techjossecom_hero_slides() ) {
+		$techjossecom_hero_layout = 'split';
+	}
 
-				<div class="tj-hero-content">
-					<?php if ( techjossecom_mod( 'hero1_title' ) ) : ?>
-						<h2 class="tj-hero-title"><?php echo esc_html( techjossecom_mod( 'hero1_title' ) ); ?></h2>
-					<?php endif; ?>
-
-					<?php if ( techjossecom_mod( 'hero1_subtitle' ) ) : ?>
-						<p class="tj-hero-subtitle"><?php echo esc_html( techjossecom_mod( 'hero1_subtitle' ) ); ?></p>
-					<?php endif; ?>
-
-					<?php if ( techjossecom_mod( 'hero1_button_text' ) ) : ?>
-						<a class="tj-btn tj-btn--accent tj-btn--lg" href="<?php echo esc_url( $techjossecom_hero_button_url ); ?>">
-							<?php echo esc_html( techjossecom_mod( 'hero1_button_text' ) ); ?>
-						</a>
-					<?php endif; ?>
-				</div>
-			</div>
-
-			<div class="tj-hero-side">
-				<?php
-				foreach ( array( 2, 3 ) as $techjossecom_index ) {
-					$techjossecom_image_id = techjossecom_mod( 'hero' . $techjossecom_index . '_image' );
-					$techjossecom_url      = techjossecom_mod( 'hero' . $techjossecom_index . '_url' );
-					$techjossecom_url      = $techjossecom_url ? $techjossecom_url : techjossecom_shop_url();
-					$techjossecom_badge    = techjossecom_mod( 'hero' . $techjossecom_index . '_badge' );
-					$techjossecom_title    = techjossecom_mod( 'hero' . $techjossecom_index . '_title' );
-
-					if ( ! $techjossecom_image_id && ! $techjossecom_title ) {
-						continue;
-					}
-					?>
-					<a class="tj-hero-card" href="<?php echo esc_url( $techjossecom_url ); ?>">
-						<?php
-						if ( $techjossecom_image_id ) {
-							echo techjossecom_image( $techjossecom_image_id, 'large', array( 'class' => 'tj-hero-card-img' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						}
-						?>
-
-						<span class="tj-hero-card-text">
-							<?php if ( $techjossecom_badge ) : ?>
-								<span class="tj-hero-card-badge"><?php echo esc_html( $techjossecom_badge ); ?></span>
-							<?php endif; ?>
-
-							<?php if ( $techjossecom_title ) : ?>
-								<span class="tj-hero-card-title"><?php echo esc_html( $techjossecom_title ); ?></span>
-							<?php endif; ?>
-						</span>
-					</a>
-					<?php
-				}
-				?>
-			</div>
-		</div>
-	</section>
+	get_template_part( 'template-parts/hero-' . $techjossecom_hero_layout );
+	?>
 
 	<?php if ( techjossecom_mod( 'show_features' ) ) : ?>
 		<section class="tj-features">
@@ -124,7 +65,8 @@ $techjossecom_has_woo        = class_exists( 'WooCommerce' );
 		</section>
 	<?php endif; ?>
 	<?php
-	$techjossecom_categories = techjossecom_mod( 'show_categories' ) ? techjossecom_product_categories( techjossecom_mod( 'categories_limit' ) ) : array();
+	$techjossecom_categories        = techjossecom_mod( 'show_categories' ) ? techjossecom_product_categories( techjossecom_section_limit( 'categories_limit' ) ) : array();
+	$techjossecom_categories_mobile = techjossecom_section_mobile_limit( 'categories_limit' );
 
 	if ( $techjossecom_categories ) :
 		?>
@@ -135,7 +77,7 @@ $techjossecom_has_woo        = class_exists( 'WooCommerce' );
 					<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'View all', 'techjossecom' ); ?> &rarr;</a>
 				</div>
 
-				<ul class="tj-category-grid">
+				<ul class="tj-category-grid"<?php echo $techjossecom_categories_mobile ? ' data-tj-mobile-limit="' . esc_attr( $techjossecom_categories_mobile ) . '"' : ''; ?>>
 					<?php foreach ( $techjossecom_categories as $techjossecom_term ) : ?>
 						<?php $techjossecom_thumb_id = (int) get_term_meta( $techjossecom_term->term_id, 'thumbnail_id', true ); ?>
 						<li class="tj-category-card">
@@ -168,9 +110,10 @@ $techjossecom_has_woo        = class_exists( 'WooCommerce' );
 	<?php endif; ?>
 
 	<?php
-	$techjossecom_deals = ( techjossecom_mod( 'show_deals' ) && $techjossecom_has_woo )
-		? techjossecom_on_sale_products( techjossecom_mod( 'deals_limit' ) )
+	$techjossecom_deals        = ( techjossecom_mod( 'show_deals' ) && $techjossecom_has_woo )
+		? techjossecom_on_sale_products( techjossecom_section_limit( 'deals_limit' ) )
 		: null;
+	$techjossecom_deals_mobile = techjossecom_section_mobile_limit( 'deals_limit' );
 
 	if ( $techjossecom_deals && $techjossecom_deals->have_posts() ) :
 		?>
@@ -180,35 +123,63 @@ $techjossecom_has_woo        = class_exists( 'WooCommerce' );
 					<h2 class="tj-section-title"><?php echo esc_html( techjossecom_mod( 'deals_title' ) ); ?></h2>
 
 					<div class="tj-section-tools">
-						<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'View All', 'techjossecom' ); ?> &rsaquo;</a>
+						<?php
+						/*
+						 * The arrows sit in the heading, on the left of the "View
+						 * All" link, at every screen size. They used to be a row of
+						 * their own under the products, and before that floated over
+						 * the middle of the row, which covered the very pictures
+						 * they exist to scroll. In the heading they cover nothing and
+						 * the track keeps the full width of the section.
+						 *
+						 * techjossecom_scroll_buttons() writes the buttons, their labels
+						 * and their icons in one place for every carousel on the site,
+						 * so a new section reuses this one by wrapping its product grid
+						 * in .tj-carousel / [data-tj-scroller] and calling it inside its
+						 * .tj-section-tools: no copied markup, no new CSS and no new
+						 * JavaScript.
+						 */
+						techjossecom_scroll_buttons();
+						?>
 
-						<span class="tj-scroll-buttons">
-							<button type="button" class="tj-scroll-btn" data-tj-scroll="prev" aria-label="<?php esc_attr_e( 'Previous products', 'techjossecom' ); ?>">&#8249;</button>
-							<button type="button" class="tj-scroll-btn" data-tj-scroll="next" aria-label="<?php esc_attr_e( 'Next products', 'techjossecom' ); ?>">&#8250;</button>
-						</span>
+						<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'View All', 'techjossecom' ); ?> &rsaquo;</a>
 					</div>
 				</div>
 
-				<div class="tj-scroller" data-tj-scroller>
-					<?php techjossecom_product_grid( $techjossecom_deals, 4 ); ?>
+				<div class="tj-carousel">
+					<div class="tj-scroller" data-tj-scroller<?php echo $techjossecom_deals_mobile ? ' data-tj-mobile-limit="' . esc_attr( $techjossecom_deals_mobile ) . '"' : ''; ?>>
+						<?php techjossecom_product_grid( $techjossecom_deals, 4 ); ?>
+					</div>
 				</div>
 			</div>
 		</section>
 	<?php endif; ?>
 
 	<?php
-	$techjossecom_latest = $techjossecom_has_woo ? techjossecom_latest_products( 8 ) : null;
+	$techjossecom_latest        = ( techjossecom_mod( 'show_latest' ) && $techjossecom_has_woo )
+		? techjossecom_latest_products( techjossecom_section_limit( 'latest_limit' ) )
+		: null;
+	$techjossecom_latest_mobile = techjossecom_section_mobile_limit( 'latest_limit' );
 
 	if ( $techjossecom_latest && $techjossecom_latest->have_posts() ) :
 		?>
 		<section class="tj-section tj-section--latest">
 			<div class="tj-container">
 				<div class="tj-section-head">
-					<h2 class="tj-section-title"><?php esc_html_e( 'New Arrivals', 'techjossecom' ); ?></h2>
-					<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'Shop all', 'techjossecom' ); ?> &rarr;</a>
+					<h2 class="tj-section-title"><?php echo esc_html( techjossecom_mod( 'latest_title' ) ); ?></h2>
+
+					<div class="tj-section-tools">
+						<?php techjossecom_scroll_buttons(); ?>
+
+						<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'Shop all', 'techjossecom' ); ?> &rarr;</a>
+					</div>
 				</div>
 
-				<?php techjossecom_product_grid( $techjossecom_latest, 4 ); ?>
+				<div class="tj-carousel">
+					<div class="tj-scroller" data-tj-scroller<?php echo $techjossecom_latest_mobile ? ' data-tj-mobile-limit="' . esc_attr( $techjossecom_latest_mobile ) . '"' : ''; ?>>
+						<?php techjossecom_product_grid( $techjossecom_latest, 4 ); ?>
+					</div>
+				</div>
 			</div>
 		</section>
 	<?php endif; ?>
