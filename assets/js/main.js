@@ -603,6 +603,85 @@
 		update();
 	} );
 
+	/* ------------------------------------------ read more description ---- */
+
+	/*
+	 * The homepage description block: a heading, a run of paragraphs and a
+	 * "Read More" button.
+	 *
+	 * The text is printed in full by the template and only its height is capped
+	 * by the stylesheet, so nothing is hidden from search engines or from a
+	 * reader without JavaScript; this script is what lifts the cap again.
+	 *
+	 * The block is measured rather than capped blindly. A description that
+	 * already fits inside the cap is marked as not clamped, which is what keeps
+	 * the button off the page: without that check a two line description would
+	 * still be offered a control that opens nothing. The measurement is repeated
+	 * after a resize, because the cap is measured in lines and the same text
+	 * wraps to a different number of them on a narrower screen.
+	 *
+	 * The cap is put on before the two heights are read, and the block is shut
+	 * for the measurement: the capped box and the text it hides are the only
+	 * two heights that can tell us there is anything to hide. Measuring first
+	 * and adding the class afterwards compares the text with itself, finds no
+	 * difference and never caps anything at all.
+	 */
+	qsa( '[data-tj-seo-toggle]' ).forEach( function ( button ) {
+		var block = button.closest( '[data-tj-seo]' );
+		var body  = block ? qs( '[data-tj-seo-body]', block ) : null;
+
+		if ( ! block || ! body ) {
+			return;
+		}
+
+		var label = qs( '[data-tj-seo-label]', button );
+		var more  = button.getAttribute( 'data-tj-more' ) || ( label ? label.textContent : '' );
+		var less  = button.getAttribute( 'data-tj-less' ) || more;
+
+		var measure = function () {
+			var wasExpanded = block.classList.contains( 'is-expanded' );
+
+			block.classList.remove( 'is-expanded' );
+			block.classList.add( 'is-clamped' );
+
+			var overflows = body.scrollHeight - body.clientHeight > 1;
+
+			block.classList.toggle( 'is-clamped', overflows );
+
+			// Still too long for the cap, so the block goes back the way it was left.
+			if ( overflows ) {
+				block.classList.toggle( 'is-expanded', wasExpanded );
+
+				return;
+			}
+
+			/*
+			 * The whole text fits inside the cap, so there is nothing for the
+			 * button to open: dropping the class has already taken the button
+			 * off the page, and the label and the state it reports to assistive
+			 * technology are put back to match.
+			 */
+			if ( label ) {
+				label.textContent = more;
+			}
+
+			button.setAttribute( 'aria-expanded', 'false' );
+		};
+
+		button.addEventListener( 'click', function () {
+			var expanded = block.classList.toggle( 'is-expanded' );
+
+			if ( label ) {
+				label.textContent = expanded ? less : more;
+			}
+
+			button.setAttribute( 'aria-expanded', expanded ? 'true' : 'false' );
+		} );
+
+		window.addEventListener( 'resize', debounce( measure, 150 ) );
+		measure();
+	} );
+
 	/* ----------------------------------------------------- hero slider ---- */
 
 	/* The markup is a scroll-snap track, so a swipe already works with this

@@ -2690,6 +2690,86 @@ p.no-comments {
 .tj-intro { padding: 20px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: var(--tj-white); }
 .tj-intro .tj-section-title { margin-bottom: 12px; }
 
+/*
+ * The homepage description block.
+ *
+ * A heading, a run of paragraphs with sub-headings, and a "Read More" button.
+ * The text is written out in full and only its height is capped on screen, so
+ * the whole block is in the HTML for search engines and for readers who never
+ * load the script.
+ *
+ * The cap and the button are written behind .tj-js - the class header.php sets
+ * before the stylesheet is parsed - because they are the script's work. With no
+ * JavaScript the block simply reads as an ordinary text section, and a button
+ * that could do nothing is never offered in the first place.
+ *
+ * The cut-off line fades out instead of being sliced, which is what tells the
+ * reader there is more underneath. A mask is used rather than a white block
+ * over the text, so it also sits correctly on a coloured background and does
+ * not have to be told the colour of the section behind it.
+ */
+.tj-seo-title {
+	margin: 0 0 10px;
+	font-size: 1.3rem;
+}
+
+.tj-seo-body { color: var(--tj-muted); }
+.tj-seo-body > :first-child { margin-top: 0; }
+.tj-seo-body > :last-child { margin-bottom: 0; }
+.tj-seo-body h2 { margin: 1.3em 0 .45em; font-size: 1.12rem; color: var(--tj-text); }
+.tj-seo-body h3 { margin: 1.1em 0 .35em; font-size: 1rem; color: var(--tj-text); }
+.tj-seo-body strong { color: var(--tj-text); }
+
+/* Two full lines and the start of a third, which is what the design shows. */
+.tj-js .tj-seo.is-clamped:not(.is-expanded) .tj-seo-body {
+	max-height: 4.2em;
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+	mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+}
+
+.tj-seo-toggle {
+	display: none;
+	align-items: center;
+	gap: 6px;
+	margin-top: 14px;
+	padding: 9px 18px;
+	border: 1px solid var(--tj-line);
+	border-radius: 999px;
+	background: var(--tj-line);
+	color: var(--tj-text);
+	font: inherit;
+	font-size: .85rem;
+	font-weight: 600;
+	line-height: 1.3;
+	cursor: pointer;
+	transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+/* Shown only once the script has measured the text and found it too long. */
+.tj-js .tj-seo.is-clamped .tj-seo-toggle { display: inline-flex; }
+
+.tj-seo-toggle:hover {
+	border-color: var(--tj-primary);
+	background: var(--tj-primary-soft);
+	color: var(--tj-primary);
+}
+
+.tj-seo-toggle:focus-visible {
+	outline: 2px solid var(--tj-primary);
+	outline-offset: 2px;
+}
+
+.tj-seo-toggle-icon {
+	display: inline-flex;
+	transition: transform .2s ease;
+}
+
+.tj-seo-toggle-icon .tj-icon { width: 16px; height: 16px; }
+
+/* The same arrow turns around instead of a second one being loaded. */
+.tj-seo.is-expanded .tj-seo-toggle-icon { transform: rotate(180deg); }
+
 .tj-no-results { padding: 22px; text-align: center; }
 .tj-no-results-title { margin-bottom: 6px; }
 .tj-no-results-actions,
@@ -3154,6 +3234,7 @@ p.no-comments {
 	.tj-product .tj-product-actions > .tj-btn { padding: 10px 8px; font-size: .74rem; }
 	.tj-entry { padding: 26px; }
 	.tj-intro { padding: 28px; }
+	.tj-seo-title { font-size: 1.45rem; }
 	.tj-footer-top { grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr; }
 	.tj-cart-actions { grid-template-columns: 1fr 1fr; }
 }

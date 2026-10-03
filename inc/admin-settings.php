@@ -102,6 +102,15 @@ function techjossecom_admin_sanitize( $key, $value, $field ) {
 		case 'textarea':
 			return sanitize_textarea_field( (string) $value );
 
+		/*
+		 * The description block is the one field that keeps its markup, because
+		 * a sub-heading and a bold keyword are how the text is meant to read.
+		 * wp_kses_post() keeps the tags a post may use and drops anything else,
+		 * so the field stays as safe as the plain text ones.
+		 */
+		case 'html':
+			return wp_kses_post( (string) $value );
+
 		case 'color':
 			$color = sanitize_hex_color( (string) $value );
 
@@ -123,7 +132,7 @@ function techjossecom_admin_sanitize( $key, $value, $field ) {
  *
  * Each entry is one field:
  *   key         setting name without the theme prefix
- *   type        text | textarea | url | email | number | checkbox | image | select | color
+ *   type        text | textarea | html | url | email | number | checkbox | image | select | color
  *   label       field label
  *   description optional help text under the label
  *   section     which group the field belongs to
@@ -407,6 +416,54 @@ function techjossecom_admin_fields() {
 			'label'   => __( 'Intro paragraph', 'techjossecom' ),
 			'section' => 'home',
 		),
+		'show_featured'       => array(
+			'type'        => 'checkbox',
+			'label'       => __( 'Show the "Featured Products" grid', 'techjossecom' ),
+			'description' => __( 'Shows the products ticked "Featured" in WooCommerce → Products, under the New Arrivals row.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'featured_title'      => array(
+			'type'    => 'text',
+			'label'   => __( 'Featured Products section heading', 'techjossecom' ),
+			'section' => 'home',
+		),
+		'featured_limit'      => array(
+			'type'    => 'number',
+			'label'   => __( 'Number of featured products', 'techjossecom' ),
+			'section' => 'home',
+			'min'     => 2,
+			'max'     => 16,
+		),
+		'featured_mobile_limit' => array(
+			'type'        => 'number',
+			'label'       => __( 'Featured products on mobile', 'techjossecom' ),
+			'description' => __( 'Leave 0 to use the desktop number. Set a smaller number to show fewer featured products on phones.', 'techjossecom' ),
+			'section'     => 'home',
+			'min'         => 0,
+			'max'         => 16,
+		),
+		'show_seo'            => array(
+			'type'        => 'checkbox',
+			'label'       => __( 'Show the homepage description block', 'techjossecom' ),
+			'description' => __( 'The keyword text at the foot of the homepage, opened by a "Read More" button.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'seo_title'           => array(
+			'type'    => 'text',
+			'label'   => __( 'Description block heading', 'techjossecom' ),
+			'section' => 'home',
+		),
+		'seo_text'            => array(
+			'type'        => 'html',
+			'label'       => __( 'Description block text', 'techjossecom' ),
+			'description' => __( 'Basic HTML is kept here, so sub-headings and bold keywords survive. The whole text is printed on the page and read by search engines; only its height is capped behind the "Read More" button.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'seo_read_more'       => array(
+			'type'    => 'text',
+			'label'   => __( 'Description block button label', 'techjossecom' ),
+			'section' => 'home',
+		),
 
 		// --- Top bar and contact -------------------------------------------
 		'show_topbar'        => array(
@@ -669,6 +726,15 @@ function techjossecom_admin_render_field( $key, $field ) {
 
 		case 'textarea':
 			echo '<textarea id="' . esc_attr( $id ) . '" name="tj[' . esc_attr( $key ) . ']" rows="4" class="large-text">' . esc_textarea( $value ) . '</textarea>';
+			break;
+
+		/*
+		 * The same box as the plain text areas, only taller: the description
+		 * block holds a heading and several paragraphs, and the sanitiser behind
+		 * it - wp_kses_post() - is the same one a post goes through.
+		 */
+		case 'html':
+			echo '<textarea id="' . esc_attr( $id ) . '" name="tj[' . esc_attr( $key ) . ']" rows="12" class="large-text code">' . esc_textarea( $value ) . '</textarea>';
 			break;
 
 		case 'number':

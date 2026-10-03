@@ -616,6 +616,62 @@ function techjossecom_customize_register( $wp_customize ) {
 				'type'     => 'text',
 				'priority' => 170,
 			),
+
+			/*
+			 * The Featured Products row and the description block are listed
+			 * after the service highlights rather than in the order they appear
+			 * on the page, so that raising one of the numbers below never moves
+			 * a control the site owner has already found.
+			 */
+			'show_featured'     => array(
+				'label'       => __( 'Show the "Featured Products" grid', 'techjossecom' ),
+				'description' => __( 'Shows the products ticked "Featured" in WooCommerce → Products, under the New Arrivals row.', 'techjossecom' ),
+				'type'        => 'checkbox',
+				'priority'    => 180,
+			),
+			'featured_title'    => array(
+				'label'    => __( 'Featured Products section heading', 'techjossecom' ),
+				'type'     => 'text',
+				'priority' => 190,
+			),
+			'featured_limit'    => array(
+				'label'    => __( 'Number of featured products', 'techjossecom' ),
+				'type'     => 'number',
+				'min'      => 2,
+				'max'      => 16,
+				'priority' => 200,
+			),
+			'featured_mobile_limit' => array(
+				'label'       => __( 'Featured products on mobile', 'techjossecom' ),
+				'description' => __( 'Leave 0 to use the desktop number. Set a smaller number to show fewer featured products on phones.', 'techjossecom' ),
+				'type'        => 'number',
+				'min'         => 0,
+				'max'         => 16,
+				'priority'    => 210,
+			),
+			'show_seo'          => array(
+				'label'       => __( 'Show the homepage description block', 'techjossecom' ),
+				'description' => __( 'The keyword text at the foot of the homepage, opened by a "Read More" button.', 'techjossecom' ),
+				'type'        => 'checkbox',
+				'priority'    => 220,
+			),
+			'seo_title'         => array(
+				'label'    => __( 'Description block heading', 'techjossecom' ),
+				'type'     => 'text',
+				'priority' => 230,
+			),
+			'seo_text'          => array(
+				'label'       => __( 'Description block text', 'techjossecom' ),
+				'description' => __( 'Basic HTML is kept here, so sub-headings and bold keywords survive. The whole text is printed on the page and read by search engines; only its height is capped behind the "Read More" button.', 'techjossecom' ),
+				'type'        => 'textarea',
+				'sanitize'    => 'wp_kses_post',
+				'priority'    => 240,
+			),
+			'seo_read_more'     => array(
+				'label'    => __( 'Description block button label', 'techjossecom' ),
+				'type'     => 'text',
+				'priority' => 250,
+			),
 		)
 	);
 

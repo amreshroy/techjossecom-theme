@@ -138,7 +138,17 @@ function techjossecom_meta_description() {
 			$description = sprintf( __( 'Browse %s and order online with cash on delivery.', 'techjossecom' ), single_term_title( '', false ) );
 		}
 	} elseif ( is_home() || is_front_page() ) {
-		$description = techjossecom_mod( 'intro_text' );
+		/*
+		 * The description block is the better source than the intro paragraph:
+		 * it is written as keywords for this page, so it describes the homepage
+		 * far better than the short intro line. The intro paragraph is kept as
+		 * the second choice, for a site that fills in one but not the other.
+		 */
+		$description = techjossecom_mod( 'seo_text' );
+
+		if ( ! $description ) {
+			$description = techjossecom_mod( 'intro_text' );
+		}
 
 		if ( ! $description ) {
 			$description = get_bloginfo( 'description', 'display' );

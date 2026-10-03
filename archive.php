@@ -14,11 +14,12 @@ get_header();
 		<header class="tj-page-head">
 			<h1 class="tj-page-title"><?php echo esc_html( wp_strip_all_tags( get_the_archive_title() ) ); ?></h1>
 			<?php
-			$techjossecom_description = get_the_archive_description();
-
-			if ( $techjossecom_description ) {
-				echo '<div class="tj-page-desc">' . wp_kses_post( $techjossecom_description ) . '</div>';
-			}
+			/*
+			 * The archive description is no longer printed here. It now appears
+			 * once, under the pagination, in the collapsible block that every
+			 * archive shares: the same words twice on one page would be
+			 * duplicate content, and the block is the only copy.
+			 */
 			?>
 		</header>
 
@@ -38,6 +39,8 @@ get_header();
 				<?php else : ?>
 					<?php get_template_part( 'template-parts/content', 'none' ); ?>
 				<?php endif; ?>
+
+				<?php techjossecom_the_description_block(); ?>
 			</div>
 
 			<?php get_sidebar(); ?>

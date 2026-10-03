@@ -569,6 +569,26 @@ function techjossecom_woocommerce_init() {
 	add_action( 'woocommerce_before_shop_loop', 'techjossecom_shop_topbar_open', 15 );
 	add_action( 'woocommerce_before_shop_loop', 'techjossecom_shop_topbar_close', 45 );
 
+	/*
+	 * The archive description moves under the pagination.
+	 *
+	 * WooCommerce prints the product category description and the shop page
+	 * content above the product grid. Both are now printed once, lower down,
+	 * by the shared collapsible block: the shop page content is the block the
+	 * user reads, and a term description is the words a search engine is looking
+	 * for, so it is the block that should carry them - but printed in both
+	 * places the same paragraph would appear twice on one URL.
+	 *
+	 * "woocommerce_after_shop_loop" runs after woocommerce_pagination (priority
+	 * 10), which is what puts the block under the pagination rather than between
+	 * the products and it. The second hook covers an archive with no products at
+	 * all, where the first one never fires.
+	 */
+	remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
+	remove_action( 'woocommerce_archive_description', 'woocommerce_product_archive_description', 10 );
+	add_action( 'woocommerce_after_shop_loop', 'techjossecom_the_description_block', 20 );
+	add_action( 'woocommerce_no_products_found', 'techjossecom_the_description_block', 20 );
+
 	// ---------------------------------------------------------------------
 	// Shop loop.
 	// The product card template builds its own links, so the default
@@ -1633,6 +1653,48 @@ function techjossecom_latest_products( $limit = 8 ) {
 			'ignore_sticky_posts' => true,
 		)
 	);
+}
+
+/**
+ * Products marked as "Featured" in WooCommerce, used by the homepage grid.
+ *
+ * The tick lives in the product_visibility taxonomy under the "featured" term,
+ * which is where WooCommerce keeps it and where a child theme or a plugin such
+ * as the most viewed products module can also write it, so this reads the same
+ * source as the "Featured" tab on a single product page.
+ *
+ * An empty result is returned as null rather than as a query with no posts, so
+ * the front page can hide the section with one check and never print an empty
+ * heading.
+ *
+ * @param int $limit Maximum number of products.
+ * @return WP_Query|null
+ */
+function techjossecom_featured_products( $limit = 8 ) {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return null;
+	}
+
+	$query = new WP_Query(
+		array(
+			'post_type'           => 'product',
+			'post_status'         => 'publish',
+			'posts_per_page'      => absint( $limit ),
+			'tax_query'           => array(
+				array(
+					'taxonomy' => 'product_visibility',
+					'field'    => 'name',
+					'terms'    => 'featured',
+					'operator' => 'IN',
+				),
+			),
+			'orderby'             => 'date',
+			'order'               => 'DESC',
+			'ignore_sticky_posts' => true,
+		)
+	);
+
+	return $query->have_posts() ? $query : null;
 }
 /**
  * Render a WP_Query of products with the theme's product card template.

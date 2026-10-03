@@ -21,14 +21,7 @@ get_header();
 				}
 				?>
 			</h1>
-			<?php
-			$techjossecom_description = get_the_archive_description();
-
-			if ( $techjossecom_description ) {
-				echo '<div class="tj-page-desc">' . wp_kses_post( $techjossecom_description ) . '</div>';
-			}
-			?>
-		</header>
+			</header>
 
 		<div class="tj-layout tj-layout--sidebar">
 			<div class="tj-layout-content">
@@ -46,6 +39,8 @@ get_header();
 				<?php else : ?>
 					<?php get_template_part( 'template-parts/content', 'none' ); ?>
 				<?php endif; ?>
+
+				<?php techjossecom_the_description_block(); ?>
 			</div>
 
 			<?php get_sidebar(); ?>

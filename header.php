@@ -13,6 +13,23 @@ $techjossecom_hotline = techjossecom_mod( 'hotline_number' );
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link rel="profile" href="https://gmpg.org/xfn/11" />
+	<?php
+	/*
+	 * Marks the document as scripted.
+	 *
+	 * A few things on this site are only switched on when the script that drives
+	 * them is there - the collapsible homepage description block hides its text
+	 * behind a "Read More" button, and the arrow in that button rotates. Rather
+	 * than let the stylesheet hide text that a browser with no JavaScript could
+	 * never bring back, the decision is made here, before wp_head() prints the
+	 * stylesheet, so the browser never paints the collapsed version first and
+	 * then the expanded one.
+	 *
+	 * One class on <html> is enough for all of them, and the class is what the
+	 * rules in assets/css/main.css are written behind.
+	 */
+	?>
+	<script>document.documentElement.classList.add('tj-js');</script>
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>

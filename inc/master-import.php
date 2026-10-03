@@ -222,7 +222,7 @@ function techjossecom_master_apply( $raw, $context = 'site' ) {
  * Guess the field type from its key, so values can be sanitized correctly.
  *
  * @param string $key Setting name without the theme prefix.
- * @return string One of: checkbox, number, image, url, email, color, textarea, text.
+ * @return string One of: checkbox, number, image, url, email, color, html, textarea, text.
  */
 function techjossecom_master_field_type( $key ) {
 	if ( 0 === strpos( $key, 'show_' ) || 0 === strpos( $key, 'enable_' ) ) {
@@ -254,6 +254,11 @@ function techjossecom_master_field_type( $key ) {
 
 	if ( in_array( $key, array( 'footer_about', 'intro_text', 'cod_success_message', 'contact_address' ), true ) ) {
 		return 'textarea';
+	}
+
+	// The homepage description keeps its sub-headings and bold keywords.
+	if ( 'seo_text' === $key ) {
+		return 'html';
 	}
 
 	return 'text';
@@ -342,6 +347,9 @@ function techjossecom_master_sanitize_value( $key, $value, $type, &$errors ) {
 
 		case 'textarea':
 			return sanitize_textarea_field( (string) $value );
+
+		case 'html':
+			return wp_kses_post( (string) $value );
 
 		case 'image':
 			return techjossecom_master_import_image( $value, $key, $errors );

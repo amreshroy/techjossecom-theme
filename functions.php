@@ -93,6 +93,41 @@ function techjossecom_defaults() {
 		'latest_title'           => 'New Arrivals',
 		'latest_limit'           => 8,
 		'latest_mobile_limit'    => 0,
+		'show_featured'          => true,
+		'featured_title'         => 'Featured Products',
+		'featured_limit'         => 8,
+		'featured_mobile_limit'  => 0,
+		'show_seo'               => true,
+		'seo_title'              => 'Quality Electrical, Fire & Industrial Safety Products in Bangladesh',
+		'seo_read_more'          => 'Read More',
+		/*
+		 * The homepage description block.
+		 *
+		 * This is the one setting that keeps its formatting: it is written with
+		 * real markup (sub-headings and bold keywords), sanitized with
+		 * wp_kses_post() instead of sanitize_textarea_field(), and printed
+		 * through wpautop(). It is the paragraph text search engines read for the
+		 * homepage, so it is stored in full and only the height is capped on
+		 * screen behind the "Read More" button.
+		 *
+		 * The parts are listed one line each rather than written as one long
+		 * string, so a replacement paragraph can be swapped without touching the
+		 * paragraphs around it.
+		 */
+		'seo_text'               => implode(
+			'',
+			array(
+				'<p>Looking for reliable <strong>electrical</strong>, <strong>fire safety</strong>, <strong>industrial safety</strong>, tools, shoes and hardware products in Bangladesh? We are an online marketplace for individuals, businesses, factories, construction projects and industrial workplaces. We provide a wide range of quality products designed to support <strong>workplace safety</strong>, <strong>electrical protection</strong>, <strong>construction</strong>, <strong>maintenance</strong> and industrial needs.</p>',
+				'<h2>Electrical Products &amp; Safety Equipment</h2>',
+				'<p>You can find a wide selection of <strong>electrical products</strong> and <strong>electrical safety equipment</strong>, including electrical accessories, protection devices, cables and related essentials. Whether you need products for home maintenance, commercial installations, construction projects or industrial applications, our collection is designed to meet everyday electrical needs with reliable quality and honest prices.</p>',
+				'<h2>Fire Safety Products</h2>',
+				'<p>Protecting people, property and workplaces starts with the right fire safety equipment. We supply fire extinguishers, fire alarms, emergency lights, emergency signage and other fire protection products suitable for homes, offices, shops, factories, warehouses, construction sites and other commercial environments.</p>',
+				'<h2>Industrial Safety, Safety Shoes &amp; Tools</h2>',
+				'<p>Workplace safety is essential across construction, manufacturing, factories, warehouses, workshops and other industrial environments. Our <strong>industrial safety products</strong> - safety helmets, safety vests, face protection, safety goggles, hand gloves and <strong>safety shoes</strong> - are selected to help workers stay protected during different types of work. From everyday maintenance to professional industrial work, our <strong>tools and hardware</strong> range covers hand tools, hardware products and maintenance essentials for professional workers, technicians, contractors, workshops and DIY users.</p>',
+				'<h2>Your Trusted Online Store in Bangladesh</h2>',
+				'<p>Whether you are buying a single product or sourcing products for a business, factory, office, construction project, workshop or industrial facility, we make it easy to find dependable products with competitive pricing and delivery across Bangladesh.</p>',
+			)
+		),
 		'show_features'       => true,
 		'feature1_title'      => '100% Genuine Products',
 		'feature1_text'       => 'Verified quality items',
@@ -762,6 +797,111 @@ function techjossecom_nav_menu( $args ) {
  */
 function techjossecom_excerpt_length() {
 	return 24;
+}
+
+/**
+ * The description block for the archive being viewed.
+ *
+ * Every archive already carries a description of its own - a category or tag
+ * description in WordPress, the content of the page set as the shop page in
+ * WooCommerce - so nothing has to be written twice for this block and no admin
+ * option is involved. This is the one place that knows which description
+ * belongs to which view, which is what keeps the four templates that print the
+ * block from each having to work it out for themselves.
+ *
+ * Nothing is printed on the second page of an archive or later. The description
+ * is the page's own text, so repeating it on every page of a paginated archive
+ * would put the same words on several URLs, which is exactly what a search
+ * engine is asked not to see. WooCommerce makes the same cut for its own copy.
+ *
+ * @return array|false Array with "title" and "text" keys, or false when the
+ *                     current view has no description to show.
+ */
+function techjossecom_description_block_data() {
+	$paged = max( absint( get_query_var( 'paged' ) ), absint( get_query_var( 'page' ) ) );
+
+	if ( $paged > 1 ) {
+		return false;
+	}
+
+	if ( class_exists( 'WooCommerce' ) && is_product_taxonomy() ) {
+		$title = single_term_title( '', false );
+		$text  = get_the_archive_description();
+	} elseif ( class_exists( 'WooCommerce' ) && ( is_shop() || is_post_type_archive( 'product' ) ) ) {
+		$shop_id = wc_get_page_id( 'shop' );
+		$shop    = $shop_id > 0 ? get_post( $shop_id ) : null;
+
+		if ( ! $shop ) {
+			return false;
+		}
+
+		/*
+		 * The shop page description is the body of that page, so it goes through
+		 * the content filter: the block editor markup WooCommerce stores is
+		 * turned into the same HTML the page would have shown, and a shortcode
+		 * typed into it still works.
+		 */
+		$title = get_the_title( $shop );
+		$text  = apply_filters( 'the_content', $shop->post_content );
+	} elseif ( is_category() || is_tag() || is_tax() || is_author() || is_date() || ( is_home() && ! is_front_page() ) ) {
+		// "Category: Casual" reads as a heading; the name on its own does not.
+		$title = ( is_category() || is_tag() || is_tax() )
+			? single_term_title( '', false )
+			: wp_strip_all_tags( get_the_archive_title() );
+		$text  = get_the_archive_description();
+	} else {
+		return false;
+	}
+
+	/**
+	 * Filter the heading the description block prints for this archive.
+	 *
+	 * @param string $title Heading line.
+	 * @param string $text  Body text the heading belongs to.
+	 */
+	$title = apply_filters( 'techjossecom_description_block_title', $title, $text );
+
+	/*
+	 * A title on its own is not a block. Every archive has a name, so a term
+	 * with no description written for it would otherwise end the page with a
+	 * heading and nothing under it - an empty H2 in the outline and a section
+	 * of padding around it.
+	 */
+	if ( '' === trim( wp_strip_all_tags( (string) $text ) ) ) {
+		return false;
+	}
+
+	return array(
+		'title' => $title,
+		'text'  => $text,
+	);
+}
+
+/**
+ * Print the description block for the archive being viewed.
+ *
+ * The block is a section of its own, so a template only decides where it sits:
+ * under the pagination of the blog archives, under the products of the shop and
+ * category archives. Passing arguments overrides what the archive supplies,
+ * which is how the homepage, whose text comes from a theme setting rather than
+ * from an archive, uses the same block.
+ *
+ * @param array $args Optional overrides. See template-parts/description-block.php.
+ * @return void
+ */
+function techjossecom_the_description_block( $args = array() ) {
+	$block = wp_parse_args( $args, (array) techjossecom_description_block_data() );
+
+	// Nothing to open, so nothing is printed - not even an empty section.
+	if ( '' === trim( wp_strip_all_tags( (string) $block['text'] ) ) ) {
+		return;
+	}
+
+	echo '<section class="tj-section tj-section--description">';
+
+	get_template_part( 'template-parts/description-block', null, $block );
+
+	echo '</section>';
 }
 add_filter( 'excerpt_length', 'techjossecom_excerpt_length', 999 );
 

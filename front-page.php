@@ -185,6 +185,50 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 	<?php endif; ?>
 
 	<?php
+	/*
+	 * Featured Products.
+	 *
+	 * A fourth product row, built from exactly the parts the two rows above are
+	 * built from - the same .tj-section shell, the same heading with the same
+	 * .tj-section-tools, techjossecom_scroll_buttons() for the arrows and
+	 * techjossecom_product_grid() for the cards. That is the whole reason the
+	 * arrows and the grid were written as shared functions, so this section adds
+	 * a row of products without a line of new CSS or JavaScript and cannot drift
+	 * away from the look of the rows around it.
+	 *
+	 * The products are the ones ticked "Featured" in WooCommerce → Products, so
+	 * the section is filled from the shop rather than from a second list of
+	 * settings that would have to be kept in step with the first.
+	 */
+	$techjossecom_featured        = ( techjossecom_mod( 'show_featured' ) && $techjossecom_has_woo )
+		? techjossecom_featured_products( techjossecom_section_limit( 'featured_limit' ) )
+		: null;
+	$techjossecom_featured_mobile = techjossecom_section_mobile_limit( 'featured_limit' );
+
+	if ( $techjossecom_featured && $techjossecom_featured->have_posts() ) :
+		?>
+		<section class="tj-section tj-section--featured">
+			<div class="tj-container">
+				<div class="tj-section-head">
+					<h2 class="tj-section-title"><?php echo esc_html( techjossecom_mod( 'featured_title' ) ); ?></h2>
+
+					<div class="tj-section-tools">
+						<?php techjossecom_scroll_buttons(); ?>
+
+						<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'Shop all', 'techjossecom' ); ?> &rarr;</a>
+					</div>
+				</div>
+
+				<div class="tj-carousel">
+					<div class="tj-scroller" data-tj-scroller<?php echo $techjossecom_featured_mobile ? ' data-tj-mobile-limit="' . esc_attr( $techjossecom_featured_mobile ) . '"' : ''; ?>>
+						<?php techjossecom_product_grid( $techjossecom_featured, 4 ); ?>
+					</div>
+				</div>
+			</div>
+		</section>
+	<?php endif; ?>
+
+	<?php
 	$techjossecom_intro       = techjossecom_mod( 'intro_text' );
 	$techjossecom_page_id     = (int) get_option( 'page_on_front' );
 	$techjossecom_page_object = ( $techjossecom_page_id && get_queried_object_id() === $techjossecom_page_id ) ? get_post( $techjossecom_page_id ) : null;
@@ -204,6 +248,44 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 				?>
 			</div>
 		</section>
+	<?php endif; ?>
+
+	<?php
+	/*
+	 * The homepage description block.
+	 *
+	 * The text comes from a theme setting rather than from an archive, so it is
+	 * passed in; everything after that - the markup, the capped height and the
+	 * "Read More" button - is the shared block the shop, category and blog
+	 * archives print as well.
+	 *
+	 * The text is never shortened on the server: everything written in the
+	 * setting is in the HTML, so search engines and readers without JavaScript
+	 * get the whole block. Only the height on screen is capped, and only when
+	 * the script that lifts the cap is running - the .tj-js class is set in
+	 * header.php before the stylesheet is parsed, which is why the cap and the
+	 * button are both written behind that class. A reader with no JavaScript
+	 * therefore sees every word and is not shown a button that would do nothing.
+	 *
+	 * The script measures the block before capping it, so a description short
+	 * enough to fit shows no button at all.
+	 */
+	$techjossecom_seo_title = techjossecom_mod( 'seo_title' );
+	$techjossecom_seo_text  = techjossecom_mod( 'seo_text' );
+
+	if ( techjossecom_mod( 'show_seo' ) && $techjossecom_seo_text ) :
+		?>
+		<div class="tj-container">
+			<?php
+			techjossecom_the_description_block(
+				array(
+					'title' => $techjossecom_seo_title,
+					'text'  => $techjossecom_seo_text,
+					'label' => techjossecom_mod( 'seo_read_more' ),
+				)
+			);
+			?>
+		</div>
 	<?php endif; ?>
 </main>
 <?php
