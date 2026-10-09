@@ -24,6 +24,7 @@ require_once TECHJOSSECOM_DIR . '/inc/admin-settings.php';
 require_once TECHJOSSECOM_DIR . '/inc/performance-seo.php';
 require_once TECHJOSSECOM_DIR . '/inc/woocommerce-setup.php';
 require_once TECHJOSSECOM_DIR . '/inc/ajax-handlers.php';
+require_once TECHJOSSECOM_DIR . '/inc/analytics.php';
 require_once TECHJOSSECOM_DIR . '/inc/master-import.php';
 
 /**
@@ -151,6 +152,8 @@ function techjossecom_defaults() {
 		'social_linkedin'     => '',
 		'social_instagram'    => '',
 		'social_pinterest'    => '',
+		'fb_pixel_id'         => '',
+		'google_analytics_id' => '',
 		'footer_about'        => 'We are a trusted online shop delivering genuine products all over Bangladesh with cash on delivery.',
 		'footer_copyright'    => '',
 		'footer_payments'     => 'We accept: bKash • Nagad • Cash on Delivery • Cards',

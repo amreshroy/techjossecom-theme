@@ -56,6 +56,16 @@ function techjossecom_admin_sections() {
 			'title' => __( 'Colours', 'techjossecom' ),
 			'icon'  => 'dashicons-art',
 		),
+		'tracking' => array(
+			'title' => __( 'Facebook Pixel & Analytics', 'techjossecom' ),
+			'icon'  => 'dashicons-chart-line',
+			'note'  => __( 'Paste the IDs from Facebook Events Manager and Google Analytics 4. Leave a field empty and that service stays switched off — nothing is loaded until an ID is saved.', 'techjossecom' ),
+		),
+		'social'  => array(
+			'title' => __( 'Social Profiles', 'techjossecom' ),
+			'icon'  => 'dashicons-share',
+			'note'  => __( 'Links shown as icons in the footer. Only the profiles with a URL are displayed; leave the rest empty.', 'techjossecom' ),
+		),
 	);
 
 	/** This filter is documented below the fields function. */
@@ -543,6 +553,52 @@ function techjossecom_admin_fields() {
 			'label'       => __( 'Secondary colour', 'techjossecom' ),
 			'description' => __( 'Used for the "All Categories" menu button.', 'techjossecom' ),
 			'section'     => 'colors',
+		),
+
+		// --- Facebook Pixel & Analytics -----------------------------------
+		'fb_pixel_id'        => array(
+			'type'        => 'text',
+			'label'       => __( 'Facebook Pixel ID', 'techjossecom' ),
+			'description' => __( 'The number from Meta Events Manager, for example 1234567890123456. Leave empty to switch the pixel off.', 'techjossecom' ),
+			'section'     => 'tracking',
+		),
+		'google_analytics_id' => array(
+			'type'        => 'text',
+			'label'       => __( 'Google Analytics Measurement ID', 'techjossecom' ),
+			'description' => __( 'The GA4 measurement ID, for example G-XXXXXXXXXX. Leave empty to switch Analytics off.', 'techjossecom' ),
+			'section'     => 'tracking',
+		),
+
+		// --- Social profiles ------------------------------------------------
+		'social_facebook'    => array(
+			'type'    => 'url',
+			'label'   => __( 'Facebook URL', 'techjossecom' ),
+			'section' => 'social',
+		),
+		'social_youtube'     => array(
+			'type'    => 'url',
+			'label'   => __( 'YouTube URL', 'techjossecom' ),
+			'section' => 'social',
+		),
+		'social_x'           => array(
+			'type'    => 'url',
+			'label'   => __( 'X (Twitter) URL', 'techjossecom' ),
+			'section' => 'social',
+		),
+		'social_linkedin'    => array(
+			'type'    => 'url',
+			'label'   => __( 'LinkedIn URL', 'techjossecom' ),
+			'section' => 'social',
+		),
+		'social_instagram'   => array(
+			'type'    => 'url',
+			'label'   => __( 'Instagram URL', 'techjossecom' ),
+			'section' => 'social',
+		),
+		'social_pinterest'   => array(
+			'type'    => 'url',
+			'label'   => __( 'Pinterest URL', 'techjossecom' ),
+			'section' => 'social',
 		),
 	);
 

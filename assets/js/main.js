@@ -354,8 +354,50 @@
 
 	// Open the mini cart after an add to cart event triggered by WooCommerce.
 	if ( window.jQuery ) {
-		window.jQuery( document.body ).on( 'added_to_cart', function () {
+		window.jQuery( document.body ).on( 'added_to_cart', function ( event, fragments, cartHash, $button ) {
 			openPanel( 'tj-mini-cart' );
+
+			/*
+			 * Fire an AddToCart event for the pixel and Analytics when they
+			 * are set up. jQuery passes the clicked button as the third
+			 * argument, and WooCommerce stamps the product ID onto it, so a
+			 * product page, an archive "add" button and a quick add all
+			 * report the same way. The price is read from the button's data
+			 * attributes when present and left out otherwise, so the event
+			 * still fires for a button that carries only an ID.
+			 */
+			if ( typeof window.techjossecomTrack === 'function' && $button ) {
+				var id = $button.data( 'product_id' );
+				if ( id ) {
+					var meta = {
+						content_ids: [ String( id ) ],
+						content_type: 'product'
+					};
+					var price = parseFloat( $button.attr( 'data-price' ) );
+					if ( price ) {
+						meta.value = price;
+					}
+					var qty = parseInt( $button.attr( 'data-quantity' ), 10 );
+					if ( ! qty ) {
+						qty = 1;
+					}
+					var name = $button.attr( 'data-product_name' ) || '';
+					if ( name ) {
+						meta.content_name = name;
+					}
+					var gaItem = {
+						item_id: String( id ),
+						quantity: qty
+					};
+					if ( name ) {
+						gaItem.item_name = name;
+					}
+					if ( price ) {
+						gaItem.price = price;
+					}
+					window.techjossecomTrack( 'AddToCart', meta, [ gaItem ] );
+				}
+			}
 		} );
 	}
 	/* ------------------------------------------------------ live search -- */
