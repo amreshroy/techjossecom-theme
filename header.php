@@ -105,6 +105,7 @@ $techjossecom_hotline = techjossecom_mod( 'hotline_number' );
 					<?php esc_html_e( 'Shop Deals', 'techjossecom' ); ?>
 				</a>
 			<?php endif; ?>
+			<?php echo do_shortcode('[make_quotation_button]'); ?>
 		</div>
 	</nav>
 

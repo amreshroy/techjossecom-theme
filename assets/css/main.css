@@ -2110,9 +2110,84 @@ body.tj-locked { overflow: hidden; }
 .single-product .woocommerce-product-gallery__wrapper { position: relative; }
 .single-product .onsale.tj-sale-badge { top: 10px; left: 10px; padding: 4px 12px; font-size: .8rem; }
 
-.single-product .woocommerce-product-gallery .flex-control-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; padding: 0; list-style: none; }
-.single-product .woocommerce-product-gallery .flex-control-thumbs li { width: 68px; }
-.single-product .woocommerce-product-gallery .flex-control-thumbs img { border: 1px solid var(--tj-line); border-radius: 8px; cursor: pointer; }
+/*
+ * The gallery: a square main photo with the thumbnails in a row under it.
+ *
+ * The photo box is square because the column is: a portrait photo in a 576px
+ * column asked for 702px of height, which pushed the title, the price and the
+ * buy row down the screen. A square box is exactly as tall as it is wide, and
+ * "object-fit: cover" fills that box the way the design shows it. No "overflow:
+ * hidden" is needed here - the photo is clipped to its own box by object-fit -
+ * and leaving it off is what keeps WooCommerce's hover zoom, which paints a
+ * picture larger than the box, working.
+ *
+ * The thumbnails are four across, the "columns" number WooCommerce prints on
+ * the gallery itself, and the one showing is picked out in the brand colour.
+ *
+ * WooCommerce writes its gallery rules as ".woocommerce div.product div.images
+ * ..." which is three classes deep, so a plain ".single-product
+ * .woocommerce-product-gallery ..." rule loses to it whatever order the two
+ * stylesheets are printed in - which is why the row of thumbnails sat at
+ * WooCommerce's own 25% with the theme's 68px never applying. The selectors
+ * below repeat that prefix with the body class on the front, so they win on
+ * specificity rather than on load order.
+ */
+body.single-product div.product div.images .woocommerce-product-gallery__image {
+	aspect-ratio: 1 / 1;
+}
+
+/* The link is the direct parent of the photo, and a percentage height only
+   resolves against a parent that has a height of its own: without this the
+   photo keeps its own proportions inside the square and the box is square only
+   because it clips nothing. */
+body.single-product div.product div.images .woocommerce-product-gallery__image a {
+	display: block;
+	height: 100%;
+}
+
+body.single-product div.product div.images .woocommerce-product-gallery__image img:not(.zoomImg) {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: var(--tj-radius);
+}
+
+body.single-product div.product div.images .flex-control-thumbs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+body.single-product div.product div.images .flex-control-thumbs li {
+	width: calc(25% - 6px);
+	margin: 0;
+	list-style: none;
+	position: relative;
+}
+
+body.single-product div.product div.images .flex-control-thumbs li img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	object-fit: cover;
+	margin: 0;
+	border: 1px solid var(--tj-line);
+	border-radius: 8px;
+	cursor: pointer;
+	opacity: .55;
+	transition: opacity .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+body.single-product div.product div.images .flex-control-thumbs li img:hover,
+body.single-product div.product div.images .flex-control-thumbs li img.flex-active {
+	opacity: 1;
+	border-color: var(--tj-primary);
+	box-shadow: 0 0 0 1px var(--tj-primary);
+}
 
 .single-product .product_title { margin: 0 0 6px; font-size: 1.35rem; }
 .single-product .woocommerce-product-details__short-description { color: var(--tj-muted); font-size: .92rem; }
