@@ -3336,6 +3336,381 @@ p.no-comments {
 	* { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
+/* ============================================================ *
+ *  Page templates: Contact, About, Terms, Privacy, Refund,
+ *  Career. These reuse the same colour, type and spacing tokens
+ *  as the rest of the theme, so a new page never has to invent a
+ *  value of its own - the customizer keeps changing every one of
+ *  them from a single place.
+ * ============================================================ */
+
+/*
+ * A page hero: the title band that opens Contact and About. It is
+ * a soft tinted card rather than a full-bleed image, so it stays
+ * legible on a phone and needs no artwork to look finished.
+ */
+.tj-page-hero {
+	position: relative;
+	overflow: hidden;
+	padding: 26px 22px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius-lg);
+	background: var(--tj-primary-soft);
+}
+
+.tj-page-hero::before {
+	content: "";
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: 4px;
+	background: var(--tj-primary);
+}
+
+.tj-page-hero-title {
+	margin: 0 0 8px;
+	color: var(--tj-dark);
+	font-size: 1.5rem;
+	line-height: 1.25;
+}
+
+.tj-page-hero-text {
+	margin: 0;
+	max-width: 62ch;
+	color: var(--tj-muted);
+	font-size: .95rem;
+}
+
+/* Grid helpers shared by the content blocks of the new pages. */
+.tj-page-grid {
+	display: grid;
+	gap: 16px;
+	margin: 20px 0;
+}
+
+.tj-page-grid--2 { grid-template-columns: 1fr; }
+.tj-page-grid--3 { grid-template-columns: 1fr; }
+
+/*
+ * A single info / feature card. Same border, radius, white surface
+ * and shadow as .tj-card, so it sits naturally beside the product
+ * grid anywhere on the site.
+ */
+.tj-info-card {
+	display: flex;
+	gap: 12px;
+	padding: 16px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+}
+
+.tj-info-card-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 42px;
+	height: 42px;
+	border-radius: var(--tj-radius);
+	background: var(--tj-primary-soft);
+	color: var(--tj-primary);
+}
+
+.tj-info-card-icon .tj-icon { width: 20px; height: 20px; }
+
+.tj-info-card-title {
+	margin: 0 0 4px;
+	font-size: 1rem;
+}
+
+.tj-info-card-text {
+	margin: 0;
+	color: var(--tj-muted);
+	font-size: .9rem;
+}
+
+.tj-info-card-text a { font-weight: 600; }
+
+/*
+ * The big number band on the About page (customers served, orders
+ * delivered and so on). Each stat is centre-aligned and the value
+ * carries the primary colour so the row reads as one highlight.
+ */
+.tj-stats {
+	display: grid;
+	gap: 14px;
+	grid-template-columns: repeat(2, 1fr);
+	margin: 20px 0;
+}
+
+.tj-stat {
+	padding: 18px 14px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+	text-align: center;
+}
+
+.tj-stat-value {
+	margin: 0;
+	color: var(--tj-primary);
+	font-size: 1.7rem;
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+.tj-stat-label {
+	margin: 4px 0 0;
+	color: var(--tj-muted);
+	font-size: .85rem;
+}
+
+/*
+ * Legal / policy pages (Terms, Privacy, Refund). The content is
+ * laid out as a sticky table of contents beside the article so a
+ * long policy is still easy to jump around, and the whole thing
+ * collapses to a single column on a phone.
+ */
+.tj-policy-layout {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+	margin: 20px 0;
+	align-items: start;
+}
+
+.tj-policy-toc {
+	padding: 16px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+}
+
+.tj-policy-toc-title {
+	margin: 0 0 10px;
+	font-size: .95rem;
+}
+
+.tj-policy-toc ol {
+	margin: 0;
+	padding-left: 1.1em;
+	font-size: .9rem;
+}
+
+.tj-policy-toc li { margin: 0 0 6px; }
+.tj-policy-toc a { color: var(--tj-text); }
+.tj-policy-toc a:hover { color: var(--tj-primary); }
+
+/* The article column of a policy page. */
+.tj-policy-body {
+	padding: 20px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+}
+
+.tj-policy-body > section + section {
+	margin-top: 26px;
+	padding-top: 22px;
+	border-top: 1px solid var(--tj-line);
+}
+
+.tj-policy-body h2 {
+	scroll-margin-top: 90px;
+	font-size: 1.15rem;
+}
+
+.tj-policy-body h3 { font-size: 1.02rem; }
+
+.tj-policy-body ul,
+.tj-policy-body ol { color: var(--tj-text); }
+
+.tj-policy-note {
+	margin: 14px 0 0;
+	padding: 12px 14px;
+	border-left: 4px solid var(--tj-primary);
+	border-radius: 6px;
+	background: var(--tj-primary-soft);
+	color: var(--tj-muted);
+	font-size: .88rem;
+}
+
+/* A numbered step list, used by the refund process and the career "how to apply". */
+.tj-steps {
+	counter-reset: tj-step;
+	margin: 14px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tj-steps > li {
+	position: relative;
+	margin: 0 0 12px;
+	padding-left: 40px;
+	counter-increment: tj-step;
+}
+
+.tj-steps > li::before {
+	content: counter(tj-step);
+	position: absolute;
+	left: 0;
+	top: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: var(--tj-primary);
+	color: var(--tj-white);
+	font-size: .82rem;
+	font-weight: 700;
+}
+
+.tj-steps-title { display: block; font-weight: 600; }
+
+/*
+ * Career page: an opening. Each opening is a <details> so the job
+ * description is collapsed until the visitor opens it - no
+ * JavaScript and keyboard accessible out of the box.
+ */
+.tj-opening {
+	margin: 12px 0;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+	overflow: hidden;
+}
+
+.tj-opening > summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 14px 16px;
+	cursor: pointer;
+	font-weight: 600;
+	list-style: none;
+}
+
+.tj-opening > summary::-webkit-details-marker { display: none; }
+
+.tj-opening > summary::after {
+	content: "";
+	flex: 0 0 auto;
+	width: 9px;
+	height: 9px;
+	border-right: 2px solid var(--tj-primary);
+	border-bottom: 2px solid var(--tj-primary);
+	transform: rotate(45deg);
+	transition: transform .15s ease;
+}
+
+.tj-opening[open] > summary::after { transform: rotate(-135deg); }
+
+.tj-opening-meta {
+	display: block;
+	margin-top: 2px;
+	color: var(--tj-muted);
+	font-size: .82rem;
+	font-weight: 400;
+}
+
+.tj-opening-body {
+	padding: 14px 16px 16px;
+	border-top: 1px solid var(--tj-line);
+}
+
+.tj-opening-body ul { margin-top: 6px; }
+
+/* A contact detail row: icon + label + value, used on the Contact page. */
+.tj-contact-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tj-contact-list li {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px 0;
+	border-bottom: 1px solid var(--tj-line);
+}
+
+.tj-contact-list li:last-child { border-bottom: 0; }
+
+.tj-contact-list .tj-icon {
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
+	margin-top: 2px;
+	color: var(--tj-primary);
+}
+
+.tj-contact-label { display: block; color: var(--tj-muted); font-size: .78rem; }
+.tj-contact-value { font-weight: 600; }
+.tj-contact-value a { color: var(--tj-text); }
+.tj-contact-value a:hover { color: var(--tj-primary); }
+
+/* The card that wraps the Contact page map / hours / form area. */
+.tj-panel {
+	padding: 20px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	box-shadow: var(--tj-shadow);
+}
+
+.tj-panel-title { margin: 0 0 12px; font-size: 1.1rem; }
+
+.tj-panel + .tj-panel { margin-top: 16px; }
+
+/* Simple opening-hours table. */
+.tj-hours { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.tj-hours th, .tj-hours td { padding: 8px 0; text-align: left; border-bottom: 1px solid var(--tj-line); }
+.tj-hours tr:last-child th, .tj-hours tr:last-child td { border-bottom: 0; }
+.tj-hours td { color: var(--tj-muted); }
+
+/* A value / benefit list with a coloured dot, used across About and Career. */
+.tj-check-list { margin: 10px 0 0; padding: 0; list-style: none; }
+.tj-check-list li { position: relative; margin: 0 0 10px; padding-left: 24px; color: var(--tj-text); }
+.tj-check-list li::before {
+	content: "";
+	position: absolute;
+	left: 2px;
+	top: .5em;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--tj-primary);
+}
+
+/* Entry pages (policy / about) share the default .tj-entry card. */
+.tj-entry .tj-page-hero { margin: 0 0 18px; }
+
+/* -------------------------------------------------- breakpoints ------- */
+
+@media (min-width: 600px) {
+	.tj-stats { grid-template-columns: repeat(4, 1fr); }
+	.tj-page-grid--2 { grid-template-columns: repeat(2, 1fr); }
+	.tj-page-grid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 992px) {
+	.tj-page-hero { padding: 34px 30px; }
+	.tj-page-hero-title { font-size: 1.8rem; }
+	.tj-page-grid--3 { grid-template-columns: repeat(3, 1fr); }
+	/* Policy: sticky table of contents beside the article. */
+	.tj-policy-layout { grid-template-columns: 260px minmax(0, 1fr); gap: 28px; }
+	.tj-policy-toc { position: sticky; top: 90px; }
+}
+
 @media print {
 	.tj-topbar, .tj-header, .tj-nav-bar, .tj-bottom-bar, .tj-footer, .tj-drawer, .tj-modal, .tj-overlay { display: none !important; }
 	body { background: #fff; }
