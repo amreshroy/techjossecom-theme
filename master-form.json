@@ -21,7 +21,7 @@
   "bilingual_examples": {
     "note": "Customer-facing labels can be English or Bengali. Copy these values into the matching settings keys to switch a string to Bengali.",
     "cod_button_text": "ক্যাশ অন ডেলিভারি অর্ডার করুন",
-    "cod_modal_title": "অর্ডার নিশ্চিত করুন",
+    "cod_modal_title": "কুইক অর্ডার",
     "cod_success_message": "ধন্যবাদ! আপনার অর্ডারটি গ্রহণ করা হয়েছে। আমাদের প্রতিনিধি শীঘ্রই কল করবেন।",
     "search_placeholder": "পণ্য খুঁজুন...",
     "categories_title": "ক্যাটাগরি অনুযায়ী কিনুন",
@@ -73,7 +73,7 @@
     "feature4_text": "Affordable & transparent",
     "enable_cod": true,
     "cod_button_text": "Order Now (Cash on Delivery)",
-    "cod_modal_title": "Order Now — Cash on Delivery",
+    "cod_modal_title": "Quick Order",
     "cod_success_message": "Thank you! Your order has been received.",
     "contact_address": "Dhaka, Bangladesh",
     "contact_email": "support@example.com",

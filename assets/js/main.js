@@ -41,6 +41,16 @@
 		return Array.prototype.slice.call( ( context || document ).querySelectorAll( selector ) );
 	}
 
+	/**
+	 * A unique id for one conversion, shared with the server.
+	 *
+	 * The pixel and the Conversions API both use this id, so Meta counts
+	 * the browser hit and the server hit for the same action as one.
+	 */
+	function techjossecomEventId() {
+		return 'ev_' + Date.now().toString( 36 ) + '_' + Math.random().toString( 36 ).slice( 2, 10 );
+	}
+
 	/** Debounce a function. */
 	function debounce( fn, wait ) {
 		var timer;
@@ -365,6 +375,10 @@
 			 * report the same way. The price is read from the button's data
 			 * attributes when present and left out otherwise, so the event
 			 * still fires for a button that carries only an ID.
+			 *
+			 * The event id lets the theme's own add-to-cart request report
+			 * the same conversion server side, so the browser pixel hit and
+			 * the Conversions API hit dedupe into one.
 			 */
 			if ( typeof window.techjossecomTrack === 'function' && $button ) {
 				var id = $button.data( 'product_id' );
@@ -385,6 +399,9 @@
 					if ( name ) {
 						meta.content_name = name;
 					}
+					if ( meta.value && data.currency ) {
+						meta.currency = data.currency;
+					}
 					var gaItem = {
 						item_id: String( id ),
 						quantity: qty
@@ -395,7 +412,19 @@
 					if ( price ) {
 						gaItem.price = price;
 					}
-					window.techjossecomTrack( 'AddToCart', meta, [ gaItem ] );
+					var gaParams = { ga: 'add_to_cart', gaItems: [ gaItem ] };
+					if ( meta.value ) {
+						gaParams.value = price * qty;
+						gaParams.currency = data.currency || '';
+					}
+					window.techjossecomTrack( 'AddToCart', {
+						eventId: techjossecomEventId(),
+						meta: meta,
+						ga: gaParams.ga,
+						gaItems: gaParams.gaItems,
+						value: gaParams.value,
+						currency: gaParams.currency
+					} );
 				}
 			}
 		} );
@@ -438,6 +467,11 @@
 				body.append( 'nonce', data.searchNonce || '' );
 				body.append( 'term', term );
 
+				// The event id is posted with the request so the server can
+				// report the same Search conversion and the two dedupe.
+				var searchEventId = techjossecomEventId();
+				body.append( 'event_id', searchEventId );
+
 				window.fetch( data.ajaxUrl, {
 						method: 'POST',
 						credentials: 'same-origin',
@@ -455,6 +489,20 @@
 						results.innerHTML = payload.data.html || '<p class="tj-live-search-empty">' + strings.noResults + '</p>';
 						activeIndex = -1;
 						searchInput.setAttribute( 'aria-expanded', 'true' );
+
+						// A Search is only worth recording once there are
+						// results to act on, matching the server side.
+						if ( payload.data.count && typeof window.techjossecomTrack === 'function' ) {
+							window.techjossecomTrack( 'Search', {
+								eventId: searchEventId,
+								meta: {
+									search_string: term,
+									content_type: 'product'
+								},
+								ga: 'search',
+								search_term: term
+							} );
+						}
 					} )
 					.catch( function () {
 						results.innerHTML = '<p class="tj-live-search-empty">' + strings.error + '</p>';
@@ -1215,6 +1263,68 @@
 			}
 
 			/*
+			 * Report the add to the pixel and Analytics once it has gone
+			 * through. The event id matches the one posted to the server,
+			 * so the browser hit and the Conversions API hit dedupe. The
+			 * price and name are read from the form so a variable product
+			 * reports the chosen variation's price.
+			 */
+			function techjossecomTrackAddToCart( eventId ) {
+				if ( typeof window.techjossecomTrack !== 'function' ) {
+					return;
+				}
+
+				var id = productId.value;
+				if ( ! id ) {
+					return;
+				}
+
+				var qtyInput = qs( '[name="quantity"]', form );
+				var qty = qtyInput ? parseInt( qtyInput.value, 10 ) || 1 : 1;
+				var price = parseFloat( button.getAttribute( 'data-price' ) ) || 0;
+				var currency = data.currency || '';
+
+				var meta = {
+					content_ids: [ String( id ) ],
+					content_type: 'product'
+				};
+				if ( price ) {
+					meta.value = price * qty;
+					meta.currency = currency;
+				}
+
+				var nameEl = qs( '.product_title, h1', form.closest( '.summary' ) || document );
+				var name = nameEl ? nameEl.textContent.trim() : '';
+				if ( name ) {
+					meta.content_name = name;
+				}
+
+				var gaItem = {
+					item_id: String( id ),
+					quantity: qty
+				};
+				if ( name ) {
+					gaItem.item_name = name;
+				}
+				if ( price ) {
+					gaItem.price = price;
+				}
+
+				var payload = {
+					eventId: eventId,
+					meta: meta,
+					ga: 'add_to_cart',
+					gaItems: [ gaItem ]
+				};
+				if ( price ) {
+					payload.value = price * qty;
+					payload.currency = currency;
+				}
+
+				window.techjossecomTrack( 'AddToCart', payload );
+			}
+
+			/*
 			 * Read what is actually being added.
 			 *
 			 * WooCommerce's own script writes the hidden variation_id input
@@ -1289,6 +1399,11 @@
 			body.append( 'product_id', productId.value );
 			body.append( 'quantity', quantity ? quantity.value : 1 );
 
+			// Shared with the server so the pixel hit and the Conversions
+			// API hit for this add dedupe into one conversion.
+			var addEventId = techjossecomEventId();
+			body.append( 'event_id', addEventId );
+
 			if ( variationId ) {
 				body.append( 'variation_id', variationId );
 
@@ -1316,6 +1431,7 @@
 					} else {
 						applyFragments( payload.data.fragments );
 						openPanel( 'tj-mini-cart' );
+						techjossecomTrackAddToCart( addEventId );
 					}
 				} )
 				.catch( function () {
@@ -1797,13 +1913,16 @@
 
 	var modal = document.getElementById( 'tj-cod-modal' );
 	var freeLabel = strings.free || 'Free';
-	var outOfStockLabel = strings.outOfStock || 'Out of stock';
 
 	if ( modal && data.codEnabled && data.isWooCommerce ) {
 		var els = {
 			image: qs( '[data-tj-cod-image]', modal ),
+			thumbFallback: qs( '[data-tj-cod-thumb-fallback]', modal ),
 			name: qs( '[data-tj-cod-name]', modal ),
 			price: qs( '[data-tj-cod-price]', modal ),
+			orderSubtotal: qs( '[data-tj-cod-order-subtotal]', modal ),
+			subtotal: qs( '[data-tj-cod-subtotal]', modal ),
+			shippingTotal: qs( '[data-tj-cod-shipping-total]', modal ),
 			variationWrap: qs( '[data-tj-cod-variation-wrap]', modal ),
 			variation: qs( '[data-tj-cod-variation]', modal ),
 			qty: qs( '[data-tj-cod-qty]', modal ),
@@ -1819,6 +1938,8 @@
 			id: 0,
 			price: 0,
 			variations: [],
+			attributes: [],
+			chosen: {},
 			options: [],
 			shippingCost: 0,
 			shippingLabel: '',
@@ -1837,10 +1958,74 @@
 			return Math.max( 1, parseInt( els.qty.value, 10 ) || 1 );
 		}
 
-		function findVariation( id ) {
+		function currentVariation() {
+			return state.variations.length ? matchVariation( state.variations, state.chosen ) : null;
+		}
+
+		/*
+		 * Build the Size / Color rows from the attribute groups the Order Now
+		 * button carries, the same way the single product page lays them out:
+		 * a named row per attribute, tappable chips for a size, colour swatches
+		 * for a colour. A Size / Color already chosen on the product card or page
+		 * is written onto the button by the picker, so the popup opens on that
+		 * combination rather than making the shopper pick it twice.
+		 */
+		function buildVariationPicker( preselected ) {
+			state.chosen = {};
+
+			if ( ! state.attributes.length ) {
+				els.variation.innerHTML = '';
+				els.variationWrap.hidden = true;
+
+				return;
+			}
+
+			var html = '';
+
+			state.attributes.forEach( function ( group ) {
+				html += '<div class="tj-cod-var-group" data-attribute="' + escapeHtml( group.name ) + '">';
+				html += '<span class="tj-cod-var-group-name">' + escapeHtml( group.label ) + '</span>';
+				html += '<span class="tj-cod-var-group-values">';
+
+				group.options.forEach( function ( option ) {
+					var colorStyle = group.is_color ? ' style="--tj-swatch:' + escapeHtml( option.color ) + '"' : '';
+					var colorClass = group.is_color ? ' tj-cod-var-value--color' : '';
+
+					html += '<button type="button" class="tj-cod-var-value' + colorClass + '" data-tj-cod-variation-value="' + escapeHtml( option.slug ) + '" data-attribute="' + escapeHtml( group.name ) + '" aria-pressed="false"' + colorStyle + '><span class="tj-cod-var-value-text">' + escapeHtml( option.text ) + '</span></button>';
+				} );
+
+				html += '</span></div>';
+			} );
+
+			els.variation.innerHTML = html;
+			els.variationWrap.hidden = false;
+
+			// Seed the choice with whatever the product page or card had picked,
+			// then work out which variation that points at and paint the rows.
+			if ( preselected ) {
+				var seed = currentVariationFromAttributes( state.variations, preselected );
+
+				if ( seed ) {
+					state.attributes.forEach( function ( group ) {
+						if ( Object.prototype.hasOwnProperty.call( seed.attributes, group.name ) ) {
+							state.chosen[ group.name ] = seed.attributes[ group.name ];
+						}
+					} );
+				}
+			}
+
+			paintVariationPicker();
+			updateTotal();
+		}
+
+		/*
+		 * A preselected variation id, handed back as the full variation object,
+		 * so its attribute map can seed the Size / Color rows.
+		 */
+		function currentVariationFromAttributes( list, id ) {
 			var found = null;
 
-			state.variations.forEach( function ( variation ) {
+			list.forEach( function ( variation ) {
 				if ( String( variation.id ) === String( id ) ) {
 					found = variation;
 				}
@@ -1849,9 +2034,57 @@
 			return found;
 		}
 
-		function currentVariation() {
-			return state.variations.length ? findVariation( els.variation.value ) : null;
+		/*
+		 * Mark each option chosen or greyed out.
+		 *
+		 * An option is unavailable when no in-stock variation can still be
+		 * reached through it given the other choices, so a combination that does
+		 * not exist reads as such before it is clicked rather than after. The
+		 * button is disabled as well as dimmed, the same way the single product
+		 * page treats its chips, so the choice cannot be made in the first place.
+		 */
+		function paintVariationPicker() {
+			state.attributes.forEach( function ( group ) {
+				qsa( '[data-attribute="' + group.name + '"] .tj-cod-var-value', els.variation ).forEach( function ( button ) {
+					var value = button.getAttribute( 'data-tj-cod-variation-value' );
+					var chosen = state.chosen[ group.name ] === value;
+					var possible = valueIsAvailable( state.variations, state.chosen, group.name, value );
+
+					button.classList.toggle( 'is-selected', chosen );
+					button.classList.toggle( 'is-unavailable', ! possible );
+					button.disabled = ! possible && ! chosen;
+					button.setAttribute( 'aria-pressed', chosen ? 'true' : 'false' );
+				} );
+			} );
 		}
+
+		/*
+		 * Handle a Size / Color button click.
+		 *
+		 * Choosing the already chosen value clears it, so a shopper can step
+		 * back to a different combination; otherwise the choice is recorded, the
+		 * rows repainted and the line re-priced.
+		 */
+		els.variation.addEventListener( 'click', function ( event ) {
+			var picked = event.target.closest( '.tj-cod-var-value' );
+
+			if ( ! picked ) {
+				return;
+			}
+
+			var name  = picked.getAttribute( 'data-attribute' );
+			var value = picked.getAttribute( 'data-tj-cod-variation-value' );
+
+			if ( state.chosen[ name ] === value ) {
+				delete state.chosen[ name ];
+			} else {
+				state.chosen[ name ] = value;
+			}
+
+			paintVariationPicker();
+			updateTotal();
+			loadShipping();
+		} );
 
 		function unitPrice() {
 			var variation = currentVariation();
@@ -1860,7 +2093,20 @@
 		}
 
 		function updateTotal() {
-			els.total.textContent = formatPrice( unitPrice() * currentQuantity() + state.shippingCost );
+			var qty       = currentQuantity();
+			var unit      = unitPrice();
+			var subtotal  = unit * qty;
+			var shipping  = state.shippingCost || 0;
+
+			// Prices are formatted with the store's currency symbol, which is
+			// stored as an HTML entity, so they are written as markup rather
+			// than as plain text: a textContent write would print the entity
+			// itself ("140&#2547;") instead of the sign it stands for.
+			els.price.innerHTML         = formatPrice( unit );
+			els.orderSubtotal.innerHTML = formatPrice( subtotal );
+			els.subtotal.innerHTML      = formatPrice( subtotal );
+			els.shippingTotal.innerHTML = shipping > 0 ? formatPrice( shipping ) : freeLabel;
+			els.total.innerHTML         = formatPrice( subtotal + shipping );
 		}
 
 		function showMessage( text, type ) {
@@ -1918,12 +2164,12 @@
 					var html = '';
 
 					options.forEach( function ( option, index ) {
-						var cost = parseFloat( option.cost ) > 0 ? formatPrice( option.cost ) : freeLabel;
+						var cost = parseFloat( option.cost ) > 0 ? '&ndash; ' + formatPrice( option.cost ) : freeLabel;
 
 						html += '<label class="tj-cod-shipping-option">';
 						html += '<input type="radio" name="tj_shipping_option" value="' + index + '"' + ( index === 0 ? ' checked' : '' ) + '>';
 						html += '<span class="tj-cod-shipping-label">' + escapeHtml( option.label ) + '</span>';
-						html += '<span class="tj-cod-shipping-cost">' + escapeHtml( cost ) + '</span>';
+						html += '<span class="tj-cod-shipping-cost">' + cost + '</span>';
 						html += '</label>';
 					} );
 
@@ -1942,90 +2188,75 @@
 			}
 		} );
 
-		qsa( '[data-tj-qty-step]', modal ).forEach( function ( button ) {
-			button.addEventListener( 'click', function () {
-				var step = parseInt( button.getAttribute( 'data-tj-qty-step' ), 10 ) || 1;
-
-				els.qty.value = Math.max( 1, currentQuantity() + step );
-				loadShipping();
-			} );
-		} );
-
-		els.qty.addEventListener( 'change', loadShipping );
-
-		els.variation.addEventListener( 'change', function () {
-			var variation = currentVariation();
-
-			els.price.textContent = variation && variation.price_html ? variation.price_html : formatPrice( state.price );
+		// The -/+ stepper is wired up by the shared initQuantitySteppers() above,
+		// which steps the input and fires a change event; the change listener
+		// below then re-prices the line and reloads the delivery options. Binding
+		// a second handler here stepped the same input twice on one click, so the
+		// count jumped by two.
+		els.qty.addEventListener( 'change', function () {
+			updateTotal();
 			loadShipping();
 		} );
 
-		qsa( '.tj-order-now' ).forEach( function ( button ) {
-			button.addEventListener( 'click', function ( event ) {
-				event.preventDefault();
+qsa( '.tj-order-now' ).forEach( function ( button ) {
+button.addEventListener( 'click', function ( event ) {
+event.preventDefault();
 
-				state.id = parseInt( button.getAttribute( 'data-product-id' ), 10 ) || 0;
-				state.price = parseFloat( button.getAttribute( 'data-product-price' ) ) || 0;
-				state.variations = [];
+state.id = parseInt( button.getAttribute( 'data-product-id' ), 10 ) || 0;
+state.price = parseFloat( button.getAttribute( 'data-product-price' ) ) || 0;
+state.variations = [];
+state.attributes = [];
+state.chosen = {};
 
-				try {
-					var raw = button.getAttribute( 'data-product-variations' );
-					state.variations = raw ? JSON.parse( raw ) : [];
-				} catch ( error ) {
-					state.variations = [];
-				}
+try {
+var raw = button.getAttribute( 'data-product-variations' );
+state.variations = raw ? JSON.parse( raw ) : [];
+} catch ( error ) {
+state.variations = [];
+}
 
-				var image = button.getAttribute( 'data-product-image' );
+try {
+var rawAttrs = button.getAttribute( 'data-product-attributes' );
+state.attributes = rawAttrs ? JSON.parse( rawAttrs ) : [];
+} catch ( error ) {
+state.attributes = [];
+}
 
-				els.productId.value = state.id;
-				els.name.textContent = button.getAttribute( 'data-product-name' ) || '';
-				els.price.textContent = formatPrice( state.price );
-				els.qty.value = 1;
+var image = button.getAttribute( 'data-product-image' );
 
-				if ( image ) {
-					els.image.src = image;
-					els.image.hidden = false;
-				} else {
-					els.image.hidden = true;
-					els.image.removeAttribute( 'src' );
-				}
+els.productId.value = state.id;
+els.name.textContent = button.getAttribute( 'data-product-name' ) || '';
+els.price.innerHTML = formatPrice( state.price );
+els.qty.value = 1;
 
-				if ( state.variations.length ) {
-					var options = state.variations.map( function ( variation ) {
-						var label = variation.label + ( variation.in_stock ? '' : ' (' + outOfStockLabel + ')' );
+// The thumbnail and its box fallback are two halves of one slot:
+// exactly one shows, so a product with no image reads as an empty
+// box rather than a broken picture, and one with an image never
+// has the fallback peeking out from behind it.
+if ( image ) {
+els.image.src = image;
+els.image.hidden = false;
+if ( els.thumbFallback ) {
+els.thumbFallback.hidden = true;
+}
+} else {
+els.image.hidden = true;
+els.image.removeAttribute( 'src' );
+if ( els.thumbFallback ) {
+els.thumbFallback.hidden = false;
+}
+}
 
-						return '<option value="' + variation.id + '">' + escapeHtml( label ) + '</option>';
-					} );
+buildVariationPicker( button.getAttribute( 'data-selected-variation' ) );
 
-					els.variation.innerHTML = options.join( '' );
-					els.variationWrap.hidden = false;
-
-				// A Size / Color chosen on the product card or on the product page
-				// is written onto the button by the variation picker, so open the
-				// popup already on that option rather than making the shopper pick
-				// the same thing twice.
-				var preselected = button.getAttribute( 'data-selected-variation' );
-				var preselectedVariation = preselected ? findVariation( preselected ) : null;
-
-				if ( preselectedVariation ) {
-					els.variation.value = String( preselectedVariation.id );
-				}
-
-				var shown = preselectedVariation || state.variations[ 0 ];
-
-				if ( shown && shown.price_html ) {
-					els.price.textContent = shown.price_html;
-				}
-				} else {
-					els.variation.innerHTML = '';
-					els.variationWrap.hidden = true;
-				}
-
-				showMessage( '' );
-				openPanel( 'tj-cod-modal' );
-				loadShipping();
-			} );
-		} );
+// Fill the summary table right away so the shopper sees the price
+// and subtotal before the delivery options finish loading.
+updateTotal();
+showMessage( '' );
+openPanel( 'tj-cod-modal' );
+loadShipping();
+} );
+} );
 
 		els.form.addEventListener( 'submit', function ( event ) {
 			event.preventDefault();
@@ -2042,6 +2273,15 @@
 			}
 
 			var variation = currentVariation();
+
+			// A variable product only has a price and a stock once every option is
+			// chosen, so an incomplete Size / Color is stopped here in place
+			// rather than posted and refused by WooCommerce.
+			if ( state.attributes.length && ! variation ) {
+				showMessage( strings.variationRequired || 'Please choose the product options first.', 'error' );
+
+				return;
+			}
 
 			formData.append( 'action', 'techjossecom_cod_order' );
 			formData.append( 'nonce', data.codNonce || '' );

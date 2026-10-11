@@ -568,6 +568,24 @@ function techjossecom_admin_fields() {
 			'description' => __( 'The GA4 measurement ID, for example G-XXXXXXXXXX. Leave empty to switch Analytics off.', 'techjossecom' ),
 			'section'     => 'tracking',
 		),
+		'fb_capi_token'      => array(
+			'type'        => 'text',
+			'label'       => __( 'Facebook Conversions API token', 'techjossecom' ),
+			'description' => __( 'Optional. A system user access token from Meta Events Manager. When set, conversions are also sent from the server, so a purchase is still recorded when a browser or extension blocks the pixel. Browser and server events share an ID, so they are never counted twice.', 'techjossecom' ),
+			'section'     => 'tracking',
+		),
+		'ga_api_secret'      => array(
+			'type'        => 'text',
+			'label'       => __( 'Google Analytics API secret', 'techjossecom' ),
+			'description' => __( 'Optional. From GA4 → Data Streams → Measurement Protocol API secrets. When set, GA4 events are also sent from the server as a backup to the browser.', 'techjossecom' ),
+			'section'     => 'tracking',
+		),
+		'fb_test_event_code' => array(
+			'type'        => 'text',
+			'label'       => __( 'Test Events code', 'techjossecom' ),
+			'description' => __( 'Optional. Paste the code from Meta Events Manager → Test Events. While it is set, every event is routed to the Test Events tool (and Analytics DebugView) so you can confirm they arrive. Leave empty on a live store so events are not held out of reporting.', 'techjossecom' ),
+			'section'     => 'tracking',
+		),
 
 		// --- Social profiles ------------------------------------------------
 		'social_facebook'    => array(

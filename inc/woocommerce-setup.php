@@ -1016,9 +1016,10 @@ function techjossecom_order_now_button( $product = null, $context = 'loop' ) {
 	$image_url  = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
 	$price      = $product->get_price();
 	$variations = techjossecom_variation_data( $product );
+	$attributes = techjossecom_variation_attributes( $product );
 
 	printf(
-		'<button type="button" class="tj-btn tj-btn--cod tj-order-now tj-order-now--%6$s" data-product-id="%1$d" data-product-name="%2$s" data-product-price="%3$s" data-product-image="%4$s" data-product-type="%5$s" data-selected-variation=""%8$s>%7$s</button>',
+		'<button type="button" class="tj-btn tj-btn--cod tj-order-now tj-order-now--%6$s" data-product-id="%1$d" data-product-name="%2$s" data-product-price="%3$s" data-product-image="%4$s" data-product-type="%5$s" data-selected-variation=""%8$s%9$s>%7$s</button>',
 		(int) $product->get_id(),
 		esc_attr( $product->get_name() ),
 		esc_attr( $price ? $price : '0' ),
@@ -1026,7 +1027,8 @@ function techjossecom_order_now_button( $product = null, $context = 'loop' ) {
 		esc_attr( $product->get_type() ),
 		esc_attr( $context ),
 		esc_html( techjossecom_mod( 'cod_button_text' ) ),
-		$variations ? ' data-product-variations="' . esc_attr( wp_json_encode( $variations ) ) . '"' : ''
+		$variations ? ' data-product-variations="' . esc_attr( wp_json_encode( $variations ) ) . '"' : '',
+		$attributes ? ' data-product-attributes="' . esc_attr( wp_json_encode( $attributes ) ) . '"' : ''
 	);
 }
 
@@ -1146,6 +1148,65 @@ function techjossecom_variation_data( $product = null ) {
 	}
 
 	return $variations;
+}
+
+/**
+ * Collect the attribute groups of a variable product for the quick order popup.
+ *
+ * The popup shows the same Size / Color picker as the single product page
+ * rather than a flat list of every variation, so it needs to know the groups
+ * (their labels, which one is a colour, and each option's display text and
+ * swatch) and not just the purchasable variations. Built here so the two
+ * never disagree about the same product.
+ *
+ * @param WC_Product|null $product Product object.
+ * @return array List of groups, empty for anything but a variable product.
+ */
+function techjossecom_variation_attributes( $product = null ) {
+	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
+		return array();
+	}
+
+	$attributes = $product->get_variation_attributes();
+
+	if ( empty( $attributes ) ) {
+		return array();
+	}
+
+	$groups = array();
+
+	foreach ( $attributes as $name => $values ) {
+		if ( empty( $values ) || ! is_array( $values ) ) {
+			continue;
+		}
+
+		$taxonomy = str_replace( 'attribute_', '', $name );
+		$is_color = (bool) preg_match( '/colou?r/i', $taxonomy . ' ' . wc_attribute_label( $taxonomy ) );
+		$label    = wc_attribute_label( $taxonomy );
+		$cart_name = 0 === strpos( $name, 'attribute_' ) ? $name : 'attribute_' . $name;
+
+		$options = array();
+
+		foreach ( $values as $slug ) {
+			$term = taxonomy_exists( $taxonomy ) ? get_term_by( 'slug', $slug, $taxonomy ) : null;
+			$text = $term && ! is_wp_error( $term ) ? $term->name : $slug;
+
+			$options[] = array(
+				'slug'  => (string) $slug,
+				'text'  => $text,
+				'color' => $is_color ? techjossecom_swatch_color( $slug ) : '',
+			);
+		}
+
+		$groups[] = array(
+			'name'     => $cart_name,
+			'label'    => $label,
+			'is_color' => $is_color,
+			'options'  => $options,
+		);
+	}
+
+	return $groups;
 }
 
 /**

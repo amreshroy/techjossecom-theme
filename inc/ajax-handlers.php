@@ -147,6 +147,17 @@ function techjossecom_ajax_live_search() {
 
 	wp_reset_postdata();
 
+	/*
+	 * Server-side Search. The suggestion panel fires the browser event
+	 * and posts its event id here, so the pixel hit and this server hit
+	 * dedupe into one. Only sent when there are results, so an incomplete
+	 * keystroke never becomes a Search.
+	 */
+	if ( $total > 0 ) {
+		$event_id = isset( $_POST['event_id'] ) ? sanitize_text_field( wp_unslash( $_POST['event_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce checked above.
+		techjossecom_track_search_server( $term, $event_id );
+	}
+
 	wp_send_json_success(
 		array(
 			'html'  => $html,
@@ -316,6 +327,14 @@ function techjossecom_ajax_add_to_cart() {
 	 * banner on whichever page the shopper visits next.
 	 */
 	wc_clear_notices();
+
+	/*
+	 * Server-side AddToCart. The event id the browser pixel used is sent
+	 * with the request, so the pixel hit and this server hit dedupe into
+	 * one conversion in Events Manager.
+	 */
+	$event_id = isset( $_POST['event_id'] ) ? sanitize_text_field( wp_unslash( $_POST['event_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce checked above.
+	techjossecom_track_add_to_cart_server( $product_id, $quantity, $event_id );
 
 	wp_send_json_success(
 		array(
@@ -771,6 +790,13 @@ function techjossecom_ajax_cod_order() {
 	if ( is_wp_error( $order ) ) {
 		wp_send_json_error( array( 'message' => $order->get_error_message() ) );
 	}
+
+	/*
+	 * Server-side Purchase for the quick order. It shares the order-keyed
+	 * event id with the thank-you page hit, so a shopper who lands on the
+	 * order-received screen is still counted once.
+	 */
+	techjossecom_track_cod_purchase_server( $order );
 
 	set_transient( $throttle, 1, 20 );
 

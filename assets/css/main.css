@@ -3083,19 +3083,124 @@ p.no-comments {
 	to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.tj-modal-close { position: absolute; top: 10px; right: 10px; }
-.tj-modal-title { margin: 0 24px 14px 0; font-size: 1.15rem; }
+.tj-modal-close { position: absolute; top: 10px; right: 10px; z-index: 2; }
 
-.tj-cod-product { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding: 10px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); background: #fbfbfc; }
-.tj-cod-thumb { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; overflow: hidden; border-radius: 8px; background: #fff; }
-.tj-cod-thumb img { width: 64px; height: 64px; object-fit: cover; }
-.tj-cod-thumb-fallback { font-size: 1.6rem; }
-.tj-cod-product-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.tj-cod-name { font-size: .95rem; font-weight: 700; }
-.tj-cod-price { color: var(--tj-accent); font-size: .95rem; font-weight: 800; }
+/* Quick Order header: the "Quick Order" heading and the one line under it that
+   tells the shopper what the popup is for, in the words of the store. */
+.tj-cod-head { margin: 0 24px 16px 0; }
+.tj-cod .tj-modal-title { margin: 0; font-size: 1.3rem; }
+.tj-cod-subtitle { margin: 3px 0 0; color: var(--tj-muted); font-size: .85rem; font-weight: 500; }
+
+.tj-cod-thumb { display: flex; align-items: center; justify-content: center; flex: none; width: 48px; height: 48px; overflow: hidden; border-radius: 8px; background: var(--tj-bg); }
+.tj-cod-thumb img { width: 48px; height: 48px; object-fit: cover; }
+.tj-cod-thumb-fallback { font-size: 1.4rem; }
 
 .tj-cod-row { margin-bottom: 12px; }
 .tj-cod-label { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 600; }
+
+/* The Size / Color rows a variable product shows, laid out like the single
+   product page: a named row per attribute, tappable chips for a size, colour
+   swatches for a colour. */
+.tj-cod-var-groups { display: flex; flex-direction: column; gap: 10px; }
+
+.tj-cod-var-group { display: flex; align-items: center; gap: 10px; }
+
+.tj-cod-var-group-name {
+	flex: 0 0 auto;
+	min-width: 46px;
+	color: var(--tj-text);
+	font-size: .78rem;
+	font-weight: 700;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+}
+
+.tj-cod-var-group-values { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.tj-cod-var-value {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-width: 36px;
+	height: 34px;
+	padding: 0 12px;
+	border: 1px solid var(--tj-line);
+	border-radius: 8px;
+	background: var(--tj-white);
+	color: var(--tj-text);
+	font-family: inherit;
+	font-size: .82rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+
+.tj-cod-var-value:hover { border-color: var(--tj-primary); }
+
+.tj-cod-var-value:focus-visible {
+	outline: 0;
+	border-color: var(--tj-primary);
+	box-shadow: 0 0 0 3px var(--tj-primary-ring);
+}
+
+.tj-cod-var-value.is-selected {
+	border-color: var(--tj-primary);
+	box-shadow: inset 0 0 0 1px var(--tj-primary);
+	color: var(--tj-primary);
+}
+
+.tj-cod-var-value.is-unavailable {
+	opacity: .4;
+	cursor: not-allowed;
+}
+
+/* A colour swatch is a painted square; the visible text is for screen readers
+   only, so the row reads as the swatches it looks like. */
+.tj-cod-var-value--color {
+	width: 34px;
+	min-width: 34px;
+	padding: 0;
+	background: var(--tj-swatch, #9ca3af);
+	box-shadow: inset 0 0 0 2px var(--tj-white);
+}
+
+.tj-cod-var-value--color .tj-cod-var-value-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.tj-cod-var-value--color.is-selected {
+	border-color: var(--tj-primary);
+	box-shadow: inset 0 0 0 2px var(--tj-white), 0 0 0 2px var(--tj-primary);
+}
+
+/* A labelled field with its own leading icon, the way the reference checkout
+   reads: name, phone and address each carry a small glyph inside the control
+   so the shopper can tell them apart at a glance. */
+.tj-cod-field { margin: 0 0 14px; }
+.tj-cod-field-label { display: block; margin-bottom: 5px; font-size: .82rem; font-weight: 600; }
+.tj-cod-control { position: relative; display: block; }
+.tj-cod-control-icon {
+	position: absolute;
+	top: 50%;
+	left: 12px;
+	display: flex;
+	transform: translateY( -50% );
+	color: var(--tj-muted);
+	pointer-events: none;
+}
+.tj-cod-control-icon .tj-icon { width: 18px; height: 18px; }
+.tj-cod-control input,
+.tj-cod-control textarea { padding-left: 40px; }
+/* The textarea is several lines tall, so its glyph sits under the first line
+   rather than being vertically centred against the whole box. */
+.tj-cod-control--area .tj-cod-control-icon { top: 12px; transform: none; }
+.tj-cod-control--area textarea { padding-top: 11px; resize: vertical; }
 
 /* The stepper in the cash on delivery popup, not the single product form.
    These used to be bare .tj-qty-btn rules, which meant they landed on the
@@ -3119,18 +3224,52 @@ p.no-comments {
 .tj-cod .tj-qty-btn:hover { background-color: var(--tj-primary-soft); color: var(--tj-primary); }
 .tj-cod .tj-qty .tj-qty-input { border-radius: 0; border-left: 0; border-right: 0; }
 
+/* A compact stepper that sits inside the order table's QTY cell, so it is a
+   little smaller than the standalone one and never wraps in the narrow column. */
+.tj-cod-order .tj-qty-btn { width: 28px; height: 30px; font-size: .95rem; }
+.tj-cod-order .tj-qty-input { width: 40px; height: 30px; padding: 0 2px; text-align: center; }
+
 .tj-cod-shipping-list { display: grid; gap: 8px; }
 .tj-cod-shipping-option { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); font-size: .88rem; cursor: pointer; }
 .tj-cod-shipping-option:hover { border-color: var(--tj-primary); }
-.tj-cod-shipping-option input { width: auto; margin: 0; }
+.tj-cod-shipping-option input { width: auto; margin: 0; accent-color: var(--tj-primary); }
 .tj-cod-shipping-label { flex: 1; }
-.tj-cod-shipping-cost { font-weight: 700; color: var(--tj-accent); }
+.tj-cod-shipping-cost { font-weight: 700; color: var(--tj-primary); white-space: nowrap; }
 .tj-cod-loading { margin: 0; color: var(--tj-muted); font-size: .85rem; }
 
 .tj-cod-grid { display: grid; gap: 0 12px; }
-.tj-cod-summary { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; padding: 12px; border-radius: var(--tj-radius); background: var(--tj-primary-soft); }
-.tj-cod-summary-label { font-size: .9rem; font-weight: 600; }
-.tj-cod-summary-value { color: var(--tj-primary); font-size: 1.2rem; }
+
+/* The order summary table: a row number, the product with its thumbnail and
+   quantity stepper, the unit price and the line subtotal, then the subtotal,
+   the shipping charge and the total payable, the way the reference checkout
+   reads. Numbers line up on the right so the columns are easy to scan. */
+.tj-cod-order { width: 100%; margin: 16px 0 4px; border-collapse: collapse; font-size: .85rem; }
+.tj-cod-order th,
+.tj-cod-order td { padding: 10px 6px; border-bottom: 1px solid var(--tj-line); text-align: left; vertical-align: middle; }
+.tj-cod-order thead th { color: var(--tj-muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+.tj-cod-order-idx { width: 28px; color: var(--tj-muted); }
+.tj-cod-order-num { text-align: right; white-space: nowrap; }
+.tj-cod-order-product { display: flex; align-items: center; gap: 10px; }
+.tj-cod-order-name { font-weight: 600; }
+.tj-cod-order tfoot th { font-weight: 600; text-align: left; }
+
+/* The one product line reads as a small card, so the thumbnail and the name
+   sit on a soft panel the way the reference checkout shows them. */
+.tj-cod-order tbody td { border: 0; }
+.tj-cod-order tbody tr td { border-bottom: 1px solid var(--tj-line); }
+.tj-cod-order-product-card {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-bg);
+}
+.tj-cod-order tfoot td { font-weight: 700; }
+.tj-cod-order-total th,
+.tj-cod-order-total td { border-bottom: 0; padding-top: 12px; color: var(--tj-primary); font-size: 1.05rem; font-weight: 800; }
+
 .tj-cod-message { margin: 10px 0 0; font-size: .85rem; font-weight: 600; }
 .tj-cod-message.is-error { color: var(--tj-danger); }
 .tj-cod-message.is-success { color: var(--tj-success); }
@@ -3260,7 +3399,13 @@ p.no-comments {
 	.tj-hero-img,
 	.tj-hero-main .tj-placeholder { height: 100%; min-height: 300px; }
 
-	.tj-hero-card { min-height: 0; border-radius: 0; background: var(--tj-dark); box-shadow: none; }
+	/*
+	 * The two side banners keep the same rounded corners as the large one, so
+	 * the whole hero band reads as a set of matching cards rather than three
+	 * blocks with mismatched edges. overflow: hidden on .tj-hero-card clips the
+	 * picture to those corners.
+	 */
+	.tj-hero-card { min-height: 0; border-radius: var(--tj-radius-lg); background: var(--tj-dark); box-shadow: none; }
 	.tj-hero-card-img { height: 100%; }
 
 	/*
