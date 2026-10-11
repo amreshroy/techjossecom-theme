@@ -1927,6 +1927,8 @@
 			variation: qs( '[data-tj-cod-variation]', modal ),
 			qty: qs( '[data-tj-cod-qty]', modal ),
 			shipping: qs( '[data-tj-cod-shipping]', modal ),
+			zoneWrap: qs( '[data-tj-cod-zone-wrap]', modal ),
+			zoneRegion: qs( '[data-tj-cod-zone-region]', modal ),
 			productId: qs( '[data-tj-cod-product-id]', modal ),
 			total: qs( '[data-tj-cod-total]', modal ),
 			form: qs( '[data-tj-cod-form]', modal ),
@@ -1944,7 +1946,9 @@
 			shippingCost: 0,
 			shippingLabel: '',
 			methodId: '',
-			instanceId: 0
+			instanceId: 0,
+			shippingZone: '',
+			zoneRegion: ''
 		};
 
 		function escapeHtml( value ) {
@@ -1960,6 +1964,12 @@
 
 		function currentVariation() {
 			return state.variations.length ? matchVariation( state.variations, state.chosen ) : null;
+		}
+
+		function getSelectedVariationId() {
+			var variation = currentVariation();
+
+			return variation ? ( parseInt( variation.id, 10 ) || 0 ) : 0;
 		}
 
 		/*
@@ -2122,6 +2132,9 @@
 				state.shippingLabel = '';
 				state.methodId = '';
 				state.instanceId = 0;
+				state.shippingZone = '';
+				state.zoneRegion = '';
+				renderZoneRegions();
 				updateTotal();
 
 				return;
@@ -2131,17 +2144,48 @@
 			state.shippingLabel = option.label || '';
 			state.methodId = option.method_id || '';
 			state.instanceId = parseInt( option.instance_id, 10 ) || 0;
+			state.shippingZone = option.zone_name || '';
+			state.zoneRegion = '';
+			renderZoneRegions( option );
 
 			updateTotal();
+		}
+
+		function renderZoneRegions( option ) {
+			if ( ! els.zoneWrap || ! els.zoneRegion ) {
+				return;
+			}
+
+			var regions = option && option.zone_regions ? option.zone_regions : [];
+
+			if ( ! regions.length ) {
+				els.zoneWrap.hidden = true;
+				els.zoneRegion.innerHTML = '';
+				state.zoneRegion = '';
+
+				return;
+			}
+
+			var html = '<option value="">' + escapeHtml( strings.chooseRegion || 'Select your zone region' ) + '</option>';
+
+			regions.forEach( function ( region ) {
+				html += '<option value="' + escapeHtml( region.label ) + '">' + escapeHtml( region.label ) + '</option>';
+			} );
+
+			els.zoneRegion.innerHTML = html;
+			els.zoneWrap.hidden = false;
 		}
 
 		function loadShipping() {
 			els.shipping.innerHTML = '<p class="tj-cod-loading">' + ( strings.searching || '...' ) + '</p>';
 
+			var picked = ( typeof currentVariation === 'function' ) ? currentVariation() : null;
+			var variationId = picked && picked.id ? picked.id : 0;
 			var body = new FormData();
 			body.append( 'action', 'techjossecom_shipping' );
 			body.append( 'nonce', data.codNonce || '' );
 			body.append( 'product_id', state.id );
+			body.append( 'variation_id', variationId );
 			body.append( 'quantity', currentQuantity() );
 
 			window.fetch( data.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } )
@@ -2164,12 +2208,11 @@
 					var html = '';
 
 					options.forEach( function ( option, index ) {
-						var cost = parseFloat( option.cost ) > 0 ? '&ndash; ' + formatPrice( option.cost ) : freeLabel;
+						var cost = parseFloat( option.cost ) > 0 ? formatPrice( option.cost ) : freeLabel;
 
 						html += '<label class="tj-cod-shipping-option">';
 						html += '<input type="radio" name="tj_shipping_option" value="' + index + '"' + ( index === 0 ? ' checked' : '' ) + '>';
-						html += '<span class="tj-cod-shipping-label">' + escapeHtml( option.label ) + '</span>';
-						html += '<span class="tj-cod-shipping-cost">' + cost + '</span>';
+						html += '<span class="tj-cod-shipping-label">' + escapeHtml( option.label ) + ' - ' + cost + '</span>';
 						html += '</label>';
 					} );
 
@@ -2187,6 +2230,12 @@
 				selectShipping( parseInt( event.target.value, 10 ) || 0 );
 			}
 		} );
+
+		if ( els.zoneRegion ) {
+			els.zoneRegion.addEventListener( 'change', function () {
+				state.zoneRegion = els.zoneRegion.value || '';
+			} );
+		}
 
 		// The -/+ stepper is wired up by the shared initQuantitySteppers() above,
 		// which steps the input and fires a change event; the change listener
@@ -2292,6 +2341,23 @@ loadShipping();
 			formData.append( 'shipping_cost', state.shippingCost );
 			formData.append( 'shipping_method_id', state.methodId );
 			formData.append( 'shipping_instance_id', state.instanceId );
+			formData.append( 'shipping_zone', state.shippingZone );
+			formData.append( 'zone_region', state.zoneRegion );
+			formData.append( 'shipping_zone', state.shippingZone );
+			formData.append( 'zone_region', state.zoneRegion || ( els.zoneRegion ? els.zoneRegion.value || '' : '' ) );
+			formData.append( 'shipping_zone', state.shippingZone );
+			formData.append( 'zone_region', state.zoneRegion );
+			formData.append( 'shipping_zone', state.shippingZone || '' );
+			formData.append( 'zone_region', state.zoneRegion || ( els.zoneRegion ? els.zoneRegion.value || '' : '' ) );
+			formData.append( 'shipping_zone', state.shippingZone );
+			var chosenRegion = state.zoneRegion || ( els.zoneRegion ? els.zoneRegion.value || '' : '' );
+			formData.append( 'zone_region', chosenRegion );
+
+			if ( els.zoneWrap && ! els.zoneWrap.hidden && ! chosenRegion ) {
+				showMessage( strings.chooseRegion || 'Please select your zone region.', 'error' );
+
+				return;
+			}
 
 			var originalText = els.submit.textContent;
 

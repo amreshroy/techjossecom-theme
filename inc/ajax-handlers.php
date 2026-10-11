@@ -441,125 +441,18 @@ add_action( 'wp_ajax_techjossecom_cart_update', 'techjossecom_ajax_cart_update' 
 add_action( 'wp_ajax_nopriv_techjossecom_cart_update', 'techjossecom_ajax_cart_update' );
 
 /**
- * Shipping options for a destination, used by the COD popup.
- *
- * @param int $product_id Optional product used to build the package contents.
- * @param int $quantity   Quantity of the product.
- * @return array List of array( id, method_id, instance_id, label, cost ).
- */
-function techjossecom_get_shipping_options( $product_id = 0, $quantity = 1 ) {
-	if ( ! class_exists( 'WooCommerce' ) || ! WC()->shipping ) {
-		return array();
-	}
-
-	$base    = wc_get_base_location();
-	$country = '';
-
-	if ( WC()->customer ) {
-		$country = WC()->customer->get_shipping_country();
-	}
-
-	if ( ! $country ) {
-		$country = isset( $base['country'] ) ? $base['country'] : 'BD';
-	}
-
-	$package = array(
-		'destination'     => array(
-			'country'  => $country,
-			'state'    => isset( $base['state'] ) ? $base['state'] : '',
-			'postcode' => '',
-		),
-		'contents'        => array(),
-		'contents_cost'   => 0,
-		'cart_subtotal'   => 0,
-		'applied_coupons' => array(),
-		'user'            => array( 'ID' => get_current_user_id() ),
-	);
-
-	$quantity = max( 1, absint( $quantity ) );
-
-	if ( $product_id ) {
-		$product = wc_get_product( $product_id );
-
-		if ( $product ) {
-			$line_total = (float) $product->get_price() * $quantity;
-
-			$package['contents'][ $product_id ] = array(
-				'product_id'        => $product->get_id(),
-				'variation_id'      => 0,
-				'variation'         => array(),
-				'quantity'          => $quantity,
-				'data'              => $product,
-				'line_total'        => $line_total,
-				'line_subtotal'     => $line_total,
-				'line_tax'          => 0,
-				'line_subtotal_tax' => 0,
-			);
-
-			$package['contents_cost'] = $line_total;
-			$package['cart_subtotal'] = $line_total;
-		}
-	}
-
-	$zone    = WC_Shipping_Zones::get_zone_matching_package( $package );
-	$options = array();
-
-	if ( ! $zone ) {
-		return $options;
-	}
-
-	foreach ( $zone->get_shipping_methods( true ) as $method ) {
-		if ( isset( $method->enabled ) && 'yes' !== $method->enabled ) {
-			continue;
-		}
-
-		if ( ! method_exists( $method, 'calculate_shipping' ) ) {
-			continue;
-		}
-
-		$method->calculate_shipping( $package );
-
-		if ( empty( $method->rates ) || ! is_array( $method->rates ) ) {
-			continue;
-		}
-
-		foreach ( $method->rates as $rate ) {
-			if ( ! $rate instanceof WC_Shipping_Rate ) {
-				continue;
-			}
-
-			$options[] = array(
-				'id'          => $rate->get_id(),
-				'method_id'   => $rate->get_method_id(),
-				'instance_id' => method_exists( $rate, 'get_instance_id' ) ? (int) $rate->get_instance_id() : 0,
-				'label'       => $rate->get_label(),
-				'cost'        => (float) $rate->get_cost(),
-			);
-		}
-	}
-
-	/**
-	 * Filter the shipping options offered in the COD popup.
-	 *
-	 * @param array $options    Shipping options.
-	 * @param array $package    Package used for the calculation.
-	 * @param int   $product_id Product ID.
-	 */
-	return apply_filters( 'techjossecom_shipping_options', $options, $package, $product_id );
-}
-
-/**
- * AJAX: return the shipping options for the COD popup.
+ * AJAX: every shipping method + its zone regions for the COD popup.
  *
  * @return void
  */
 function techjossecom_ajax_shipping_options() {
 	check_ajax_referer( 'techjossecom_cod', 'nonce' );
 
-	$product_id = isset( $_REQUEST['product_id'] ) ? absint( $_REQUEST['product_id'] ) : 0;
-	$quantity   = isset( $_REQUEST['quantity'] ) ? absint( $_REQUEST['quantity'] ) : 1;
+	$product_id   = isset( $_REQUEST['product_id'] ) ? absint( $_REQUEST['product_id'] ) : 0;
+	$variation_id = isset( $_REQUEST['variation_id'] ) ? absint( $_REQUEST['variation_id'] ) : 0;
+	$quantity     = isset( $_REQUEST['quantity'] ) ? absint( $_REQUEST['quantity'] ) : 1;
 
-	$options = techjossecom_get_shipping_options( $product_id, $quantity );
+	$options = techjossecom_wc_shipping_options( $product_id, $variation_id, $quantity );
 
 	wp_send_json_success(
 		array(
@@ -707,6 +600,14 @@ function techjossecom_create_cod_order( $data ) {
 
 	$order->update_meta_data( '_tj_quick_order', 'yes' );
 
+	if ( ! empty( $data['shipping_zone'] ) ) {
+		$order->update_meta_data( '_tj_shipping_zone', sanitize_text_field( $data['shipping_zone'] ) );
+	}
+
+	if ( ! empty( $data['zone_region'] ) ) {
+		$order->update_meta_data( '_tj_zone_region', sanitize_text_field( $data['zone_region'] ) );
+	}
+
 	$order->calculate_totals();
 	$order->save();
 
@@ -766,6 +667,8 @@ function techjossecom_ajax_cod_order() {
 		'shipping_cost'      => isset( $_POST['shipping_cost'] ) ? (float) $_POST['shipping_cost'] : 0,
 		'shipping_method_id' => isset( $_POST['shipping_method_id'] ) ? sanitize_text_field( wp_unslash( $_POST['shipping_method_id'] ) ) : '',
 		'shipping_instance_id' => isset( $_POST['shipping_instance_id'] ) ? absint( $_POST['shipping_instance_id'] ) : 0,
+		'shipping_zone' => isset( $_POST['shipping_zone'] ) ? sanitize_text_field( wp_unslash( $_POST['shipping_zone'] ) ) : '',
+		'zone_region' => isset( $_POST['zone_region'] ) ? sanitize_text_field( wp_unslash( $_POST['zone_region'] ) ) : '',
 	);
 
 	if ( '' === $data['name'] || '' === $data['phone'] || '' === $data['address'] ) {

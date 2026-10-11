@@ -61,14 +61,18 @@ if ( ! techjossecom_mod( 'enable_cod' ) || ! class_exists( 'WooCommerce' ) ) {
 				<div class="tj-cod-shipping-list" data-tj-cod-shipping>
 					<p class="tj-cod-loading"><?php esc_html_e( 'Checking delivery options…', 'techjossecom' ); ?></p>
 				</div>
+				<div class="tj-cod-zone" data-tj-cod-zone-wrap hidden>
+					<label class="tj-cod-field-label" for="tj-cod-zone-region"><?php esc_html_e( 'আপনার জোন রিজিয়ন সিলেক্ট করুন', 'techjossecom' ); ?></label>
+					<span class="tj-cod-control"><select id="tj-cod-zone-region" name="zone_region" data-tj-cod-zone-region></select></span>
+				</div>
 			</div>
 			<table class="tj-cod-order">
 			<thead>
 				<tr>
-					<th class="tj-cod-order-head" scope="col"><?php esc_html_e( 'প্রোডাক্ট', 'techjossecom' ); ?></th>
-					<th class="tj-cod-order-num" scope="col"><?php esc_html_e( 'QTY', 'techjossecom' ); ?></th>
-					<th class="tj-cod-order-num" scope="col"><?php esc_html_e( 'PRICE', 'techjossecom' ); ?></th>
-					<th class="tj-cod-order-num" scope="col"><?php esc_html_e( 'SUBTOTAL', 'techjossecom' ); ?></th>
+					<th class="tj-cod-order-head" scope="col"><?php esc_html_e( 'Product', 'techjossecom' ); ?></th>
+					<th class="tj-cod-order-num" scope="col"><?php esc_html_e( 'Qty', 'techjossecom' ); ?></th>
+					<th class="tj-cod-order-num" scope="col"><?php esc_html_e( 'Price', 'techjossecom' ); ?></th>
+					<th class="tj-cod-order-num" scope="col"><?php esc_html_e( 'Subtotal', 'techjossecom' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -95,7 +99,7 @@ if ( ! techjossecom_mod( 'enable_cod' ) || ! class_exists( 'WooCommerce' ) ) {
 			</tbody>
 			<tfoot>
 				<tr>
-					<th colspan="3" scope="row"><?php esc_html_e( 'সাবটোটাল (ট্যাক্স ছাড়া)', 'techjossecom' ); ?></th>
+					<th colspan="3" scope="row"><?php esc_html_e( 'সাবটোটাল (VAT বাদে)', 'techjossecom' ); ?></th>
 					<td class="tj-cod-order-num" data-tj-cod-subtotal>&mdash;</td>
 				</tr>
 				<tr>
@@ -112,11 +116,11 @@ if ( ! techjossecom_mod( 'enable_cod' ) || ! class_exists( 'WooCommerce' ) ) {
 			<input type="text" name="tj_hp" class="tj-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
 			<button type="submit" class="tj-btn tj-btn--primary tj-btn--block" data-tj-cod-submit>
-			<?php esc_html_e( 'অর্ডার কনফার্ম করুন', 'techjossecom' ); ?>
+			<?php esc_html_e( '✓ অর্ডার কনফার্ম করুন', 'techjossecom' ); ?>
 			</button>
 
 			<p class="tj-cod-message" data-tj-cod-message role="status" aria-live="polite"></p>
-			<p class="tj-cod-terms"><?php esc_html_e( 'কোনো অগ্রিম পেমেন্ট লাগবে না। পণ্য হাতে পেয়ে কুরিয়ারকে পরিশোধ করুন।', 'techjossecom' ); ?></p>
+			<p class="tj-cod-terms"><?php esc_html_e( 'শিপিং চার্জ আগে দিতে হবে।', 'techjossecom' ); ?></p>
 			</form>
 	</div>
 </div>

@@ -23,6 +23,7 @@ require_once TECHJOSSECOM_DIR . '/inc/customizer.php';
 require_once TECHJOSSECOM_DIR . '/inc/admin-settings.php';
 require_once TECHJOSSECOM_DIR . '/inc/performance-seo.php';
 require_once TECHJOSSECOM_DIR . '/inc/woocommerce-setup.php';
+require_once TECHJOSSECOM_DIR . '/inc/cod-shipping.php';
 require_once TECHJOSSECOM_DIR . '/inc/ajax-handlers.php';
 require_once TECHJOSSECOM_DIR . '/inc/analytics.php';
 require_once TECHJOSSECOM_DIR . '/inc/master-import.php';
