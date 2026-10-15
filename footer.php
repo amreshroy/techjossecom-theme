@@ -72,11 +72,28 @@ $techjossecom_copyright = techjossecom_mod( 'footer_copyright' );
 					if ( $techjossecom_copyright ) {
 						echo esc_html( $techjossecom_copyright );
 					} else {
+						// printf(
+						// 	/* translators: 1: current year, 2: site name. */
+						// 	esc_html__( '© %1$s %2$s. All rights reserved. Designed by %3$s.', 'techjossecom' ),
+						// 	esc_html( gmdate( 'Y' ) ),
+						// 	esc_html( get_bloginfo( 'name' ) ),
+						// 	esc_url( 'https://yourwebsite.com' )
+						// );
 						printf(
-							/* translators: 1: current year, 2: site name. */
-							esc_html__( '© %1$s %2$s. All rights reserved.', 'techjossecom' ),
+							wp_kses(
+								/* translators: 1: current year, 2: site name. 3: author website URL.*/
+								__( '© %1$s %2$s. All rights reserved. Designed by <a href="%3$s" target="_blank" rel="noopener">Amresh</a>', 'techjossecom' ),
+								array(
+									'a' => array(
+										'href'   => array(),
+										'target' => array(),
+										'rel'    => array(),
+									),
+								)
+							),
 							esc_html( gmdate( 'Y' ) ),
-							esc_html( get_bloginfo( 'name' ) )
+							esc_html( get_bloginfo( 'name' ) ),
+							esc_url( 'https://amreshroy.com' )
 						);
 					}
 					?>

@@ -3089,7 +3089,7 @@ p.no-comments {
 
 /* One button per row, full width. The first is the softer of the two so the
    route to checkout stays the obvious one. */
-.tj-cart-actions { display: grid; gap: 10px; }
+.tj-cart-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .tj-cart-actions .tj-btn { width: 100%; min-height: 46px; }
 .tj-cart-actions .tj-btn--ghost { background: var(--tj-bg); }
 .tj-cart-actions .tj-btn--ghost:hover { background: var(--tj-line); }
@@ -3501,7 +3501,6 @@ p.no-comments {
 	.tj-intro { padding: 28px; }
 	.tj-seo-title { font-size: 1.45rem; }
 	.tj-footer-top { grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr; }
-	.tj-cart-actions { grid-template-columns: 1fr 1fr; }
 }
 
 @media (min-width: 1200px) {
@@ -3535,8 +3534,8 @@ p.no-comments {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 50px;
-	height: 50px;
+	width: 40px;
+	height: 40px;
 	padding: 0;
 	border: 0;
 	border-radius: 50%;

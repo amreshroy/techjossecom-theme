@@ -142,7 +142,7 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 						techjossecom_scroll_buttons();
 						?>
 
-						<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'View All', 'techjossecom' ); ?> &rsaquo;</a>
+						<a class="tj-section-link" href="<?php echo esc_url( techjossecom_shop_url() ); ?>"><?php esc_html_e( 'View All', 'techjossecom' ); ?> &rarr;</a>
 					</div>
 				</div>
 
