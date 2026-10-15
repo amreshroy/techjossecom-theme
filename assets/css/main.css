@@ -1452,6 +1452,48 @@ body.tj-locked { overflow: hidden; }
 
 /* --------------------------------------------------------- features ---- */
 
+/* ----------------------------------------------------- top banners ---- */
+
+/* The pair of image banners printed above the New Arrivals row. There is no
+   heading and no text: the picture is the content and, when the banner has a
+   link, the whole tile is the click target. The block carries no padding of
+   its own - the section above and the section below each keep their own
+   rhythm - and the grid stacks the pair until there is room to draw them side
+   by side. A banner on its own is not left at half width: :only-child
+   stretches it across the whole row. */
+.tj-top-banners-grid { display: grid; gap: 12px; }
+
+.tj-top-banner {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	border-radius: var(--tj-radius-lg);
+	background: var(--tj-dark);
+	box-shadow: var(--tj-shadow);
+	transition: box-shadow .15s ease;
+}
+
+a.tj-top-banner:hover { box-shadow: var(--tj-shadow-lg); }
+
+.tj-top-banner__img {
+	display: block;
+	width: 100%;
+	height: 150px;
+	object-fit: cover;
+}
+
+/* One banner alone takes the whole row rather than half of it. */
+.tj-top-banner:only-child { grid-column: 1 / -1; }
+
+@media (min-width: 576px) {
+	.tj-top-banner__img { height: 180px; }
+}
+
+@media (min-width: 768px) {
+	.tj-top-banners-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.tj-top-banner__img { height: 210px; }
+}
+
 /* Four selling points on the front page. They read as a row of four small cards
    two-up on a phone. The icon sits above the text and everything is centred, so
    each card is a self-contained badge: a shopper scanning the strip reads four

@@ -23,7 +23,6 @@ require_once TECHJOSSECOM_DIR . '/inc/customizer.php';
 require_once TECHJOSSECOM_DIR . '/inc/admin-settings.php';
 require_once TECHJOSSECOM_DIR . '/inc/performance-seo.php';
 require_once TECHJOSSECOM_DIR . '/inc/woocommerce-setup.php';
-require_once TECHJOSSECOM_DIR . '/inc/cod-shipping.php';
 require_once TECHJOSSECOM_DIR . '/inc/ajax-handlers.php';
 require_once TECHJOSSECOM_DIR . '/inc/analytics.php';
 require_once TECHJOSSECOM_DIR . '/inc/master-import.php';
@@ -78,6 +77,14 @@ function techjossecom_defaults() {
 		'hero_slide5_image'         => '',
 		'hero_slide5_mobile_image'  => '',
 		'hero_slide5_url'           => '',
+		/* The pair of image banners printed directly above the New Arrivals
+		   row on the homepage. Each banner is a picture plus an optional
+		   link; the section stays hidden until one of the pictures is set. */
+		'show_top_banners'          => true,
+		'top_banner1_image'         => '',
+		'top_banner1_url'           => '',
+		'top_banner2_image'         => '',
+		'top_banner2_url'           => '',
 		'show_front_heading'  => true,
 		'front_heading'       => 'Shop Online in Bangladesh — Genuine Products, Fast Delivery',
 		'show_intro'          => true,

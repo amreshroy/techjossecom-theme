@@ -386,6 +386,34 @@ function techjossecom_admin_fields() {
 			'min'         => 0,
 			'max'         => 16,
 		),
+		'show_top_banners'    => array(
+			'type'        => 'checkbox',
+			'label'       => __( 'Show the two banners above New Arrivals', 'techjossecom' ),
+			'description' => __( 'The pair of pictures printed between the deals row and the New Arrivals row. The section stays hidden until at least one image is set.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'top_banner1_image'   => array(
+			'type'        => 'image',
+			'label'       => __( 'Top banner 1 image', 'techjossecom' ),
+			'description' => __( 'Recommended 600 x 200 px. Leave a banner empty to skip it.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'top_banner1_url'     => array(
+			'type'        => 'url',
+			'label'       => __( 'Top banner 1 link', 'techjossecom' ),
+			'description' => __( 'Where the banner points. Leave empty to show the image without a link.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'top_banner2_image'   => array(
+			'type'    => 'image',
+			'label'   => __( 'Top banner 2 image', 'techjossecom' ),
+			'section' => 'home',
+		),
+		'top_banner2_url'     => array(
+			'type'    => 'url',
+			'label'   => __( 'Top banner 2 link', 'techjossecom' ),
+			'section' => 'home',
+		),
 		'show_latest'        => array(
 			'type'    => 'checkbox',
 			'label'   => __( 'Show the "New Arrivals" grid', 'techjossecom' ),

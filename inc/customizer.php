@@ -545,22 +545,59 @@ function techjossecom_customize_register( $wp_customize ) {
 				'max'         => 16,
 				'priority'    => 85,
 			),
+			/*
+			 * The two image banners sit directly above the New Arrivals row
+			 * on the page, so their controls sit directly above the New
+			 * Arrivals controls here too. The four "latest" priorities and
+			 * the service highlight tick move up to make room; their order
+			 * relative to each other - and to everything after them - is
+			 * unchanged, so no control jumps past one a site owner has
+			 * already found.
+			 */
+			'show_top_banners'  => array(
+				'label'       => __( 'Show the two banners above New Arrivals', 'techjossecom' ),
+				'description' => __( 'The pair of pictures printed between the deals row and the New Arrivals row. The section stays hidden until at least one image is set.', 'techjossecom' ),
+				'type'        => 'checkbox',
+				'priority'    => 86,
+			),
+			'top_banner1_image' => array(
+				'label'       => __( 'Top banner 1 image', 'techjossecom' ),
+				'description' => __( 'Recommended 600 x 200 px. Leave a banner empty to skip it.', 'techjossecom' ),
+				'type'        => 'image',
+				'priority'    => 87,
+			),
+			'top_banner1_url'   => array(
+				'label'       => __( 'Top banner 1 link', 'techjossecom' ),
+				'description' => __( 'Where the banner points. Leave empty to show the image without a link.', 'techjossecom' ),
+				'type'        => 'url',
+				'priority'    => 88,
+			),
+			'top_banner2_image' => array(
+				'label'    => __( 'Top banner 2 image', 'techjossecom' ),
+				'type'     => 'image',
+				'priority' => 89,
+			),
+			'top_banner2_url'   => array(
+				'label'    => __( 'Top banner 2 link', 'techjossecom' ),
+				'type'     => 'url',
+				'priority' => 90,
+			),
 			'show_latest'      => array(
 				'label'    => __( 'Show the "New Arrivals" grid', 'techjossecom' ),
 				'type'     => 'checkbox',
-				'priority' => 86,
+				'priority' => 91,
 			),
 			'latest_title'     => array(
 				'label'    => __( 'New Arrivals section heading', 'techjossecom' ),
 				'type'     => 'text',
-				'priority' => 87,
+				'priority' => 92,
 			),
 			'latest_limit'     => array(
 				'label'    => __( 'Number of new arrival products', 'techjossecom' ),
 				'type'     => 'number',
 				'min'      => 2,
 				'max'      => 16,
-				'priority' => 88,
+				'priority' => 93,
 			),
 			'latest_mobile_limit' => array(
 				'label'       => __( 'New arrival products on mobile', 'techjossecom' ),
@@ -568,13 +605,13 @@ function techjossecom_customize_register( $wp_customize ) {
 				'type'        => 'number',
 				'min'         => 0,
 				'max'         => 16,
-				'priority'    => 89,
+				'priority'    => 94,
 			),
 			'show_features'    => array(
 				'label'       => __( 'Show the service highlight bar', 'techjossecom' ),
 				'description' => __( 'The four-item bar with icons, usually placed under the hero banner.', 'techjossecom' ),
 				'type'        => 'checkbox',
-				'priority'    => 90,
+				'priority'    => 95,
 			),
 			'feature1_title'   => array(
 				'label'    => __( 'Highlight 1 title', 'techjossecom' ),
@@ -923,7 +960,7 @@ function techjossecom_customizer_schema() {
 			array( 'hero_slider_autoplay', 'hero_slider_speed' ),
 			techjossecom_hero_slider_keys()
 		),
-		'home'    => array( 'show_front_heading', 'front_heading', 'show_intro', 'intro_title', 'intro_text', 'show_categories', 'categories_title', 'categories_limit', 'categories_mobile_limit', 'show_deals', 'deals_title', 'deals_limit', 'deals_mobile_limit', 'show_latest', 'latest_title', 'latest_limit', 'latest_mobile_limit', 'show_features', 'feature1_title', 'feature1_text', 'feature2_title', 'feature2_text', 'feature3_title', 'feature3_text', 'feature4_title', 'feature4_text' ),
+		'home'    => array( 'show_front_heading', 'front_heading', 'show_intro', 'intro_title', 'intro_text', 'show_categories', 'categories_title', 'categories_limit', 'categories_mobile_limit', 'show_deals', 'deals_title', 'deals_limit', 'deals_mobile_limit', 'show_top_banners', 'top_banner1_image', 'top_banner1_url', 'top_banner2_image', 'top_banner2_url', 'show_latest', 'latest_title', 'latest_limit', 'latest_mobile_limit', 'show_features', 'feature1_title', 'feature1_text', 'feature2_title', 'feature2_text', 'feature3_title', 'feature3_text', 'feature4_title', 'feature4_text' ),
 		'cod'     => array( 'enable_cod', 'cod_button_text', 'cod_modal_title', 'cod_success_message' ),
 		'product' => array( 'show_single_share' ),
 		'footer'  => array( 'footer_about', 'contact_address', 'contact_email', 'footer_payments', 'social_facebook', 'social_youtube', 'social_x', 'social_linkedin', 'social_instagram', 'social_pinterest', 'footer_copyright' ),

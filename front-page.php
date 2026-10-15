@@ -156,6 +156,80 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 	<?php endif; ?>
 
 	<?php
+	/*
+	 * The two image banners directly above the New Arrivals row.
+	 *
+	 * Both are edited in Appearance -> Theme Settings (and in the customizer
+	 * under "4. Homepage Sections"): one picture and one optional link each,
+	 * with a switch that hides the pair. Nothing is printed until at least
+	 * one of the two pictures has been chosen, so an untouched site keeps
+	 * the flow it has today with no empty band above the new arrivals.
+	 *
+	 * The same markup is served to every screen - the stylesheet stacks the
+	 * pair on a phone and draws it side by side from 768px up - so one
+	 * cached page stays correct for both, the way the hero banners work. A
+	 * banner with no link of its own is shown as a plain picture rather
+	 * than wrapped in an empty href, the same rule the hero slider follows.
+	 *
+	 * The picture asks the browser for about half the container from 768px
+	 * up and the full width below it, so a phone is never pointed at a file
+	 * twice as wide as the slot it is drawn in, and the registered
+	 * "techjossecom-hero-side" size keeps a 4k upload out of a half width
+	 * slot.
+	 */
+	$techjossecom_top_banners = array();
+
+	if ( techjossecom_mod( 'show_top_banners' ) ) {
+		for ( $techjossecom_i = 1; $techjossecom_i <= 2; $techjossecom_i++ ) {
+			$techjossecom_banner_image = (int) techjossecom_mod( 'top_banner' . $techjossecom_i . '_image' );
+
+			if ( $techjossecom_banner_image <= 0 ) {
+				continue;
+			}
+
+			$techjossecom_top_banners[] = array(
+				'id'  => $techjossecom_banner_image,
+				'url' => techjossecom_mod( 'top_banner' . $techjossecom_i . '_url' ),
+			);
+		}
+	}
+
+	if ( $techjossecom_top_banners ) :
+		?>
+		<section class="tj-top-banners">
+			<div class="tj-container tj-top-banners-grid">
+				<?php foreach ( $techjossecom_top_banners as $techjossecom_banner ) : ?>
+					<?php
+					$techjossecom_banner_markup = techjossecom_image(
+						$techjossecom_banner['id'],
+						'techjossecom-hero-side',
+						array(
+							'class' => 'tj-top-banner__img',
+							'sizes' => '(min-width: 1328px) 610px, (min-width: 768px) 50vw, 100vw',
+						)
+					);
+
+					if ( ! $techjossecom_banner_markup ) {
+						continue;
+					}
+					?>
+					<?php if ( $techjossecom_banner['url'] ) : ?>
+						<a class="tj-top-banner" href="<?php echo esc_url( $techjossecom_banner['url'] ); ?>">
+							<?php echo $techjossecom_banner_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</a>
+					<?php else : ?>
+						<div class="tj-top-banner">
+							<?php echo $techjossecom_banner_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+					<?php endif; ?>
+				<?php endforeach; ?>
+			</div>
+		</section>
+		<?php
+	endif;
+	?>
+
+	<?php
 	$techjossecom_latest        = ( techjossecom_mod( 'show_latest' ) && $techjossecom_has_woo )
 		? techjossecom_latest_products( techjossecom_section_limit( 'latest_limit' ) )
 		: null;
