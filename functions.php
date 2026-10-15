@@ -1076,6 +1076,7 @@ function techjossecom_icon( $name, $class = '' ) {
 		'search'        => '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>',
 		'grid'          => '<rect x="3" y="3" width="7.5" height="7.5" rx="1.4"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.4"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.4"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.4"/>',
 		'chevron-down'  => '<path d="m6 9 6 6 6-6"/>',
+		'chevron-up'    => '<path d="m18 15-6-6-6 6"/>',
 		'chevron-right' => '<path d="m9 6 6 6-6 6"/>',
 		'arrow-left'    => '<path d="M20 12H4"/><path d="m10 5-7 7 7 7"/>',
 		'arrow-right'   => '<path d="M4 12h16"/><path d="m14 5 7 7-7 7"/>',

@@ -6,6 +6,7 @@
  *  - AJAX live product search with keyboard support
  *  - AJAX add to cart on simple product pages
  *  - the cash on delivery quick order popup (shipping options by AJAX)
+ *  - a floating scroll to top button
  *
  * @package TechJosse_Commerce
  */
@@ -2393,6 +2394,44 @@ loadShipping();
 					els.submit.disabled = false;
 					els.submit.textContent = originalText;
 				} );
+		} );
+	}
+
+	/* -------------------------------------------------- scroll to top -- */
+
+	var scrollTopBtn = qs( '[data-tj-scroll-top]' );
+
+	if ( scrollTopBtn ) {
+		var scrollThreshold = 400;
+		var scrollTick = false;
+
+		/*
+		 * The button ships with the hidden attribute, so a visitor without
+		 * JavaScript never meets a dead control. From here the fade in and
+		 * out is driven purely by the is-visible class in the stylesheet.
+		 */
+		scrollTopBtn.hidden = false;
+
+		var syncScrollTop = function () {
+			scrollTopBtn.classList.toggle( 'is-visible', window.pageYOffset > scrollThreshold );
+			scrollTick = false;
+		};
+
+		window.addEventListener( 'scroll', function () {
+			if ( scrollTick ) {
+				return;
+			}
+
+			scrollTick = true;
+			window.requestAnimationFrame( syncScrollTop );
+		}, { passive: true } );
+
+		syncScrollTop();
+
+		scrollTopBtn.addEventListener( 'click', function () {
+			var reduce = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+
+			window.scrollTo( { top: 0, behavior: reduce ? 'auto' : 'smooth' } );
 		} );
 	}
 

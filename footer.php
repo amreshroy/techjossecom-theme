@@ -1,6 +1,6 @@
 <?php
 /**
- * Site footer: link columns, socials and mini cart drawer.
+ * Site footer: link columns, socials, mini cart drawer and back to top.
  *
  * @package TechJosse_Commerce
  */
@@ -103,6 +103,10 @@ $techjossecom_copyright = techjossecom_mod( 'footer_copyright' );
 			<a href="tel:<?php echo esc_attr( preg_replace( '/[^0-9+]/', '', techjossecom_mod( 'hotline_number' ) ) ); ?>"><span aria-hidden="true"><?php echo techjossecom_icon( 'phone' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php esc_html_e( 'Call', 'techjossecom' ); ?></a>
 		<?php endif; ?>
 	</nav>
+
+	<button type="button" class="tj-scroll-top" data-tj-scroll-top aria-label="<?php esc_attr_e( 'Back to top', 'techjossecom' ); ?>" hidden>
+		<span aria-hidden="true"><?php echo techjossecom_icon( 'chevron-up' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+	</button>
 </div><!-- #page -->
 
 <?php wp_footer(); ?>
