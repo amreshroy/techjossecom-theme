@@ -1,6 +1,6 @@
 <?php
 /**
- * Site footer: link columns, socials, mini cart drawer and the COD popup.
+ * Site footer: link columns, socials and mini cart drawer.
  *
  * @package TechJosse_Commerce
  */
@@ -89,7 +89,6 @@ $techjossecom_copyright = techjossecom_mod( 'footer_copyright' );
 	</footer>
 
 	<?php get_template_part( 'template-parts/mini-cart' ); ?>
-	<?php get_template_part( 'template-parts/cod-modal' ); ?>
 
 	<div class="tj-overlay" data-tj-overlay hidden></div>
 
