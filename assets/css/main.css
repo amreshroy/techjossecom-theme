@@ -1082,7 +1082,7 @@ textarea:focus {
    768px, and it anchors the suggestion panel underneath. The right padding
    reserves the lane the close button sits in. */
 .tj-search--bar { display: block; position: relative; padding: 0 48px 0 12px; }
-.tj-search--bar .tj-search-form { display: flex; align-items: center; gap: 8px; }
+.tj-search--bar .tj-search-form { display: flex; align-items: center; }
 
 .tj-search-field {
 	position: relative;
@@ -1138,8 +1138,7 @@ textarea:focus {
 	flex: 0 0 auto;
 	width: 42px;
 	height: 42px;
-	border-radius: 50%;
-	background: var(--tj-secondary);
+	background: var(--tj-primary);
 }
 
 .tj-search--bar .tj-search-submit:hover { background: var(--tj-secondary-dark); }
@@ -1977,7 +1976,7 @@ a.tj-top-banner:hover { box-shadow: var(--tj-shadow-lg); }
 .tj-page-band .tj-breadcrumb li + li::before { color: rgba(255, 255, 255, .5); }
 
 .woocommerce-products-header { margin-bottom: 10px; }
-.woocommerce-result-count { margin: 0; color: var(--tj-muted); font-size: .82rem; }
+.woocommerce-result-count { margin: 0; color: var(--tj-muted); font-size: .82rem; width: 100px; }
 .woocommerce-ordering { margin: 0; }
 .woocommerce-ordering select { padding: 8px 10px; font-size: .85rem; }
 
