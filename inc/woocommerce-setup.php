@@ -607,7 +607,6 @@ function techjossecom_woocommerce_init() {
 	add_filter( 'loop_shop_per_page', 'techjossecom_loop_per_page', 20 );
 	add_filter( 'loop_shop_columns', 'techjossecom_loop_columns', 20 );
 	add_filter( 'woocommerce_sale_flash', 'techjossecom_sale_flash', 10, 3 );
-	add_action( 'woocommerce_after_shop_loop_item', 'techjossecom_loop_order_now', 20 );
 	add_action( 'woocommerce_after_shop_loop_item_title', 'techjossecom_loop_stock_note', 15 );
 	add_filter( 'woocommerce_product_add_to_cart_text', 'techjossecom_add_to_cart_text', 10, 2 );
 
@@ -647,24 +646,6 @@ function techjossecom_woocommerce_init() {
 	// elements stay in the markup; the script mirrors a chip click onto them.
 	add_action( 'woocommerce_before_variations_form', 'techjossecom_single_variation_picker', 5 );
 
-	/*
-	 * "Order Now" belongs beside "Add to cart", not below it.
-	 *
-	 * It used to hang off woocommerce_single_product_summary, which fires
-	 * after the add-to-cart form has closed, so the two controls could never
-	 * share a row: the form laid out the quantity box and the add button,
-	 * ended, and only then did the Order Now button appear underneath as a
-	 * block of its own. That left two buttons of different widths stacked
-	 * on top of each other - one tall strip each - for two actions a shopper
-	 * weighs up side by side.
-	 *
-	 * woocommerce_after_add_to_cart_button fires inside the form, right
-	 * after the add button, which puts both under one row of CSS. On a
-	 * product with no add-to-cart form at all - an out of stock one, say -
-	 * there is no such hook and no button either way, so nothing is lost.
-	 */
-	add_action( 'woocommerce_single_product_summary', 'techjossecom_single_order_now', 31 );
-	add_action( 'woocommerce_after_add_to_cart_button', 'techjossecom_single_order_now' );
 	add_action( 'woocommerce_single_product_summary', 'techjossecom_single_trust_badges', 35 );
 	remove_action( 'woocommerce_share', 'woocommerce_share' );
 	add_action( 'woocommerce_share', 'techjossecom_single_share' );
@@ -993,46 +974,6 @@ function techjossecom_single_sale_badge() {
 }
 
 /**
- * Render the "Order Now" (cash on delivery) button for a product.
- *
- * @param WC_Product|int|null $product Product object or ID.
- * @param string              $context Either 'loop' or 'single'.
- * @return void
- */
-function techjossecom_order_now_button( $product = null, $context = 'loop' ) {
-	if ( ! techjossecom_mod( 'enable_cod' ) || ! class_exists( 'WooCommerce' ) ) {
-		return;
-	}
-
-	if ( ! $product instanceof WC_Product ) {
-		global $product;
-	}
-
-	if ( ! $product instanceof WC_Product || ! $product->is_purchasable() ) {
-		return;
-	}
-
-	$image_id   = $product->get_image_id();
-	$image_url  = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
-	$price      = $product->get_price();
-	$variations = techjossecom_variation_data( $product );
-	$attributes = techjossecom_variation_attributes( $product );
-
-	printf(
-		'<button type="button" class="tj-btn tj-btn--cod tj-order-now tj-order-now--%6$s" data-product-id="%1$d" data-product-name="%2$s" data-product-price="%3$s" data-product-image="%4$s" data-product-type="%5$s" data-selected-variation=""%8$s%9$s>%7$s</button>',
-		(int) $product->get_id(),
-		esc_attr( $product->get_name() ),
-		esc_attr( $price ? $price : '0' ),
-		esc_url( $image_url ),
-		esc_attr( $product->get_type() ),
-		esc_attr( $context ),
-		esc_html( techjossecom_mod( 'cod_button_text' ) ),
-		$variations ? ' data-product-variations="' . esc_attr( wp_json_encode( $variations ) ) . '"' : '',
-		$attributes ? ' data-product-attributes="' . esc_attr( wp_json_encode( $attributes ) ) . '"' : ''
-	);
-}
-
-/**
  * Map an attribute term slug onto a CSS colour, for the swatch buttons.
  *
  * Only the common colour names and literal hex values are resolved. Anything
@@ -1151,65 +1092,6 @@ function techjossecom_variation_data( $product = null ) {
 }
 
 /**
- * Collect the attribute groups of a variable product for the quick order popup.
- *
- * The popup shows the same Size / Color picker as the single product page
- * rather than a flat list of every variation, so it needs to know the groups
- * (their labels, which one is a colour, and each option's display text and
- * swatch) and not just the purchasable variations. Built here so the two
- * never disagree about the same product.
- *
- * @param WC_Product|null $product Product object.
- * @return array List of groups, empty for anything but a variable product.
- */
-function techjossecom_variation_attributes( $product = null ) {
-	if ( ! $product instanceof WC_Product || ! $product->is_type( 'variable' ) ) {
-		return array();
-	}
-
-	$attributes = $product->get_variation_attributes();
-
-	if ( empty( $attributes ) ) {
-		return array();
-	}
-
-	$groups = array();
-
-	foreach ( $attributes as $name => $values ) {
-		if ( empty( $values ) || ! is_array( $values ) ) {
-			continue;
-		}
-
-		$taxonomy = str_replace( 'attribute_', '', $name );
-		$is_color = (bool) preg_match( '/colou?r/i', $taxonomy . ' ' . wc_attribute_label( $taxonomy ) );
-		$label    = wc_attribute_label( $taxonomy );
-		$cart_name = 0 === strpos( $name, 'attribute_' ) ? $name : 'attribute_' . $name;
-
-		$options = array();
-
-		foreach ( $values as $slug ) {
-			$term = taxonomy_exists( $taxonomy ) ? get_term_by( 'slug', $slug, $taxonomy ) : null;
-			$text = $term && ! is_wp_error( $term ) ? $term->name : $slug;
-
-			$options[] = array(
-				'slug'  => (string) $slug,
-				'text'  => $text,
-				'color' => $is_color ? techjossecom_swatch_color( $slug ) : '',
-			);
-		}
-
-		$groups[] = array(
-			'name'     => $cart_name,
-			'label'    => $label,
-			'is_color' => $is_color,
-			'options'  => $options,
-		);
-	}
-
-	return $groups;
-}
-
-/**
  * Render the Size / Color picker of a variable product.
  *
  * WooCommerce's own picker is a <table class="variations"> of <select> dropdowns,
@@ -1323,17 +1205,6 @@ function techjossecom_variation_picker( $product = null, $context = 'single' ) {
 }
 
 /**
- * "Order Now" button under every product card in the shop loop.
- *
- * @return void
- */
-function techjossecom_loop_order_now() {
-	global $product;
-
-	techjossecom_order_now_button( $product, 'loop' );
-}
-
-/**
  * Print the Size / Color chips inside the single product add-to-cart form.
  *
  * @return void
@@ -1411,38 +1282,6 @@ function techjossecom_add_to_cart_text( $text, $product ) {
 	}
 
 	return $text;
-}
-
-/**
- * "Order Now" button on the single product page.
- *
- * @return void
- */
-function techjossecom_single_order_now() {
-	global $product;
-
-	if ( ! $product instanceof WC_Product || ! $product->is_in_stock() ) {
-		return;
-	}
-
-	/*
-	 * Printed once, even though it is hooked into two places.
-	 *
-	 * The summary hook is the fallback for a product whose template prints no
-	 * add-to-cart form, and the in-form hook is where it belongs when there
-	 * is one. Both fire on an ordinary purchasable product, so without this
-	 * the shopper would be offered the same button twice, the lower one
-	 * pushed away down the page by the block above it.
-	 */
-	static $printed = false;
-
-	if ( $printed ) {
-		return;
-	}
-
-	$printed = true;
-
-	techjossecom_order_now_button( $product, 'single' );
 }
 
 /**

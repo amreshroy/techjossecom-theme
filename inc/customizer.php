@@ -204,7 +204,7 @@ function techjossecom_customize_register( $wp_customize ) {
 		'techjossecom_panel',
 		array(
 			'title'       => __( 'TechJosse Theme Options', 'techjossecom' ),
-			'description' => __( 'Top bar, hero banners, homepage sections, Cash on Delivery popup and footer.', 'techjossecom' ),
+			'description' => __( 'Top bar, hero banners, homepage sections and footer.', 'techjossecom' ),
 			'priority'    => 20,
 		)
 	);
@@ -214,10 +214,9 @@ function techjossecom_customize_register( $wp_customize ) {
 		'header'  => array( __( '2. Header & Live Search', 'techjossecom' ), 20 ),
 		'hero'    => array( __( '3. Homepage Hero Banners', 'techjossecom' ), 30 ),
 		'home'    => array( __( '4. Homepage Sections', 'techjossecom' ), 40 ),
-		'cod'     => array( __( '5. Cash on Delivery Popup', 'techjossecom' ), 50 ),
-		'product' => array( __( '6. Product Page', 'techjossecom' ), 60 ),
-		'footer'  => array( __( '7. Footer', 'techjossecom' ), 70 ),
-		'colors'  => array( __( '8. Colours', 'techjossecom' ), 80 ),
+		'product' => array( __( '5. Product Page', 'techjossecom' ), 60 ),
+		'footer'  => array( __( '6. Footer', 'techjossecom' ), 70 ),
+		'colors'  => array( __( '7. Colours', 'techjossecom' ), 80 ),
 	);
 
 	foreach ( $sections as $slug => $data ) {
@@ -713,38 +712,7 @@ function techjossecom_customize_register( $wp_customize ) {
 	);
 
 	// ---------------------------------------------------------------------
-	// 5. Cash on Delivery popup.
-	// ---------------------------------------------------------------------
-	techjossecom_add_fields(
-		$wp_customize,
-		'techjossecom_section_cod',
-		array(
-			'enable_cod'          => array(
-				'label'       => __( 'Enable the COD "Order Now" popup', 'techjossecom' ),
-				'description' => __( 'Requires the Cash on delivery payment method to be enabled in WooCommerce → Settings → Payments.', 'techjossecom' ),
-				'type'        => 'checkbox',
-				'priority'    => 5,
-			),
-			'cod_button_text'     => array(
-				'label'    => __( 'Button label', 'techjossecom' ),
-				'type'     => 'text',
-				'priority' => 10,
-			),
-			'cod_modal_title'     => array(
-				'label'    => __( 'Popup heading', 'techjossecom' ),
-				'type'     => 'text',
-				'priority' => 20,
-			),
-			'cod_success_message' => array(
-				'label'    => __( 'Message shown after the order is placed', 'techjossecom' ),
-				'type'     => 'textarea',
-				'priority' => 30,
-			),
-		)
-	);
-
-	// ---------------------------------------------------------------------
-	// 6. Product page.
+	// 5. Product page.
 	// ---------------------------------------------------------------------
 	techjossecom_add_fields(
 		$wp_customize,
@@ -758,7 +726,7 @@ function techjossecom_customize_register( $wp_customize ) {
 		)
 	);
 	// ---------------------------------------------------------------------
-	// 7. Footer.
+	// 6. Footer.
 	// ---------------------------------------------------------------------
 	techjossecom_add_fields(
 		$wp_customize,
@@ -824,7 +792,7 @@ function techjossecom_customize_register( $wp_customize ) {
 	);
 
 	// ---------------------------------------------------------------------
-	// 8. Colours.
+	// 7. Colours.
 	// ---------------------------------------------------------------------
 	techjossecom_add_fields(
 		$wp_customize,
@@ -961,7 +929,6 @@ function techjossecom_customizer_schema() {
 			techjossecom_hero_slider_keys()
 		),
 		'home'    => array( 'show_front_heading', 'front_heading', 'show_intro', 'intro_title', 'intro_text', 'show_categories', 'categories_title', 'categories_limit', 'categories_mobile_limit', 'show_deals', 'deals_title', 'deals_limit', 'deals_mobile_limit', 'show_top_banners', 'top_banner1_image', 'top_banner1_url', 'top_banner2_image', 'top_banner2_url', 'show_latest', 'latest_title', 'latest_limit', 'latest_mobile_limit', 'show_features', 'feature1_title', 'feature1_text', 'feature2_title', 'feature2_text', 'feature3_title', 'feature3_text', 'feature4_title', 'feature4_text' ),
-		'cod'     => array( 'enable_cod', 'cod_button_text', 'cod_modal_title', 'cod_success_message' ),
 		'product' => array( 'show_single_share' ),
 		'footer'  => array( 'footer_about', 'contact_address', 'contact_email', 'footer_payments', 'social_facebook', 'social_youtube', 'social_x', 'social_linkedin', 'social_instagram', 'social_pinterest', 'footer_copyright' ),
 		'colors'  => array( 'primary_color', 'accent_color', 'dark_color', 'secondary_color' ),

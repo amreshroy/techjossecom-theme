@@ -3,7 +3,7 @@
  * TechJosse Commerce - theme bootstrap.
  *
  * A lightweight, SEO friendly WooCommerce theme with AJAX live search,
- * a slide-in mini cart and a one-click Cash on Delivery order popup.
+ * a slide-in mini cart and a single product variation picker.
  *
  * @package TechJosse_Commerce
  */
@@ -146,10 +146,6 @@ function techjossecom_defaults() {
 		'feature3_text'       => 'Call us any time',
 		'feature4_title'      => 'Best Price Guarantee',
 		'feature4_text'       => 'Affordable & transparent',
-		'enable_cod'          => true,
-		'cod_button_text'     => 'Order Now',
-		'cod_modal_title'     => 'কুইক অর্ডার',
-		'cod_success_message' => 'Thank you! Your order has been received.',
 		'contact_address'     => 'Dhaka, Bangladesh',
 		'contact_email'       => '',
 		'whatsapp_number'     => '',
@@ -467,12 +463,7 @@ function techjossecom_upgrade_mods() {
 		return;
 	}
 
-	$renamed = array(
-		'cod_button_text' => array(
-			'from' => 'Order Now (Cash on Delivery)',
-			'to'   => 'Order Now',
-		),
-	);
+	$renamed = array();
 
 	foreach ( $renamed as $key => $change ) {
 		$name  = 'techjossecom_' . $key;
@@ -662,13 +653,11 @@ function techjossecom_assets() {
 			'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'      => $wc_ajax_url,
 			'searchNonce'    => wp_create_nonce( 'techjossecom_search' ),
-			'codNonce'       => wp_create_nonce( 'techjossecom_cod' ),
 			'cartNonce'      => wp_create_nonce( 'techjossecom_cart' ),
 			'cartUrl'        => class_exists( 'WooCommerce' ) ? wc_get_cart_url() : '',
 			'checkoutUrl'    => class_exists( 'WooCommerce' ) ? wc_get_checkout_url() : '',
 			'isWooCommerce'  => class_exists( 'WooCommerce' ),
 			'liveSearch'     => (bool) techjossecom_mod( 'show_live_search' ),
-			'codEnabled'     => (bool) techjossecom_mod( 'enable_cod' ),
 			'currency'       => class_exists( 'WooCommerce' ) ? get_woocommerce_currency() : '',
 			'currencySymbol' => class_exists( 'WooCommerce' ) ? get_woocommerce_currency_symbol() : '',
 			'priceFormat'    => array(
@@ -683,12 +672,8 @@ function techjossecom_assets() {
 				'noResults'     => __( 'No products found.', 'techjossecom' ),
 				'viewAll'       => __( 'View all results', 'techjossecom' ),
 				'adding'        => __( 'Adding...', 'techjossecom' ),
-				'orderPlacing'  => __( 'Placing your order...', 'techjossecom' ),
 				'error'         => __( 'Something went wrong. Please try again.', 'techjossecom' ),
-				'required'      => __( 'Please fill in your name, mobile number and address.', 'techjossecom' ),
-				'variationRequired' => __( 'Please choose the product options first.', 'techjossecom' ),
 				'close'         => __( 'Close', 'techjossecom' ),
-				'free'          => __( 'Free', 'techjossecom' ),
 				'outOfStock'    => __( 'Out of stock', 'techjossecom' ),
 				// %s is the list of options still to choose, for example "Size, Color".
 				'chooseOptions' => __( 'Please choose %s before adding this to your cart.', 'techjossecom' ),

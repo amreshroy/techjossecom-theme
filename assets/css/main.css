@@ -389,8 +389,6 @@ hr { border: 0; border-top: 1px solid var(--tj-line); margin: 2em 0; }
 .tj-btn--accent:hover { background: var(--tj-accent-dark); color: var(--tj-white); }
 .tj-btn--ghost { background: transparent; border-color: var(--tj-line); color: var(--tj-text); }
 .tj-btn--ghost:hover { background: #f3f4f6; color: var(--tj-text); }
-.tj-btn--cod { background: var(--tj-primary); color: var(--tj-white); }
-.tj-btn--cod:hover { background: var(--tj-primary-dark); color: var(--tj-white); }
 .tj-btn--whatsapp { background: #25d366; color: #08301a; }
 .tj-btn--whatsapp:hover { background: #1eb257; color: #08301a; }
 .tj-btn--messenger { background: #0084ff; color: var(--tj-white); }
@@ -1862,22 +1860,10 @@ a.tj-top-banner:hover { box-shadow: var(--tj-shadow-lg); }
 	min-height: var(--tj-btn-h-card);
 }
 
-/* The card icon ships at 20x20. Scaled to the button's own text size it can never
-   push the Order Now button taller than the add to cart link next to it. */
-.woocommerce ul.products li.product.tj-product .tj-product-actions .tj-order-now svg.tj-icon,
-.tj-product .tj-product-actions .tj-order-now svg.tj-icon {
-	width: 16px;
-	height: 16px;
-}
-
 .woocommerce ul.products li.product.tj-product .tj-product-actions > .button,
 .tj-product .tj-product-actions > .button { background: var(--tj-dark); color: var(--tj-white); }
 .woocommerce ul.products li.product.tj-product .tj-product-actions > .button:hover,
 .tj-product .tj-product-actions > .button:hover { background: var(--tj-secondary-dark); color: var(--tj-white); }
-.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn--cod,
-.tj-product .tj-product-actions > .tj-btn--cod { background: var(--tj-primary); color: var(--tj-white); }
-.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn--cod:hover,
-.tj-product .tj-product-actions > .tj-btn--cod:hover { background: var(--tj-primary-dark); color: var(--tj-white); }
 
 /* Phones: reclaim the page margins. The 16px gutter costs 32px of a 360px screen
    and the content inside it (product cards, the feature grid) already carries its
@@ -1960,12 +1946,6 @@ a.tj-top-banner:hover { box-shadow: var(--tj-shadow-lg); }
 		   neighbouring button if a translated label is still too long. */
 		white-space: nowrap;
 		overflow: hidden;
-	}
-
-	.woocommerce ul.products li.product.tj-product .tj-product-actions .tj-order-now svg.tj-icon,
-	.tj-product .tj-product-actions .tj-order-now svg.tj-icon {
-		width: 13px;
-		height: 13px;
 	}
 }
 
@@ -2258,25 +2238,23 @@ body.single-product div.product div.images .flex-control-thumbs li img.flex-acti
    readable. */
 .woocommerce div.product form.cart { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; margin: 12px 0; }
 .woocommerce div.product form.cart .quantity { flex: 0 0 auto; display: inline-flex; align-items: stretch; margin: 0; }
-.woocommerce div.product form.cart .button,
-.single-product .tj-order-now--single { flex: 1 1 auto; min-width: 96px; justify-content: center; }
+.woocommerce div.product form.cart .button { flex: 1 1 auto; min-width: 96px; justify-content: center; }
 /* Neither button may wrap its label, and each needs room for it.
 
    The buttons used to be "min-width: 0", which let flex squeeze one below
-   the width of its own text: "Order Now" broke over two lines, grew taller
+   the width of its own text: a label broke over two lines, grew taller
    than the quantity box beside it, and broke the row apart. Removing that
    floor and setting nowrap keeps each label whole, and the basis of auto
    with equal growth still divides the leftover space evenly, so the pair
    come out the same width on a desktop column.
 
-   The 96px floor is the width "Order Now" needs at this font size plus its
+   The 96px floor is the width the label needs at this font size plus its
    padding. It is deliberately not a media query: a phone in portrait, a
    landscape phone and a small tablet all differ here, and a fixed pixel
    rule on the button itself holds on every one of them. Where the row
    genuinely runs out, the wrap below moves a button to its own line, which
    is the only honest outcome when two labels cannot both fit. */
-.woocommerce div.product form.cart .single_add_to_cart_button,
-.single-product .tj-order-now--single { white-space: nowrap; }
+.woocommerce div.product form.cart .single_add_to_cart_button { white-space: nowrap; }
 /* The three hidden fields the form posts - add-to-cart, product_id and
    variation_id - are laid out after the buttons and count as flex children,
    so the gap lands between the buttons as well as between them and the
@@ -2302,16 +2280,12 @@ body.single-product div.product div.images .flex-control-thumbs li img.flex-acti
    width, and the two buttons split what is left. */
 .woocommerce div.product form.cart .variations_button { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; width: 100%; }
 .woocommerce div.product form.cart .variations_button .quantity { flex: 0 0 auto; }
-.woocommerce div.product form.cart .variations_button .single_add_to_cart_button,
-.woocommerce div.product form.cart .variations_button .tj-order-now--single { flex: 1 1 auto; min-width: 96px; white-space: nowrap; }
-/* All three controls resolve to one height. The "Order Now" button carries a
-   20px card icon that is taller than the add button's text, so without a
-   floor on both it grows a few pixels past its neighbour and the pair stops
-   reading as a matched set. "box-sizing" is restated because min-height is
-   only the border box under border-box sizing, and the height token would be
-   meaningless without it. */
-.woocommerce div.product form.cart .button,
-.single-product .tj-order-now--single {
+.woocommerce div.product form.cart .variations_button .single_add_to_cart_button { flex: 1 1 auto; min-width: 96px; white-space: nowrap; }
+/* All controls resolve to one height, so the stepper and the add to cart
+   button read as a matched set. "box-sizing" is restated because min-height
+   is only the border box under border-box sizing, and the height token would
+   be meaningless without it. */
+.woocommerce div.product form.cart .button {
 	box-sizing: border-box;
 	min-height: var(--tj-btn-h-single);
 }
@@ -2464,16 +2438,6 @@ body.single-product div.product div.images .flex-control-thumbs li img.flex-acti
 .tj-qty-input::-webkit-outer-spin-button,
 .tj-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-/* "Order Now" sits beside "Add to cart" and takes half the row, so the old
-   full-width rule is dropped in favour of the flex basis set above. Only the
-   box is restated here: padding and the centred label are what keep the two
-   buttons reading as a matched pair at every width. */
-/* "Order Now" matches the rounded corners of the button beside it. It was
-   left at the 6px it inherited from an earlier layout, against the 10px the
-   theme uses everywhere else, so the pair read as two different controls
-   rather than one matched set. The padding stays tight so the label still
-   fits its minimum width on a narrow phone. */
-.single-product .tj-order-now--single { justify-content: center; padding: 12px 12px; border-radius: 10px; font-size: .95rem; }
 .tj-single-cats { margin: 0 0 6px; font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .tj-single-cats a { color: var(--tj-primary); }
 
@@ -3094,232 +3058,6 @@ p.no-comments {
 .tj-cart-actions .tj-btn--ghost { background: var(--tj-bg); }
 .tj-cart-actions .tj-btn--ghost:hover { background: var(--tj-line); }
 
-/* ----------------------------------------------------- COD popup ------- */
-
-.tj-modal {
-	position: fixed;
-	inset: 0;
-	z-index: 140;
-	display: flex;
-	align-items: flex-start;
-	justify-content: center;
-	overflow-y: auto;
-	padding: 12px;
-}
-
-.tj-modal[hidden] { display: none; }
-
-.tj-modal-backdrop { position: fixed; inset: 0; background: rgba(9, 20, 15, .6); }
-
-.tj-modal-panel {
-	position: relative;
-	z-index: 1;
-	width: min(100%, 560px);
-	margin: auto;
-	padding: 20px;
-	border-radius: var(--tj-radius-lg);
-	background: var(--tj-white);
-	box-shadow: var(--tj-shadow-lg);
-	animation: tj-pop .2s ease;
-}
-
-@keyframes tj-pop {
-	from { opacity: 0; transform: translateY(12px) scale(.98); }
-	to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.tj-modal-close { position: absolute; top: 10px; right: 10px; z-index: 2; }
-
-/* Quick Order header: the "Quick Order" heading and the one line under it that
-   tells the shopper what the popup is for, in the words of the store. */
-.tj-cod-head { margin: 0 24px 16px 0; }
-.tj-cod .tj-modal-title { margin: 0; font-size: 1.3rem; }
-.tj-cod-subtitle { margin: 3px 0 0; color: var(--tj-muted); font-size: .85rem; font-weight: 500; }
-
-.tj-cod-thumb { display: flex; align-items: center; justify-content: center; flex: none; width: 48px; height: 48px; overflow: hidden; border-radius: 8px; background: var(--tj-bg); }
-.tj-cod-thumb img { width: 48px; height: 48px; object-fit: cover; }
-.tj-cod-thumb-fallback { font-size: 1.4rem; }
-
-.tj-cod-row { margin-bottom: 12px; }
-.tj-cod-label { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 600; }
-
-/* The Size / Color rows a variable product shows, laid out like the single
-   product page: a named row per attribute, tappable chips for a size, colour
-   swatches for a colour. */
-.tj-cod-var-groups { display: flex; flex-direction: column; gap: 10px; }
-
-.tj-cod-var-group { display: flex; align-items: center; gap: 10px; }
-
-.tj-cod-var-group-name {
-	flex: 0 0 auto;
-	min-width: 46px;
-	color: var(--tj-text);
-	font-size: .78rem;
-	font-weight: 700;
-	letter-spacing: .04em;
-	text-transform: uppercase;
-}
-
-.tj-cod-var-group-values { display: flex; flex-wrap: wrap; gap: 6px; }
-
-.tj-cod-var-value {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	box-sizing: border-box;
-	min-width: 36px;
-	height: 34px;
-	padding: 0 12px;
-	border: 1px solid var(--tj-line);
-	border-radius: 8px;
-	background: var(--tj-white);
-	color: var(--tj-text);
-	font-family: inherit;
-	font-size: .82rem;
-	font-weight: 600;
-	cursor: pointer;
-	transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
-}
-
-.tj-cod-var-value:hover { border-color: var(--tj-primary); }
-
-.tj-cod-var-value:focus-visible {
-	outline: 0;
-	border-color: var(--tj-primary);
-	box-shadow: 0 0 0 3px var(--tj-primary-ring);
-}
-
-.tj-cod-var-value.is-selected {
-	border-color: var(--tj-primary);
-	box-shadow: inset 0 0 0 1px var(--tj-primary);
-	color: var(--tj-primary);
-}
-
-.tj-cod-var-value.is-unavailable {
-	opacity: .4;
-	cursor: not-allowed;
-}
-
-/* A colour swatch is a painted square; the visible text is for screen readers
-   only, so the row reads as the swatches it looks like. */
-.tj-cod-var-value--color {
-	width: 34px;
-	min-width: 34px;
-	padding: 0;
-	background: var(--tj-swatch, #9ca3af);
-	box-shadow: inset 0 0 0 2px var(--tj-white);
-}
-
-.tj-cod-var-value--color .tj-cod-var-value-text {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	overflow: hidden;
-	clip: rect(0 0 0 0);
-	white-space: nowrap;
-}
-
-.tj-cod-var-value--color.is-selected {
-	border-color: var(--tj-primary);
-	box-shadow: inset 0 0 0 2px var(--tj-white), 0 0 0 2px var(--tj-primary);
-}
-
-/* A labelled field with its own leading icon, the way the reference checkout
-   reads: name, phone and address each carry a small glyph inside the control
-   so the shopper can tell them apart at a glance. */
-.tj-cod-field { margin: 0 0 14px; }
-.tj-cod-field-label { display: block; margin-bottom: 5px; font-size: .82rem; font-weight: 600; }
-.tj-cod-control { position: relative; display: block; }
-.tj-cod-control-icon {
-	position: absolute;
-	top: 50%;
-	left: 12px;
-	display: flex;
-	transform: translateY( -50% );
-	color: var(--tj-muted);
-	pointer-events: none;
-}
-.tj-cod-control-icon .tj-icon { width: 18px; height: 18px; }
-.tj-cod-control input,
-.tj-cod-control textarea { padding-left: 40px; }
-/* The textarea is several lines tall, so its glyph sits under the first line
-   rather than being vertically centred against the whole box. */
-.tj-cod-control--area .tj-cod-control-icon { top: 12px; transform: none; }
-.tj-cod-control--area textarea { padding-top: 11px; resize: vertical; }
-
-/* The stepper in the cash on delivery popup, not the single product form.
-   These used to be bare .tj-qty-btn rules, which meant they landed on the
-   single product stepper as well and overrode its sizing there: the popup's
-   fixed 38px square and white fill won on order, so the buttons stopped
-   matching the height of the add to cart button beside them. Scoping to
-   .tj-cod keeps the two controls independent. */
-.tj-cod .tj-qty { display: inline-flex; align-items: center; }
-.tj-cod .tj-qty-btn {
-	width: 38px;
-	height: 38px;
-	border: 1px solid var(--tj-line);
-	background-color: var(--tj-white);
-	color: var(--tj-text);
-	font-size: 1.05rem;
-	line-height: 1;
-	cursor: pointer;
-}
-.tj-cod .tj-qty-btn:first-child { border-radius: var(--tj-radius) 0 0 var(--tj-radius); }
-.tj-cod .tj-qty-btn:last-child { border-radius: 0 var(--tj-radius) var(--tj-radius) 0; }
-.tj-cod .tj-qty-btn:hover { background-color: var(--tj-primary-soft); color: var(--tj-primary); }
-.tj-cod .tj-qty .tj-qty-input { border-radius: 0; border-left: 0; border-right: 0; }
-
-/* A compact stepper that sits inside the order table's QTY cell, so it is a
-   little smaller than the standalone one and never wraps in the narrow column. */
-.tj-cod-order .tj-qty-btn { width: 28px; height: 30px; font-size: .95rem; }
-.tj-cod-order .tj-qty-input { width: 40px; height: 30px; padding: 0 2px; text-align: center; }
-
-.tj-cod-shipping-list { display: grid; gap: 8px; }
-.tj-cod-shipping-option { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--tj-line); border-radius: var(--tj-radius); font-size: .88rem; cursor: pointer; }
-.tj-cod-shipping-option:hover { border-color: var(--tj-primary); }
-.tj-cod-shipping-option input { width: auto; margin: 0; accent-color: var(--tj-primary); }
-.tj-cod-shipping-label { flex: 1; }
-.tj-cod-shipping-cost { font-weight: 700; color: var(--tj-primary); white-space: nowrap; }
-.tj-cod-loading { margin: 0; color: var(--tj-muted); font-size: .85rem; }
-
-.tj-cod-grid { display: grid; gap: 0 12px; }
-
-/* The order summary table: a row number, the product with its thumbnail and
-   quantity stepper, the unit price and the line subtotal, then the subtotal,
-   the shipping charge and the total payable, the way the reference checkout
-   reads. Numbers line up on the right so the columns are easy to scan. */
-.tj-cod-order { width: 100%; margin: 16px 0 4px; border-collapse: collapse; font-size: .85rem; }
-.tj-cod-order th,
-.tj-cod-order td { padding: 10px 6px; border-bottom: 1px solid var(--tj-line); text-align: left; vertical-align: middle; }
-.tj-cod-order thead th { color: var(--tj-muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
-.tj-cod-order-idx { width: 28px; color: var(--tj-muted); }
-.tj-cod-order-num { text-align: right; white-space: nowrap; }
-.tj-cod-order-product { display: flex; align-items: center; gap: 10px; }
-.tj-cod-order-name { font-weight: 600; }
-.tj-cod-order tfoot th { font-weight: 600; text-align: left; }
-
-/* The one product line reads as a small card, so the thumbnail and the name
-   sit on a soft panel the way the reference checkout shows them. */
-.tj-cod-order tbody td { border: 0; }
-.tj-cod-order tbody tr td { border-bottom: 1px solid var(--tj-line); }
-.tj-cod-order-product-card {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 10px;
-	border: 1px solid var(--tj-line);
-	border-radius: var(--tj-radius);
-	background: var(--tj-bg);
-}
-.tj-cod-order tfoot td { font-weight: 700; }
-.tj-cod-order-total th,
-.tj-cod-order-total td { border-bottom: 0; padding-top: 12px; color: var(--tj-primary); font-size: 1.05rem; font-weight: 800; }
-
-.tj-cod-message { margin: 10px 0 0; font-size: .85rem; font-weight: 600; }
-.tj-cod-message.is-error { color: var(--tj-danger); }
-.tj-cod-message.is-success { color: var(--tj-success); }
-.tj-cod-terms { margin: 8px 0 0; color: var(--tj-muted); font-size: .76rem; text-align: center; }
-.tj-modal.is-loading .tj-btn--block { opacity: .7; pointer-events: none; }
 /* ----------------------------------------------------------- footer ---- */
 
 .tj-footer { margin-top: 30px; padding-top: 28px; background: var(--tj-dark); color: rgba(255, 255, 255, .78); font-size: .88rem; }
@@ -3376,7 +3114,6 @@ p.no-comments {
 	.tj-hero-card-img { height: 150px; }
 	.tj-category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	.tj-post-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.tj-cod-grid { grid-template-columns: 1fr 1fr; }
 	.tj-footer-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -3391,7 +3128,6 @@ p.no-comments {
 	.woocommerce ul.products, .tj-front-page ul.products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 	.tj-hero-img,
 	.tj-hero-main .tj-placeholder { height: 320px; }
-	.tj-modal-panel { padding: 24px; }
 	.tj-footer-top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	.tj-footer-bottom-inner { text-align: left; }
 }
@@ -3945,7 +3681,7 @@ p.no-comments {
 }
 
 @media print {
-	.tj-topbar, .tj-header, .tj-nav-bar, .tj-bottom-bar, .tj-footer, .tj-drawer, .tj-modal, .tj-overlay, .tj-scroll-top { display: none !important; }
+	.tj-topbar, .tj-header, .tj-nav-bar, .tj-bottom-bar, .tj-footer, .tj-drawer, .tj-overlay, .tj-scroll-top { display: none !important; }
 	body { background: #fff; }
 }
 

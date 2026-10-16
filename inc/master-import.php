@@ -252,7 +252,7 @@ function techjossecom_master_field_type( $key ) {
 		return 'color';
 	}
 
-	if ( in_array( $key, array( 'footer_about', 'intro_text', 'cod_success_message', 'contact_address' ), true ) ) {
+	if ( in_array( $key, array( 'footer_about', 'intro_text', 'contact_address' ), true ) ) {
 		return 'textarea';
 	}
 
