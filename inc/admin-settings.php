@@ -361,6 +361,19 @@ function techjossecom_admin_fields() {
 			'min'         => 0,
 			'max'         => 24,
 		),
+		'show_category_showcase' => array(
+			'type'        => 'checkbox',
+			'label'       => __( 'Show the selected category showcase', 'techjossecom' ),
+			'description' => __( 'Shows one category cover beside its latest products and a link to view the full category.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'category_showcase_category' => array(
+			'type'        => 'select',
+			'label'       => __( 'Category to showcase', 'techjossecom' ),
+			'description' => __( 'Choose the WooCommerce category whose products appear in this section.', 'techjossecom' ),
+			'section'     => 'home',
+			'choices'     => techjossecom_product_category_choices(),
+		),
 		'show_deals'         => array(
 			'type'    => 'checkbox',
 			'label'   => __( 'Show the "Best Deals" grid', 'techjossecom' ),

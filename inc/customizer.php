@@ -173,6 +173,13 @@ function techjossecom_add_fields( $wp_customize, $section, $fields ) {
 			continue;
 		}
 
+		if ( 'color' === $type ) {
+			$wp_customize->add_control(
+				new WP_Customize_Color_Control( $wp_customize, $setting_id, $args )
+			);
+			continue;
+		}
+
 		$args['type'] = $type;
 
 		if ( 'select' === $type ) {
@@ -518,6 +525,19 @@ function techjossecom_customize_register( $wp_customize ) {
 				'min'         => 0,
 				'max'         => 24,
 				'priority'    => 55,
+			),
+			'show_category_showcase' => array(
+				'label'       => __( 'Show the selected category showcase', 'techjossecom' ),
+				'description' => __( 'Shows one category cover beside its latest products and a link to view the full category.', 'techjossecom' ),
+				'type'        => 'checkbox',
+				'priority'    => 56,
+			),
+			'category_showcase_category' => array(
+				'label'       => __( 'Category to showcase', 'techjossecom' ),
+				'description' => __( 'Choose the WooCommerce category whose products appear in this section.', 'techjossecom' ),
+				'type'        => 'select',
+				'choices'     => techjossecom_product_category_choices(),
+				'priority'    => 57,
 			),
 			'show_deals'       => array(
 				'label'    => __( 'Show the "Best Deals" grid', 'techjossecom' ),
@@ -928,7 +948,7 @@ function techjossecom_customizer_schema() {
 			array( 'hero_slider_autoplay', 'hero_slider_speed' ),
 			techjossecom_hero_slider_keys()
 		),
-		'home'    => array( 'show_front_heading', 'front_heading', 'show_intro', 'intro_title', 'intro_text', 'show_categories', 'categories_title', 'categories_limit', 'categories_mobile_limit', 'show_deals', 'deals_title', 'deals_limit', 'deals_mobile_limit', 'show_top_banners', 'top_banner1_image', 'top_banner1_url', 'top_banner2_image', 'top_banner2_url', 'show_latest', 'latest_title', 'latest_limit', 'latest_mobile_limit', 'show_features', 'feature1_title', 'feature1_text', 'feature2_title', 'feature2_text', 'feature3_title', 'feature3_text', 'feature4_title', 'feature4_text' ),
+		'home'    => array( 'show_front_heading', 'front_heading', 'show_intro', 'intro_title', 'intro_text', 'show_categories', 'categories_title', 'categories_limit', 'categories_mobile_limit', 'show_category_showcase', 'category_showcase_category', 'show_deals', 'deals_title', 'deals_limit', 'deals_mobile_limit', 'show_top_banners', 'top_banner1_image', 'top_banner1_url', 'top_banner2_image', 'top_banner2_url', 'show_latest', 'latest_title', 'latest_limit', 'latest_mobile_limit', 'show_features', 'feature1_title', 'feature1_text', 'feature2_title', 'feature2_text', 'feature3_title', 'feature3_text', 'feature4_title', 'feature4_text' ),
 		'product' => array( 'show_single_share' ),
 		'footer'  => array( 'footer_about', 'contact_address', 'contact_email', 'footer_payments', 'social_facebook', 'social_youtube', 'social_x', 'social_linkedin', 'social_instagram', 'social_pinterest', 'footer_copyright' ),
 		'colors'  => array( 'primary_color', 'accent_color', 'dark_color', 'secondary_color' ),

@@ -110,6 +110,54 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 	<?php endif; ?>
 
 	<?php
+	/*
+	 * Selected Category Showcase.
+	 *
+	 * This intentionally uses the category's WooCommerce thumbnail as the
+	 * large visual card. One category selection therefore controls its cover,
+	 * its product list and both archive links, with no duplicate image or URL
+	 * to keep in sync in the theme settings.
+	 */
+	$techjossecom_showcase_term_id = (int) techjossecom_mod( 'category_showcase_category' );
+	$techjossecom_showcase_term    = ( $techjossecom_has_woo && $techjossecom_showcase_term_id > 0 )
+		? get_term( $techjossecom_showcase_term_id, 'product_cat' )
+		: null;
+	$techjossecom_showcase_products = ( techjossecom_mod( 'show_category_showcase' ) && $techjossecom_showcase_term instanceof WP_Term )
+		? techjossecom_category_showcase_products( $techjossecom_showcase_term->term_id, 7 )
+		: null;
+
+	if ( $techjossecom_showcase_products && $techjossecom_showcase_products->have_posts() ) :
+		$techjossecom_showcase_url      = get_term_link( $techjossecom_showcase_term );
+		$techjossecom_showcase_thumb_id = (int) get_term_meta( $techjossecom_showcase_term->term_id, 'thumbnail_id', true );
+		?>
+		<?php if ( ! is_wp_error( $techjossecom_showcase_url ) ) : ?>
+			<section class="tj-section tj-section--category-showcase">
+				<div class="tj-container">
+					<div class="tj-section-head">
+						<h2 class="tj-section-title"><?php echo esc_html( $techjossecom_showcase_term->name ); ?></h2>
+						<a class="tj-section-link" href="<?php echo esc_url( $techjossecom_showcase_url ); ?>"><?php esc_html_e( 'View all', 'techjossecom' ); ?> &rarr;</a>
+					</div>
+
+					<div class="tj-category-showcase">
+						<a class="tj-category-showcase__cover" href="<?php echo esc_url( $techjossecom_showcase_url ); ?>">
+							<?php if ( $techjossecom_showcase_thumb_id ) : ?>
+								<?php echo wp_get_attachment_image( $techjossecom_showcase_thumb_id, 'large', false, array( 'loading' => 'lazy', 'class' => 'tj-category-showcase__image', 'alt' => $techjossecom_showcase_term->name ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php else : ?>
+								<span class="tj-category-showcase__fallback" aria-hidden="true"><?php echo techjossecom_icon( 'grid' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							<?php endif; ?>
+							<span class="tj-category-showcase__overlay"><span><?php esc_html_e( 'Shop category', 'techjossecom' ); ?></span><strong><?php echo esc_html( $techjossecom_showcase_term->name ); ?></strong></span>
+						</a>
+
+						<div class="tj-category-showcase__products">
+							<?php techjossecom_category_showcase_grid( $techjossecom_showcase_products, $techjossecom_showcase_term ); ?>
+						</div>
+					</div>
+				</div>
+			</section>
+		<?php endif; ?>
+	<?php endif; ?>
+
+	<?php
 	$techjossecom_deals        = ( techjossecom_mod( 'show_deals' ) && $techjossecom_has_woo )
 		? techjossecom_on_sale_products( techjossecom_section_limit( 'deals_limit' ) )
 		: null;

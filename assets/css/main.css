@@ -1573,6 +1573,105 @@ a.tj-top-banner:hover { box-shadow: var(--tj-shadow-lg); }
 .tj-category-icon { font-size: 1.5rem; }
 .tj-category-name { color: var(--tj-text); font-size: .85rem; font-weight: 700; }
 .tj-category-count { color: var(--tj-muted); font-size: .72rem; }
+
+/* --------------------------------------------- category showcase ------ */
+
+/*
+ * A selected WooCommerce category gets one large editorial card alongside a
+ * compact product grid. The cover and every product point to the same archive,
+ * so this still has one source of truth when a category is renamed or moved.
+ */
+.tj-category-showcase {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px;
+}
+
+.tj-category-showcase__cover {
+	position: relative;
+	display: flex;
+	align-items: flex-end;
+	min-height: 260px;
+	overflow: hidden;
+	border-radius: var(--tj-radius);
+	background: linear-gradient(145deg, var(--tj-dark), var(--tj-primary));
+	box-shadow: var(--tj-shadow);
+	color: var(--tj-white);
+	isolation: isolate;
+}
+
+.tj-category-showcase__cover::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, transparent 28%, rgba(10, 20, 16, .78) 100%);
+	z-index: 1;
+}
+
+.tj-category-showcase__image {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform .25s ease;
+}
+
+.tj-category-showcase__cover:hover .tj-category-showcase__image { transform: scale(1.04); }
+
+.tj-category-showcase__fallback {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	color: rgba(255, 255, 255, .82);
+}
+
+.tj-category-showcase__fallback .tj-icon { width: 68px; height: 68px; stroke-width: 1.35; }
+
+.tj-category-showcase__overlay {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	width: 100%;
+	padding: 18px;
+}
+
+.tj-category-showcase__overlay span { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .88; }
+.tj-category-showcase__overlay strong { font-size: clamp(1.2rem, 3vw, 1.75rem); line-height: 1.15; }
+
+.tj-category-showcase__products ul.products { height: 100%; }
+
+.woocommerce ul.products li.product.tj-category-showcase__more,
+.tj-category-showcase__more {
+	display: flex;
+	min-width: 0;
+	margin: 0 !important;
+}
+
+.woocommerce ul.products li.product.tj-category-showcase__more > a,
+.tj-category-showcase__more > a {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	min-height: 100%;
+	padding: 18px 12px;
+	border-radius: var(--tj-radius);
+	background: linear-gradient(145deg, var(--tj-dark), var(--tj-secondary));
+	color: var(--tj-white);
+	text-align: center;
+	transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.tj-category-showcase__more > a:hover { box-shadow: var(--tj-shadow-lg); color: var(--tj-white); transform: translateY(-2px); }
+.tj-category-showcase__more span { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.tj-category-showcase__more strong { font-size: .95rem; line-height: 1.3; }
+.tj-category-showcase__more small { font-size: .76rem; opacity: .86; }
 /* ------------------------------------------------------ product cards -- */
 
 .woocommerce ul.products,
@@ -3124,6 +3223,9 @@ p.no-comments {
 	.tj-header-inner { gap: 18px; }
 	.tj-features-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 	.tj-category-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.tj-category-showcase { grid-template-columns: minmax(220px, 1fr) minmax(0, 2.7fr); }
+	.tj-category-showcase__cover { min-height: 100%; }
+	.tj-category-showcase__products ul.products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	.tj-post-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	.woocommerce ul.products, .tj-front-page ul.products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 	.tj-hero-img,
@@ -3205,7 +3307,7 @@ p.no-comments {
 	 */
 	.tj-hero-content {
 		inset: auto 0 0 0;
-		max-width: 62%;
+		/* max-width: 62%; */
 		padding: 40px 26px 22px;
 		background: linear-gradient(to top, rgba(9, 20, 15, .92), rgba(9, 20, 15, .45) 55%, transparent);
 	}
@@ -3228,6 +3330,8 @@ p.no-comments {
 	/* Four across on a desktop, where there is room for a full row of cards. */
 	.tj-carousel .tj-scroller ul.products li.product { flex: 0 0 calc((100% - 42px) / 4 - 10px); }
 	.tj-category-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+	.tj-category-showcase { grid-template-columns: minmax(280px, 1fr) minmax(0, 3.1fr); }
+	.tj-category-showcase__products ul.products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 	.woocommerce ul.products, .tj-front-page ul.products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 	.woocommerce ul.products li.product.tj-product .tj-product-actions > .button,
 	.woocommerce ul.products li.product.tj-product .tj-product-actions > .tj-btn,

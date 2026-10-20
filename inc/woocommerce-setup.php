@@ -1537,6 +1537,78 @@ function techjossecom_product_categories( $limit = 12 ) {
 }
 
 /**
+ * Product category choices for the homepage category showcase setting.
+ *
+ * Empty categories remain selectable, so the setting does not silently reset
+ * while an owner is still preparing its first products.
+ *
+ * @return array Term ID => category name.
+ */
+function techjossecom_product_category_choices() {
+	$choices = array(
+		0 => __( 'Select a product category', 'techjossecom' ),
+	);
+
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return $choices;
+	}
+
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'product_cat',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
+
+	if ( is_wp_error( $terms ) ) {
+		return $choices;
+	}
+
+	foreach ( $terms as $term ) {
+		$choices[ $term->term_id ] = $term->name;
+	}
+
+	return $choices;
+}
+
+/**
+ * Products in one selected category for the homepage showcase.
+ *
+ * @param int $term_id Product category term ID.
+ * @param int $limit   Maximum number of products.
+ * @return WP_Query|null
+ */
+function techjossecom_category_showcase_products( $term_id, $limit = 7 ) {
+	$term_id = absint( $term_id );
+
+	if ( ! class_exists( 'WooCommerce' ) || $term_id < 1 || ! term_exists( $term_id, 'product_cat' ) ) {
+		return null;
+	}
+
+	$query = new WP_Query(
+		array(
+			'post_type'           => 'product',
+			'post_status'         => 'publish',
+			'posts_per_page'      => absint( $limit ),
+			'tax_query'           => array(
+				array(
+					'taxonomy' => 'product_cat',
+					'field'    => 'term_id',
+					'terms'    => $term_id,
+				),
+			),
+			'orderby'             => 'date',
+			'order'               => 'DESC',
+			'ignore_sticky_posts' => true,
+		)
+	);
+
+	return $query->have_posts() ? $query : null;
+}
+
+/**
  * Products in a category, used by the homepage "top picks" grid.
  *
  * @param int $limit Maximum number of products.
@@ -1618,6 +1690,53 @@ function techjossecom_product_grid( $query, $columns = 4 ) {
 
 		wc_get_template_part( 'content', 'product' );
 	}
+
+	woocommerce_product_loop_end();
+
+	wp_reset_postdata();
+	wc_reset_loop();
+}
+
+/**
+ * Render the product half of the selected-category homepage showcase.
+ *
+ * The final grid slot is deliberately a category link rather than another
+ * product. It keeps the layout balanced while giving the customer a clear way
+ * to open the full archive.
+ *
+ * @param WP_Query $query    Product query.
+ * @param WP_Term  $category Selected product category.
+ * @return void
+ */
+function techjossecom_category_showcase_grid( $query, $category ) {
+	if ( ! $query instanceof WP_Query || ! $query->have_posts() || ! $category instanceof WP_Term || ! function_exists( 'woocommerce_product_loop_start' ) ) {
+		return;
+	}
+
+	$category_url = get_term_link( $category );
+
+	if ( is_wp_error( $category_url ) ) {
+		return;
+	}
+
+	wc_set_loop_prop( 'columns', 4 );
+	wc_set_loop_prop( 'is_ajax_add_to_cart', true );
+
+	woocommerce_product_loop_start();
+
+	while ( $query->have_posts() ) {
+		$query->the_post();
+
+		wc_get_template_part( 'content', 'product' );
+	}
+
+	printf(
+		'<li class="product tj-category-showcase__more"><a href="%1$s"><span>%2$s</span><strong>%3$s</strong><small>%4$s</small></a></li>',
+		esc_url( $category_url ),
+		esc_html__( 'Explore', 'techjossecom' ),
+		esc_html( $category->name ),
+		esc_html__( 'View all products', 'techjossecom' )
+	);
 
 	woocommerce_product_loop_end();
 

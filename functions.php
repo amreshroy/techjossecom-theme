@@ -94,6 +94,8 @@ function techjossecom_defaults() {
 		'categories_title'       => 'Shop by Category',
 		'categories_limit'       => 12,
 		'categories_mobile_limit' => 0,
+		'show_category_showcase' => true,
+		'category_showcase_category' => 0,
 		'show_deals'             => true,
 		'deals_title'            => 'Best Deals',
 		'deals_limit'            => 8,
