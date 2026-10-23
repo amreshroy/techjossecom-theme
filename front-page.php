@@ -110,14 +110,7 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 	<?php endif; ?>
 
 	<?php
-	/*
-	 * Selected Category Showcase.
-	 *
-	 * This intentionally uses the category's WooCommerce thumbnail as the
-	 * large visual card. One category selection therefore controls its cover,
-	 * its product list and both archive links, with no duplicate image or URL
-	 * to keep in sync in the theme settings.
-	 */
+
 	$techjossecom_showcase_term_id = (int) techjossecom_mod( 'category_showcase_category' );
 	$techjossecom_showcase_term    = ( $techjossecom_has_woo && $techjossecom_showcase_term_id > 0 )
 		? get_term( $techjossecom_showcase_term_id, 'product_cat' )
@@ -156,6 +149,7 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 			</section>
 		<?php endif; ?>
 	<?php endif; ?>
+
 
 	<?php
 	$techjossecom_deals        = ( techjossecom_mod( 'show_deals' ) && $techjossecom_has_woo )
@@ -349,6 +343,17 @@ $techjossecom_has_woo = class_exists( 'WooCommerce' );
 			</div>
 		</section>
 	<?php endif; ?>
+
+	<?php
+	/* Bulk Order / Wholesale section. */
+	if ( techjossecom_mod( 'show_bulk_order' ) ) :
+		get_template_part( 'template-parts/section', 'bulk-order' );
+	endif;
+	/* Client Logos section. */
+	if ( techjossecom_mod( 'show_clients' ) ) :
+		get_template_part( 'template-parts/section', 'clients' );
+	endif;
+	?>
 
 	<?php
 	$techjossecom_intro       = techjossecom_mod( 'intro_text' );

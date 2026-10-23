@@ -516,6 +516,129 @@ function techjossecom_admin_fields() {
 			'section' => 'home',
 		),
 
+		// --- Bulk Order / Wholesale -----------------------------------------
+		'show_bulk_order'     => array(
+			'type'        => 'checkbox',
+			'label'       => __( 'Show the "Bulk Order / Wholesale" section', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'bulk_order_title'    => array(
+			'type'    => 'text',
+			'label'   => __( 'Bulk Order section heading', 'techjossecom' ),
+			'section' => 'home',
+		),
+		'bulk_order_subtitle' => array(
+			'type'        => 'textarea',
+			'label'       => __( 'Bulk Order section text', 'techjossecom' ),
+			'description' => __( 'Shown under the heading on the left side of the section.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'bulk_order_button_text' => array(
+			'type'    => 'text',
+			'label'   => __( 'Bulk Order button text', 'techjossecom' ),
+			'section' => 'home',
+		),
+		'bulk_order_image'    => array(
+			'type'        => 'image',
+			'label'       => __( 'Bulk Order right-side image', 'techjossecom' ),
+			'description' => __( 'Product or branding image shown on the right side of the section.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'bulk_order_link'     => array(
+			'type'        => 'text',
+			'label'       => __( 'Bulk Order button link', 'techjossecom' ),
+			'description' => __( 'Shortcode (e.g. [make_quotation_button]) or URL from your quick-order plugin. The button opens the quick-order popup.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+
+		// --- Client Logos ---------------------------------------------------
+		'show_clients'        => array(
+			'type'        => 'checkbox',
+			'label'       => __( 'Show the "Client Logos" section', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'clients_title'       => array(
+			'type'    => 'text',
+			'label'   => __( 'Client Logos section heading', 'techjossecom' ),
+			'section' => 'home',
+		),
+		'clients_subtitle'    => array(
+			'type'        => 'textarea',
+			'label'       => __( 'Client Logos section text', 'techjossecom' ),
+			'description' => __( 'Shown under the heading, above the logo grid.', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client1_image'       => array(
+			'type'        => 'image',
+			'label'       => __( 'Client logo 1', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client1_url'         => array(
+			'type'        => 'url',
+			'label'       => __( 'Client logo 1 link', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client2_image'       => array(
+			'type'        => 'image',
+			'label'       => __( 'Client logo 2', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client2_url'         => array(
+			'type'        => 'url',
+			'label'       => __( 'Client logo 2 link', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client3_image'       => array(
+			'type'        => 'image',
+			'label'       => __( 'Client logo 3', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client3_url'         => array(
+			'type'        => 'url',
+			'label'       => __( 'Client logo 3 link', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client4_image'       => array(
+			'type'        => 'image',
+			'label'       => __( 'Client logo 4', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client4_url'         => array(
+			'type'        => 'url',
+			'label'       => __( 'Client logo 4 link', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client5_image'       => array(
+			'type'        => 'image',
+			'label'       => __( 'Client logo 5', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client5_url'         => array(
+			'type'        => 'url',
+			'label'       => __( 'Client logo 5 link', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client6_image'       => array(
+			'type'        => 'image',
+			'label'       => __( 'Client logo 6', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'client6_url'         => array(
+			'type'        => 'url',
+			'label'       => __( 'Client logo 6 link', 'techjossecom' ),
+			'section'     => 'home',
+		),
+		'clients_view_all_text' => array(
+			'type'    => 'text',
+			'label'   => __( 'Client section "View All" button text', 'techjossecom' ),
+			'section' => 'home',
+		),
+		'clients_view_all_url'  => array(
+			'type'        => 'url',
+			'label'       => __( 'Client section "View All" button link', 'techjossecom' ),
+			'section'     => 'home',
+		),
+
 		// --- Top bar and contact -------------------------------------------
 		'show_topbar'        => array(
 			'type'    => 'checkbox',
