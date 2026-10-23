@@ -1644,6 +1644,72 @@ a.tj-top-banner:hover { box-shadow: var(--tj-shadow-lg); }
 
 .tj-category-showcase__products ul.products { height: 100%; }
 
+/* The showcase cards are browse-only: image, name and price take the compact
+   grid role, while the regular product cards elsewhere retain their purchase
+   controls. */
+.woocommerce ul.products li.product.tj-category-showcase__product,
+.tj-category-showcase__product {
+	min-width: 0;
+	margin: 0 !important;
+}
+
+.woocommerce ul.products li.product.tj-category-showcase__product > a,
+.tj-category-showcase__product > a {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	border: 1px solid var(--tj-line);
+	border-radius: var(--tj-radius);
+	background: var(--tj-white);
+	color: var(--tj-text);
+	transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.tj-category-showcase__product > a:hover { border-color: var(--tj-primary); box-shadow: var(--tj-shadow); color: var(--tj-text); transform: translateY(-2px); }
+
+.tj-category-showcase__product-media {
+	position: relative;
+	display: block;
+	background: #fff;
+}
+
+.tj-category-showcase__product-media img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	object-fit: contain;
+	padding: 8px;
+}
+
+.tj-category-showcase__product-media .tj-sale-badge,
+.tj-category-showcase__product-media .tj-badge { position: absolute; top: 6px; }
+.tj-category-showcase__product-media .tj-sale-badge { left: 6px; }
+.tj-category-showcase__product-media .tj-badge--out { right: 6px; }
+
+.tj-category-showcase__product-info {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 4px;
+	justify-content: center;
+	padding: 8px 9px 10px;
+	text-align: center;
+}
+
+.tj-category-showcase__product-info > strong {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	color: var(--tj-text);
+	font-size: .78rem;
+	line-height: 1.3;
+}
+
+.tj-category-showcase__product-info .price { color: var(--tj-secondary); font-size: .83rem; font-weight: 800; }
+.tj-category-showcase__product-info .price del { color: var(--tj-muted); font-size: .74rem; font-weight: 400; }
+
 .woocommerce ul.products li.product.tj-category-showcase__more,
 .tj-category-showcase__more {
 	display: flex;

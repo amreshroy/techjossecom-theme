@@ -1727,7 +1727,7 @@ function techjossecom_category_showcase_grid( $query, $category ) {
 	while ( $query->have_posts() ) {
 		$query->the_post();
 
-		wc_get_template_part( 'content', 'product' );
+		techjossecom_category_showcase_product_card();
 	}
 
 	printf(
@@ -1742,6 +1742,35 @@ function techjossecom_category_showcase_grid( $query, $category ) {
 
 	wp_reset_postdata();
 	wc_reset_loop();
+}
+
+/**
+ * Render one compact, browse-only card for the category showcase.
+ *
+ * The main shop cards intentionally retain their cart and quick-order actions.
+ * This mosaic is a discovery surface instead, so its complete card is one link
+ * to the product and it never runs the standard loop action hooks.
+ *
+ * @return void
+ */
+function techjossecom_category_showcase_product_card() {
+	$product = wc_get_product( get_the_ID() );
+
+	if ( ! $product instanceof WC_Product || ! $product->is_visible() ) {
+		return;
+	}
+
+	printf(
+		'<li class="product tj-category-showcase__product"><a href="%1$s" aria-label="%2$s"><span class="tj-category-showcase__product-media">%3$s%4$s%5$s</span><span class="tj-category-showcase__product-info"><strong>%6$s</strong><span class="price">%7$s</span></span></a></li>',
+		esc_url( $product->get_permalink() ),
+		/* translators: %s: product name. */
+		esc_attr( sprintf( __( 'View %s', 'techjossecom' ), $product->get_name() ) ),
+		wp_kses_post( $product->get_image( 'techjossecom-card', array( 'loading' => 'lazy', 'alt' => $product->get_name() ) ) ),
+		techjossecom_sale_badge( $product, 'loop' ),
+		$product->is_in_stock() ? '' : '<span class="tj-badge tj-badge--out">' . esc_html__( 'Out of stock', 'techjossecom' ) . '</span>',
+		esc_html( $product->get_name() ),
+		wp_kses_post( $product->get_price_html() )
+	);
 }
 
 /**

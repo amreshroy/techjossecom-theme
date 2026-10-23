@@ -25,15 +25,37 @@ get_header();
 
 		<div class="tj-layout tj-layout--sidebar">
 			<div class="tj-layout-content">
+				<?php
+				$techjossecom_is_product_archive = class_exists( 'WooCommerce' ) && 'product' === get_post_type();
+
+				if ( $techjossecom_is_product_archive && function_exists( 'woocommerce_product_loop_start' ) ) :
+					wc_set_loop_prop( 'columns', 4 );
+					wc_set_loop_prop( 'is_ajax_add_to_cart', true );
+					woocommerce_product_loop_start();
+				else :
+					?><div class="tj-post-grid"><?php
+				endif;
+				?>
+
 				<?php if ( have_posts() ) : ?>
-					<div class="tj-post-grid">
-						<?php
-						while ( have_posts() ) :
-							the_post();
+					<?php
+					while ( have_posts() ) :
+						the_post();
+						if ( $techjossecom_is_product_archive ) {
+							wc_get_template_part( 'content', 'product' );
+						} else {
 							get_template_part( 'template-parts/content', 'card' );
-						endwhile;
-						?>
-					</div>
+						}
+					endwhile;
+					?>
+
+					<?php if ( $techjossecom_is_product_archive ) : ?>
+						<?php woocommerce_product_loop_end(); ?>
+						<?php wp_reset_postdata(); ?>
+						<?php wc_reset_loop(); ?>
+					<?php else : ?>
+						</div>
+					<?php endif; ?>
 
 					<?php techjossecom_pagination(); ?>
 				<?php else : ?>
@@ -49,3 +71,5 @@ get_header();
 </main>
 <?php
 get_footer();
+
+
