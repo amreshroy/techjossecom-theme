@@ -918,10 +918,19 @@ function techjossecom_description_block_data() {
  * @return void
  */
 function techjossecom_the_description_block( $args = array() ) {
-	$block = wp_parse_args( $args, (array) techjossecom_description_block_data() );
+	$data = techjossecom_description_block_data();
+
+	// Archive pages supply their own title/text; the homepage (and other callers)
+	// pass them explicitly. Only fall back to the caller's values when there is
+	// no archive data to merge with.
+	if ( is_array( $data ) ) {
+		$block = wp_parse_args( $args, $data );
+	} else {
+		$block = (array) $args;
+	}
 
 	// Nothing to open, so nothing is printed - not even an empty section.
-	if ( '' === trim( wp_strip_all_tags( (string) $block['text'] ) ) ) {
+	if ( '' === trim( wp_strip_all_tags( (string) ( $block['text'] ?? '' ) ) ) ) {
 		return;
 	}
 

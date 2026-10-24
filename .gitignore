@@ -18,6 +18,21 @@ node_modules/
 vendor/
 *.log
 
+# Temporary / backup files created by editors or manual saves.
+# These must never be committed or shipped: WordPress only loads the real
+# *.php files, and a stale *.bak copy can be mistaken for the source of
+# truth during a deploy or a local sync.
+*.bak
+*.bak_*
+*.bak-*
+*.bak_cod
+*.orig
+*.orig_backup
+*.old
+*.tmp
+*.temp
+*.copy
+
 # Local environment and secrets. wp-config.php normally lives above the theme
 # folder, but it is listed here so that a stray copy inside the theme can never
 # be committed: it holds the database password and the auth keys.
