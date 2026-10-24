@@ -91,6 +91,109 @@
 		}
 	}
 
+	/* Initialise the scroll-to-top button and the description "Read More"
+	   control up front, so they keep working even if a later section of
+	   this script throws on a particular page or under a stale cache. */
+	try {
+		var earlyScrollTopBtn = qs( '[data-tj-scroll-top]' );
+
+		if ( earlyScrollTopBtn && ! earlyScrollTopBtn.getAttribute( 'data-tj-scroll-top-ready' ) ) {
+			var earlyScrollThreshold = 400;
+			var earlyScrollTick = false;
+
+			earlyScrollTopBtn.hidden = false;
+
+			var earlySyncScrollTop = function () {
+				earlyScrollTopBtn.classList.toggle( 'is-visible', window.pageYOffset > earlyScrollThreshold );
+				earlyScrollTick = false;
+			};
+
+			window.addEventListener( 'scroll', function () {
+				if ( earlyScrollTick ) {
+					return;
+				}
+
+				earlyScrollTick = true;
+				window.requestAnimationFrame( earlySyncScrollTop );
+			}, { passive: true } );
+
+			earlySyncScrollTop();
+
+			earlyScrollTopBtn.addEventListener( 'click', function () {
+				var reduce = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+
+				window.scrollTo( { top: 0, behavior: reduce ? 'auto' : 'smooth' } );
+			} );
+
+			earlyScrollTopBtn.setAttribute( 'data-tj-scroll-top-ready', '1' );
+		}
+	} catch ( earlyScrollError ) {
+		if ( window.console && console.error ) {
+			console.error( earlyScrollError );
+		}
+	}
+
+	try {
+		qsa( '[data-tj-seo-toggle]' ).forEach( function ( button ) {
+			if ( button.getAttribute( 'data-tj-seo-ready' ) ) {
+				return;
+			}
+
+			var block = button.closest( '[data-tj-seo]' );
+			var body  = block ? qs( '[data-tj-seo-body]', block ) : null;
+
+			if ( ! block || ! body ) {
+				return;
+			}
+
+			var label = qs( '[data-tj-seo-label]', button );
+			var more  = button.getAttribute( 'data-tj-more' ) || ( label ? label.textContent : '' );
+			var less  = button.getAttribute( 'data-tj-less' ) || more;
+
+			var measure = function () {
+				var wasExpanded = block.classList.contains( 'is-expanded' );
+
+				block.classList.remove( 'is-expanded' );
+				block.classList.add( 'is-clamped' );
+
+				var overflows = body.scrollHeight - body.clientHeight > 1;
+
+				block.classList.toggle( 'is-clamped', overflows );
+
+				if ( overflows ) {
+					block.classList.toggle( 'is-expanded', wasExpanded );
+
+					return;
+				}
+
+				if ( label ) {
+					label.textContent = more;
+				}
+
+				button.setAttribute( 'aria-expanded', 'false' );
+			};
+
+			button.addEventListener( 'click', function () {
+				var expanded = block.classList.toggle( 'is-expanded' );
+
+				if ( label ) {
+					label.textContent = expanded ? less : more;
+				}
+
+				button.setAttribute( 'aria-expanded', expanded ? 'true' : 'false' );
+			} );
+
+			window.addEventListener( 'resize', debounce( measure, 150 ) );
+			measure();
+
+			button.setAttribute( 'data-tj-seo-ready', '1' );
+		} );
+	} catch ( earlySeoError ) {
+		if ( window.console && console.error ) {
+			console.error( earlySeoError );
+		}
+	}
+
 	/* ------------------------------------------------------ slide panels -- */
 
 	var overlay = qs( '[data-tj-overlay]' );
@@ -718,6 +821,10 @@
 	 * difference and never caps anything at all.
 	 */
 	qsa( '[data-tj-seo-toggle]' ).forEach( function ( button ) {
+		if ( button.getAttribute( 'data-tj-seo-ready' ) ) {
+			return;
+		}
+
 		var block = button.closest( '[data-tj-seo]' );
 		var body  = block ? qs( '[data-tj-seo-body]', block ) : null;
 
@@ -1886,7 +1993,7 @@
 
 	var scrollTopBtn = qs( '[data-tj-scroll-top]' );
 
-	if ( scrollTopBtn ) {
+	if ( scrollTopBtn && ! scrollTopBtn.getAttribute( 'data-tj-scroll-top-ready' ) ) {
 		var scrollThreshold = 400;
 		var scrollTick = false;
 

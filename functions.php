@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'TECHJOSSECOM_VERSION', '1.0.0' );
+define( 'TECHJOSSECOM_VERSION', '1.0.1' );
 define( 'TECHJOSSECOM_DIR', get_template_directory() );
 define( 'TECHJOSSECOM_URI', get_template_directory_uri() );
 
