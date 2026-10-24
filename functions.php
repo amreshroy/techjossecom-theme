@@ -109,7 +109,7 @@ function techjossecom_defaults() {
 		'featured_limit'         => 8,
 		'featured_mobile_limit'  => 0,
 		'show_seo'               => true,
-		'seo_title'              => 'Quality Electrical, Fire & Industrial Safety Products in Bangladesh',
+		'seo_title'              => 'Genuine Jute Products Online in Bangladesh',
 		'seo_read_more'          => 'Read More',
 		/*
 		 * The homepage description block.
@@ -128,15 +128,15 @@ function techjossecom_defaults() {
 		'seo_text'               => implode(
 			'',
 			array(
-				'<p>Looking for reliable <strong>electrical</strong>, <strong>fire safety</strong>, <strong>industrial safety</strong>, tools, shoes and hardware products in Bangladesh? We are an online marketplace for individuals, businesses, factories, construction projects and industrial workplaces. We provide a wide range of quality products designed to support <strong>workplace safety</strong>, <strong>electrical protection</strong>, <strong>construction</strong>, <strong>maintenance</strong> and industrial needs.</p>',
-				'<h2>Electrical Products &amp; Safety Equipment</h2>',
-				'<p>You can find a wide selection of <strong>electrical products</strong> and <strong>electrical safety equipment</strong>, including electrical accessories, protection devices, cables and related essentials. Whether you need products for home maintenance, commercial installations, construction projects or industrial applications, our collection is designed to meet everyday electrical needs with reliable quality and honest prices.</p>',
-				'<h2>Fire Safety Products</h2>',
-				'<p>Protecting people, property and workplaces starts with the right fire safety equipment. We supply fire extinguishers, fire alarms, emergency lights, emergency signage and other fire protection products suitable for homes, offices, shops, factories, warehouses, construction sites and other commercial environments.</p>',
-				'<h2>Industrial Safety, Safety Shoes &amp; Tools</h2>',
-				'<p>Workplace safety is essential across construction, manufacturing, factories, warehouses, workshops and other industrial environments. Our <strong>industrial safety products</strong> - safety helmets, safety vests, face protection, safety goggles, hand gloves and <strong>safety shoes</strong> - are selected to help workers stay protected during different types of work. From everyday maintenance to professional industrial work, our <strong>tools and hardware</strong> range covers hand tools, hardware products and maintenance essentials for professional workers, technicians, contractors, workshops and DIY users.</p>',
+				'<p>KhoriBD is a trusted online shop delivering genuine jute products all over Bangladesh with cash on delivery. We offer jute bags, pillows, baskets, cushion covers and more for home, travel, corporate and everyday use. We also fulfill customer personal requirements and design materials.</p>',
+				'<h2>Jute Bags and Accessories</h2>',
+				'<p>Find a wide selection of jute bags and accessories, including corporate items, cotton bags, travel bags and shopping bags. Whether you need products for personal use, gifting, branding or business sourcing, our collection is designed to meet everyday needs with reliable quality and honest prices.</p>',
+				'<h2>Home and Living</h2>',
+				'<p>Our home and living range includes pillows, baskets and cushion covers made from natural jute. These products are selected to bring sustainable style and practical comfort to homes, offices and commercial spaces.</p>',
+				'<h2>Corporate and Bulk Orders</h2>',
+				'<p>We support corporate, wholesale and bulk requirements with dependable jute products and competitive pricing. From small orders to larger sourcing needs, we help businesses, organizations and events choose suitable items.</p>',
 				'<h2>Your Trusted Online Store in Bangladesh</h2>',
-				'<p>Whether you are buying a single product or sourcing products for a business, factory, office, construction project, workshop or industrial facility, we make it easy to find dependable products with competitive pricing and delivery across Bangladesh.</p>',
+				'<p>Whether you are buying a single product or sourcing products for a business, office, event or personal use, we make it easy to find dependable jute products with delivery across Bangladesh.</p>',
 			)
 		),
 		'show_features'       => true,

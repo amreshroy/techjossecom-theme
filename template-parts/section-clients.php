@@ -60,7 +60,7 @@ return;
 <?php endforeach; ?>
 </ul>
 </div>
-<?php techjossecom_scroll_buttons(); ?>
+
 </div>
 <?php endif; ?>
 
